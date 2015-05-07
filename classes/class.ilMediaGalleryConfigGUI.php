@@ -81,14 +81,18 @@ class ilMediaGalleryConfigGUI extends ilPluginConfigGUI
 		$ext_oth->setRequired(TRUE);
 		$form->addItem($ext_oth);
 
-		$theme = new ilTextInputGUI($pl->txt("gallery_theme"), "theme");
-		$theme->setValue(ilObjMediaGallery::_getConfigurationValue('theme'));
+		$theme = new ilSelectInputGUI($pl->txt("gallery_theme"), "theme");
 		$theme->setRequired(TRUE);
+		$theme->setValue(ilObjMediaGallery::_getConfigurationValue('theme'));
+		$theme_options = ilObjMediaGallery::_getGalleryThemes();
+		$theme->setOptions($theme_options);
 		$form->addItem($theme);
 
         $max_upload = new ilNumberInputGUI($pl->txt("max_upload_size"), "max_upload");
         $max_upload->setValue(ilObjMediaGallery::_getConfigurationValue("max_upload", "100"));
+		$max_upload->setSuffix("MB");
         $max_upload->setRequired(true);
+		$max_upload->setMinValue(1);
         $form->addItem($max_upload);
 		
 		return $form;

@@ -1259,7 +1259,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 
 	public function upload()
 	{
-		global $ilTabs, $ilCtrl;
+		global $ilTabs, $ilCtrl, $lng;
 
 		$this->setSubTabs("mediafiles");
 		$ilTabs->activateTab("mediafiles");
@@ -1281,6 +1281,16 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		$this->tpl->addCss($this->plugin->getDirectory() . "/js/jquery.plupload.queue/css/jquery.plupload.queue.css");
 		$this->tpl->addJavascript($this->plugin->getDirectory() . "/js/plupload.full.js");
 		$this->tpl->addJavascript($this->plugin->getDirectory() . "/js/jquery.plupload.queue/jquery.plupload.queue.js");
+
+		//change language
+		$lang = $lng->getUserLanguage();
+		$lang_path = $this->plugin->getDirectory() . "/js/i18n/".$lang.".js";
+
+		if(file_exists($lang_path))
+		{
+			$this->tpl->addJavascript($this->plugin->getDirectory() . "/js/i18n/de.js");
+		}
+
 		$this->tpl->setVariable("ADM_CONTENT", $template->get());
 	}
 	

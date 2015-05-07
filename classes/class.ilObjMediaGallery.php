@@ -39,7 +39,7 @@ class ilObjMediaGallery extends ilObjectPlugin
 	{
 		parent::__construct($a_ref_id);
 		include_once "./Services/Component/classes/class.ilPlugin.php";
-		$this->plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, "Repository", "robj", "MediaGallery");
+		$this->plugin = self::_getPluginObject();
 	}
 	
 
@@ -504,7 +504,7 @@ class ilObjMediaGallery extends ilObjectPlugin
 		return $files;
 	}
 
-	private function getDirsInDir($a_dir)
+	private static function getDirsInDir($a_dir)
 	{
 		$current_dir = opendir($a_dir);
 
@@ -519,10 +519,20 @@ class ilObjMediaGallery extends ilObjectPlugin
 		ksort($files);
 		return $files;
 	}
-	
+
+	protected static function _getPluginObject()
+	{
+		return ilPlugin::getPluginObject(IL_COMP_SERVICE, "Repository", "robj", "MediaGallery");
+	}
+
 	public function getGalleryThemes()
 	{
-		$data = $this->getDirsInDir($this->plugin->getDirectory() . '/js/prettyphoto_3.1.5/images/prettyPhoto');
+		return self::_getGalleryThemes();
+	}
+	
+	public static function _getGalleryThemes()
+	{
+		$data = self::getDirsInDir(self::_getPluginObject()->getDirectory() . '/js/prettyphoto_3.1.5/images/prettyPhoto');
 		if (count($data) == 0)
 		{
 			array_push($data, ilObjMediaGallery::_getConfigurationValue('theme'));
