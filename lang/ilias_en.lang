@@ -132,3 +132,4 @@ play#:#Play
 pause#:#Pause
 playpause#:#Play/Pause
 max_upload_size#:#Maximum file size
+new_file_added#:#All files have been uploaded successfully.

@@ -1261,6 +1261,11 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 	{
 		global $ilTabs, $ilCtrl, $lng;
 
+		if(isset($_GET["upload"]))
+		{
+			ilUtil::sendSuccess($this->plugin->txt("new_file_added"));
+		}
+
 		$this->setSubTabs("mediafiles");
 		$ilTabs->activateTab("mediafiles");
 		$template = $this->plugin->getTemplate("tpl.upload.html");

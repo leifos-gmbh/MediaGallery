@@ -14,7 +14,22 @@ $(function() {
 		flash_swf_url : '/plupload/js/plupload.flash.swf',
 
 		// Silverlight settings
-		silverlight_xap_url : '/plupload/js/plupload.silverlight.xap'
+		silverlight_xap_url : '/plupload/js/plupload.silverlight.xap',
+
+
+
+    init: {
+        UploadComplete: function(up, files) {
+
+            var message = "&upload=successfully";
+
+            if(window.location.href.indexOf(message) > -1)
+            {
+                message = '';
+            }
+            window.location = window.location.href + message;
+        },
+    }
 	});
 
 	// Client side form validation
