@@ -104,8 +104,8 @@ class ilMediaFileDownloadArchivesTableGUI extends ilTable2GUI
 
 		$this->plugin->includeClass("class.ilObjMediaGallery.php");
 		$this->tpl->setVariable('CB_ID', $this->counter++);
-		$this->tpl->setVariable("CB_FILE", ilUtil::prepareFormOutput($data['entry']));
-		$this->tpl->setVariable("FILENAME", ilUtil::prepareFormOutput($data['entry']));
+		$this->tpl->setVariable("CB_FILE",$data['id']);
+		$this->tpl->setVariable("FILENAME", ilUtil::prepareFormOutput($data['filename']));
 		$this->tpl->setVariable("SIZE", ilUtil::prepareFormOutput($this->formatBytes($data['size'])));
 		$this->tpl->setVariable("CREATED", ilDatePresentation::formatDate(new ilDate($data["created"],IL_CAL_UNIX)));
 		if ($data['download'])

@@ -20,6 +20,9 @@ define("LOCATION_PREVIEWS", 7);
 */
 class ilObjMediaGallery extends ilObjectPlugin
 {
+	/**
+	 * @var ilMediaGalleryPlugin
+	 */
 	protected $plugin;
 	protected $size_thumbs = 150;
 	protected $size_small = 800;
@@ -29,6 +32,22 @@ class ilObjMediaGallery extends ilObjectPlugin
 	protected $showTitle = 0;
 	protected $download = 0;
 	protected $theme = '';
+
+	const LOCATION_ROOT = 0;
+	const LOCATION_ORIGINALS = 1;
+	const LOCATION_THUMBS = 2;
+	const LOCATION_SIZE_SMALL = 3;
+	const LOCATION_SIZE_MEDIUM = 4;
+	const LOCATION_SIZE_LARGE = 5;
+	const LOCATION_DOWNLOADS = 6;
+	const LOCATION_PREVIEWS = 7;
+
+	const CONTENT_TYPE_UNKNOWN = 0;
+	const CONTENT_TYPE_VIDEO = 1;
+	const CONTENT_TYPE_IMAGE = 2;
+	const CONTENT_TYPE_AUDIO = 3;
+
+
 	
 	/**
 	* Constructor
@@ -236,6 +255,72 @@ class ilObjMediaGallery extends ilObjectPlugin
 	{
 		$this->theme = $theme;
 	}
+
+	/**
+	 * @param int $size_large
+	 */
+	public function setSizeLarge($size_large)
+	{
+		$this->size_large = $size_large;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getSizeLarge()
+	{
+		return $this->size_large;
+	}
+
+	/**
+	 * @param int $size_medium
+	 */
+	public function setSizeMedium($size_medium)
+	{
+		$this->size_medium = $size_medium;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getSizeMedium()
+	{
+		return $this->size_medium;
+	}
+
+	/**
+	 * @param int $size_thumbs
+	 */
+	public function setSizeThumbs($size_thumbs)
+	{
+		$this->size_thumbs = $size_thumbs;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getSizeThumbs()
+	{
+		return $this->size_thumbs;
+	}
+
+	/**
+	 * @param int $size_small
+	 */
+	public function setSizeSmall($size_small)
+	{
+		$this->size_small = $size_small;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getSizeSmall()
+	{
+		return $this->size_small;
+	}
+
+
 
 	private function getDataPath()
 	{
@@ -607,18 +692,6 @@ class ilObjMediaGallery extends ilObjectPlugin
 		}
 	}
 
-	public function deleteArchive($filename)
-	{
-		global $ilDB;
-		
-		@unlink($this->getPath(LOCATION_DOWNLOADS) . $filename);
-		
-		$affectedRows = $ilDB->manipulateF("DELETE FROM rep_robj_xmg_downloads WHERE xmg_id = %s AND filename = %s",
-			array('integer','text'),
-			array($this->getId(), $filename)
-		);
-	}
-
 	public function downloadArchiveExists($filename)
 	{
 		if (file_exists($this->getPath(LOCATION_DOWNLOADS) . ilUtil::getASCIIFilename($filename)))
@@ -684,28 +757,6 @@ class ilObjMediaGallery extends ilObjectPlugin
 			$width = $imgsize[0];
 			$height = $imgsize[1];
 			$this->updateFileDataAfterRotate($filename, $width, $height);
-		}
-	}
-	
-	public function saveArchiveData($downloads)
-	{
-		global $ilDB;
-		$affectedRows = $ilDB->manipulateF("DELETE FROM rep_robj_xmg_downloads WHERE xmg_id = %s",
-			array('integer'),
-			array($this->getId())
-		);
-		if (is_array($downloads))
-		{
-			foreach ($downloads as $filename)
-			{
-				if (strlen($filename))
-				{
-					$result = $ilDB->manipulateF("INSERT INTO rep_robj_xmg_downloads (xmg_id, filename) VALUES (%s, %s)",
-						array('integer','text'),
-						array($this->getId(), $filename)
-					);
-				}
-			}
 		}
 	}
 	
@@ -905,12 +956,12 @@ class ilObjMediaGallery extends ilObjectPlugin
 
 	public function createMissingPreviews()
 	{
-		$files = $this->getMediaFiles();
-		foreach ($files as $filename => $data)
+		$files = ilMediaGalleryFile::_getMediaFilesInGallery($this->getId());
+		foreach ($files as $id => $data)
 		{
-			if (!@file_exists($this->getPath(LOCATION_THUMBS,$filename)))
+			if (!@file_exists($this->plugin->getFileSystem()->getPath(ilObjMediaGallery::LOCATION_THUMBS, $id)))
 			{
-				$this->createPreviews($filename);
+				ilMediaGalleryFile::_getInstanceById($id)->createImagePreviews();
 			}
 		}
 	}
@@ -1155,7 +1206,7 @@ class ilObjMediaGallery extends ilObjectPlugin
 		$xml_writer->xmlElement("title", array(),$this->getTitle());
 		$xml_writer->xmlElement("description", array(), $this->getDescription());
 		
-		foreach($this->getMediaFiles() as $data)
+		foreach(ilMediaGalleryFile::_getMediaFilesInGallery($this->getId()) as $data)
 		{
 			$filedata_attr = array(
 				"filename" => $data["filename"],
@@ -1175,15 +1226,15 @@ class ilObjMediaGallery extends ilObjectPlugin
 			$content = @gzcompress(@file_get_contents($this->getPath(LOCATION_ORIGINALS.$data["filename"])), 9);
 			$content = base64_encode($content);
 			$xml_writer->xmlElement("content", array("mode" => "ZIP"), $content);
+
+			$prev_path = $this->plugin->getFileSystem()->getFilePath(self::LOCATION_PREVIEWS, $data["id"])
 			
-			if($data["pfilename"] && file_exists($this->getPath(LOCATION_PREVIEWS).$data["pfilename"]))
+			if(file_exists($prev_path))
 			{
-				$preview = @gzcompress(@file_get_contents($this->getPath(LOCATION_PREVIEWS).$data["pfilename"]), 9);
+				$preview = @gzcompress(@file_get_contents($prev_path), 9);
 				$preview = base64_encode($preview);
 				$preview_attr = array(
-					"pfilename" => $data["pfilename"],
-					"pwidth" => $data["pwidth"],
-					"pheight" => $data["pheight"],
+					"pfilename" => $data["filename"],
 					"mode" => "ZIP"
 				);
 				
@@ -1194,7 +1245,5 @@ class ilObjMediaGallery extends ilObjectPlugin
 		
 		$xml_writer->xmlEndTag("mediagallery");
 	}
-
-
 }
 ?>

@@ -138,25 +138,26 @@ class ilMediaFileTableGUI extends ilTable2GUI
 
 		$this->plugin->includeClass("class.ilObjMediaGallery.php");
 		$this->tpl->setVariable('CB_ID', $this->counter++);
-		$this->tpl->setVariable("CB_FILE", ilUtil::prepareFormOutput($data['entry']));
-		$this->tpl->setVariable("FILENAME", ilUtil::prepareFormOutput($data['entry']));
+		$this->tpl->setVariable("CB_FILE", $data['id']);
+		$this->tpl->setVariable("FILENAME", ilUtil::prepareFormOutput($data['filename']));
+
 		if ($data['pwidth'] > 0)
 		{
-			$this->tpl->setVariable("PREVIEW", $this->parent_obj->object->getPathWeb(LOCATION_PREVIEWS) . $data['pfilename']);
+			$this->tpl->setVariable("PREVIEW", $this->parent_obj->object->getPathWeb(LOCATION_PREVIEWS));
 			$this->tpl->setVariable("PREVIEW_CLASS_BORDER", 'xmg_border');
 		}
 		else if ($this->parent_obj->object->isImage($data['entry']))
 		{
 			$this->tpl->setVariable("PREVIEW", $this->parent_obj->object->getPathWeb(LOCATION_THUMBS, $data['filename']) );
 			$this->tpl->setVariable("ROTATE_LEFT", $this->plugin->getDirectory() . '/templates/images/rotate_left.png');
-			$this->ctrl->setParameter($this->parent_obj, "id", $data['entry']);
+			$this->ctrl->setParameter($this->parent_obj, "id", $data['id']);
 			$this->ctrl->setParameter($this->parent_obj, "action", "rotateLeft");
 			$this->tpl->setVariable("URL_ROTATE_LEFT", $this->ctrl->getLinkTarget($this->parent_obj, 'mediafiles'));
 			$this->ctrl->setParameter($this->parent_obj, "action", "");
 			$this->ctrl->setParameter($this->parent_obj, "id", "");
 			$this->tpl->setVariable("TEXT_ROTATE_LEFT", $this->lng->txt("rotate_left"));
 			$this->tpl->setVariable("ROTATE_RIGHT", $this->plugin->getDirectory() . '/templates/images/rotate_right.png');
-			$this->ctrl->setParameter($this->parent_obj, "id", $data['entry']);
+			$this->ctrl->setParameter($this->parent_obj, "id", $data['id']);
 			$this->ctrl->setParameter($this->parent_obj, "action", "rotateRight");
 			$this->tpl->setVariable("URL_ROTATE_RIGHT", $this->ctrl->getLinkTarget($this->parent_obj, 'mediafiles'));
 			$this->ctrl->setParameter($this->parent_obj, "action", "");
@@ -237,10 +238,10 @@ class ilMediaFileTableGUI extends ilTable2GUI
 		// media type
 		$options = array(
 			'' => $this->plugin->txt('all_media_types'),
-			'image' => $this->plugin->txt('image'),
-			'audio' => $this->plugin->txt('audio'),
-			'video' => $this->plugin->txt('video'),
-			'unknown' => $this->plugin->txt('unknown'),
+			ilObjMediaGallery::CONTENT_TYPE_IMAGE => $this->plugin->txt('image'),
+			ilObjMediaGallery::CONTENT_TYPE_AUDIO => $this->plugin->txt('audio'),
+			ilObjMediaGallery::CONTENT_TYPE_VIDEO => $this->plugin->txt('video'),
+			ilObjMediaGallery::CONTENT_TYPE_UNKNOWN => $this->plugin->txt('unknown'),
 		);
 		$si = new ilSelectInputGUI($this->plugin->txt("media_type"), "f_type");
 		$si->setOptions($options);

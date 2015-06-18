@@ -104,7 +104,8 @@ class ilMediaGalleryArchives
 				"id" => $row["id"],
 				"xmg_id" => $row["xmg_id"],
 				"download_flag" => $row["download_flag"],
-				"filename" => $row["filename"]
+				"filename" => $row["filename"],
+				"created" => filectime($this->getPath($row["filename"]))
 			);
 		}
 
@@ -232,4 +233,8 @@ class ilMediaGalleryArchives
 		$this->archives = array();
 	}
 
+	public static function _archiveExist($a_xmg_id, $a_archive_id)
+	{
+		return in_array($a_archive_id, array_keys(self::_getInstanceByXmgId($a_xmg_id)->getArchives()));
+	}
 } 

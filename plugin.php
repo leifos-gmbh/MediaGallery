@@ -4,7 +4,7 @@
 $id = "xmg";
  
 // code version; must be changed for all code changes
-define('xmg_version', '1.1.1');
+define('xmg_version', '1.1.2');
 $version = xmg_version;
  
 // ilias min and max version; must always reflect the versions that should

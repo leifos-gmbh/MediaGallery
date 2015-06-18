@@ -348,10 +348,10 @@ class ilMediaGalleryFile
 	}
 
 
-	public function getMimeType()
+	public function getMimeType($a_location  = ilObjMediaGallery::LOCATION_ORIGINALS)
 	{
 		include_once "./Services/Utilities/classes/class.ilMimeTypeUtil.php";
-		return ilMimeTypeUtil::getMimeType($this->getPath(ilObjMediaGallery::LOCATION_ORIGINALS));
+		return ilMimeTypeUtil::getMimeType($this->getPath($a_location));
 	}
 
 	public function getFileInfo($a_key = null, $a_location  = ilObjMediaGallery::LOCATION_ORIGINALS)
@@ -412,43 +412,11 @@ class ilMediaGalleryFile
 		}
 	}
 
-	public function getContentType()
+	public function getContentType($a_location  = ilObjMediaGallery::LOCATION_ORIGINALS)
 	{
 		include_once "./Services/Utilities/classes/class.ilMimeTypeUtil.php";
 
-		$mime = $this->getMimeType();
-		if (strpos($mime, 'image') !== false)
-		{
-			return ilObjMediaGallery::CONTENT_TYPE_IMAGE;
-		}
-		else if (strpos($mime, 'audio') !== false)
-		{
-			return ilObjMediaGallery::CONTENT_TYPE_AUDIO;
-		}
-		else if (strpos($mime, 'video') !== false)
-		{
-			return ilObjMediaGallery::CONTENT_TYPE_VIDEO;
-		}
-		else
-		{
-			$ext = strtolower($this->getFileInfo("extension"));
-			if (in_array($ext, array_map('strtolower',  ilObjMediaGallery::_getConfigurationValue('ext_img'))))
-			{
-				return ilObjMediaGallery::CONTENT_TYPE_IMAGE;
-			}
-
-			if (in_array($ext, array_map('strtolower',  ilObjMediaGallery::_getConfigurationValue('ext_vid'))))
-			{
-				return ilObjMediaGallery::CONTENT_TYPE_VIDEO;
-			}
-
-			if (in_array($ext, array_map('strtolower',  ilObjMediaGallery::_getConfigurationValue('ext_aud'))))
-			{
-				return ilObjMediaGallery::CONTENT_TYPE_AUDIO;
-			}
-
-			return ilObjMediaGallery::CONTENT_TYPE_UNKNOWN;
-		}
+		return self::_contentType($this->getMimeType($a_location), $this->getFileInfo("extension", $a_location));
 	}
 
 	public function uploadFile($file)
@@ -522,10 +490,28 @@ class ilMediaGalleryFile
 		if ($saveData) $this->saveFileData($filename, '', '', $filename, '', $this->getFileDataCount()+1, $width, $height);
 	}
 
-	public function uploadPreview()
+	public function uploadPreview($a_is_a_copy_of = null)
 	{
+		$ext = ilMimeTypeUtil::getExt2MimeMap($_FILES["filename"]["type"]);
 
+		if(self::_contentType($_FILES["filename"]["type"], $ext) != ilObjMediaGallery::CONTENT_TYPE_IMAGE)
+		{
+			return false;
+		}
+		if(!$a_is_a_copy_of)
+		{
+		$preview_filename = $this->getFileSystem()->getPath(LOCATION_PREVIEWS) . $this->getId() .
+			ilMimeTypeUtil::getExt2MimeMap($_FILES["filename"]["type"]);
+		@move_uploaded_file($_FILES['filename']["tmp_name"], $preview_filename);
+
+		}
+		else
+		{
+			@copy($this->getFileSystem()->getFilePath(LOCATION_PREVIEWS,$a_is_a_copy_of),
+				$this->getFileSystem()->getFilePath(LOCATION_PREVIEWS,$this->getId()));
+		}
 	}
+
 
 	public function rotate($direction)
 	{
@@ -562,7 +548,7 @@ class ilMediaGalleryFile
 		}
 	}
 
-	public static function _getMediaFilesInGallery($a_xmg_id, $a_return_objects = false)
+	public static function _getMediaFilesInGallery($a_xmg_id, $a_return_objects = false, $a_filter = array())
 	{
 		global $ilDB;
 		if(!$a_xmg_id)
@@ -596,18 +582,73 @@ class ilMediaGalleryFile
 				self::$objects[$row["id"]] = $obj;
 			}
 
-			if($a_return_objects)
+			if(count($a_filter) == 0 || in_array(self::$objects[$row["id"]]->getContentType, $a_filter))
 			{
-				$ret[$row["id"]] = self::$objects[$row["id"]];
-			}
-			else
-			{
-				$ret[$row["id"]] = $arr;
+				if($a_return_objects)
+				{
+					$ret[$row["id"]] = self::$objects[$row["id"]];
+				}
+				else
+				{
+					$ret[$row["id"]] = $arr;
 
+				}
 			}
+
 		}
 
 		return $ret;
+	}
+
+	public static function _createMissingPreviews($a_id)
+	{
+		$files = ilMediaGalleryFile::_getMediaFilesInGallery($a_id, true);
+		foreach ($files as $data)
+		{
+			if (!@file_exists($data->getPath(ilObjMediaGallery::LOCATION_THUMBS)))
+			{
+				$data->createImagePreviews();
+			}
+		}
+	}
+
+	public static function _contentType($a_mime, $a_ext = "")
+	{
+		include_once "./Services/Utilities/classes/class.ilMimeTypeUtil.php";
+
+		if (strpos($a_mime, 'image') !== false)
+		{
+			return ilObjMediaGallery::CONTENT_TYPE_IMAGE;
+		}
+		else if (strpos($a_mime, 'audio') !== false)
+		{
+			return ilObjMediaGallery::CONTENT_TYPE_AUDIO;
+		}
+		else if (strpos($a_mime, 'video') !== false)
+		{
+			return ilObjMediaGallery::CONTENT_TYPE_VIDEO;
+		}
+		else
+		{
+			$a_ext = str_replace('.', '' , $a_ext);
+
+			if (in_array($a_ext, array_map('strtolower',  ilObjMediaGallery::_getConfigurationValue('ext_img'))))
+			{
+				return ilObjMediaGallery::CONTENT_TYPE_IMAGE;
+			}
+
+			if (in_array($a_ext, array_map('strtolower',  ilObjMediaGallery::_getConfigurationValue('ext_vid'))))
+			{
+				return ilObjMediaGallery::CONTENT_TYPE_VIDEO;
+			}
+
+			if (in_array($a_ext, array_map('strtolower',  ilObjMediaGallery::_getConfigurationValue('ext_aud'))))
+			{
+				return ilObjMediaGallery::CONTENT_TYPE_AUDIO;
+			}
+
+			return ilObjMediaGallery::CONTENT_TYPE_UNKNOWN;
+		}
 	}
 
 	/**
