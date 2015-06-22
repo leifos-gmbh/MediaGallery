@@ -36,6 +36,10 @@ class ilMediaFileTableGUI extends ilTable2GUI
 	protected $counter;
 	protected $plugin;
 	protected $customsort;
+	/**
+	 * @var ilObjMediaGalleryGUI
+	 */
+	protected $parent_object;
 	
 	/**
 	 * Constructor
@@ -141,14 +145,14 @@ class ilMediaFileTableGUI extends ilTable2GUI
 		$this->tpl->setVariable("CB_FILE", $data['id']);
 		$this->tpl->setVariable("FILENAME", ilUtil::prepareFormOutput($data['filename']));
 
-		if ($data['pwidth'] > 0)
+		if ($data['has_preview'])
 		{
-			$this->tpl->setVariable("PREVIEW", $this->parent_obj->object->getPathWeb(LOCATION_PREVIEWS));
+			$this->tpl->setVariable("PREVIEW", $this->parent_obj->object->fs->getFilePath(LOCATION_PREVIEWS,$data['id'], true));
 			$this->tpl->setVariable("PREVIEW_CLASS_BORDER", 'xmg_border');
 		}
-		else if ($this->parent_obj->object->isImage($data['entry']))
+		else if ($data['content_type'] == ilObjMediaGallery::CONTENT_TYPE_IMAGE )
 		{
-			$this->tpl->setVariable("PREVIEW", $this->parent_obj->object->getPathWeb(LOCATION_THUMBS, $data['filename']) );
+			$this->tpl->setVariable("PREVIEW", $this->parent_obj->object->fs->getFilePath(LOCATION_THUMBS, $data['id'], true));
 			$this->tpl->setVariable("ROTATE_LEFT", $this->plugin->getDirectory() . '/templates/images/rotate_left.png');
 			$this->ctrl->setParameter($this->parent_obj, "id", $data['id']);
 			$this->ctrl->setParameter($this->parent_obj, "action", "rotateLeft");
@@ -165,20 +169,20 @@ class ilMediaFileTableGUI extends ilTable2GUI
 			$this->tpl->setVariable("TEXT_ROTATE_RIGHT", $this->lng->txt("rotate_right"));
 			$this->tpl->setVariable("PREVIEW_CLASS_BORDER", 'xmg_no_border');
 		}
-		else if ($this->parent_obj->object->isAudio($data['entry']))
+		else if ($data['content_type'] == ilObjMediaGallery::CONTENT_TYPE_VIDEO)
 		{
 			$this->tpl->setVariable("PREVIEW", $this->plugin->getDirectory() . '/templates/images/audio.png');
 		}
-		else if ($this->parent_obj->object->isVideo($data['entry']))
+		else if ($data['content_type'] == ilObjMediaGallery::CONTENT_TYPE_VIDEO)
 		{
 			$this->tpl->setVariable("PREVIEW", $this->plugin->getDirectory() . '/templates/images/video.png');
 		}
 		else
 		{
-			$this->tpl->setVariable("PREVIEW", $this->parent_obj->object->getMimeIconPath($data['entry']));
+			$this->tpl->setVariable("PREVIEW", $this->parent_obj->object->getMimeIconPath($data['id']));
 		}
 		$this->tpl->setVariable("TIMESTAMP", time());
-		$this->tpl->setVariable("TEXT_PREVIEW", strlen($data['title']) ? ilUtil::prepareFormOutput($data['title']) : ilUtil::prepareFormOutput($data['entry']));
+		$this->tpl->setVariable("TEXT_PREVIEW", strlen($data['title']) ? ilUtil::prepareFormOutput($data['title']) : ilUtil::prepareFormOutput($data['filename']));
 		$this->tpl->setVariable("ID", $data['entry']);
 		if ($data['custom'] == 0) 
 		{

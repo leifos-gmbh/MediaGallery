@@ -34,7 +34,7 @@ class ilMediaGalleryFile
 	/**
 	 * @var int
 	 */
-	protected $sorting;
+	protected $sorting = 0;
 	/**
 	 * @var string
 	 */
@@ -419,75 +419,38 @@ class ilMediaGalleryFile
 		return self::_contentType($this->getMimeType($a_location), $this->getFileInfo("extension", $a_location));
 	}
 
-	public function uploadFile($file)
+	public function uploadFile($file, $filename)
 	{
-		$saveData = true;
-		$width = 0;
-		$height = 0;
-		$file_parts = pathinfo($file);
-		$filename = $file_parts['basename'];
-
-
-
-
-
-		if ($this->isImage($file))
+		// rename mov files to mp4. gives better compatibility in most browsers
+		if (self::_hasExtension($file, 'mov'))
 		{
-			if ($this->hasExtension($file, ilObjMediaGallery::_getConfigurationValue('ext_img')))
+			$new_filename = preg_replace('/(\.mov)/is', '.mp4', $filename);
+			if (@rename($file, str_replace($filename, $new_filename, $file)))
 			{
-				include_once "./Services/Utilities/classes/class.ilMimeTypeUtil.php";
-				if (ilUtil::deducibleSize(ilMimeTypeUtil::getMimeType("", $file, "")))
-				{
-					$imgsize = getimagesize($file);
-					if (is_array($imgsize))
-					{
-						$width = $imgsize[0];
-						$height = $imgsize[1];
-					}
-				}
-				$this->createPreviews($filename);
-			}
-			else
-			{
-
-				@unlink($file);
-				$saveData = false;
+				$file = str_replace($filename, $new_filename, $file);
 			}
 		}
-		else if ($this->isAudio($file))
+
+		$valid = ilObjMediaGallery::_getConfigurationValue('ext_aud').','.
+			ilObjMediaGallery::_getConfigurationValue('ext_vid').','.
+			ilObjMediaGallery::_getConfigurationValue('ext_img').','.
+			ilObjMediaGallery::_getConfigurationValue('ext_oth');
+
+
+		if(!self::_hasExtension($file,$valid))
 		{
-			if (!$this->hasExtension($file, ilObjMediaGallery::_getConfigurationValue('ext_aud')))
-			{
-				@unlink($file);
-				$saveData = false;
-			}
+			$this->delete();
+			unlink($file);
+			return false;
 		}
-		else if ($this->isVideo($file))
+
+		rename($file, $this->getPath(ilObjMediaGallery::LOCATION_ORIGINALS));
+
+		if($this->getContentType() == ilObjMediaGallery::CONTENT_TYPE_IMAGE)
 		{
-			if (!$this->hasExtension($file, ilObjMediaGallery::_getConfigurationValue('ext_vid')))
-			{
-				@unlink($file);
-				$saveData = false;
-			}
-			// rename mov files to mp4. gives better compatibility in most browsers
-			if ($saveData && $this->hasExtension($file, 'mov'))
-			{
-				$new_filename = preg_replace('/(\.mov)/is', '.mp4', $filename);
-				if (@rename($file, str_replace($filename, $new_filename, $file)))
-				{
-					$filename = $new_filename;
-				}
-			}
+			$this->createImagePreviews();
 		}
-		else
-		{
-			if (!$this->hasExtension($file, ilObjMediaGallery::_getConfigurationValue('ext_aud').','.ilObjMediaGallery::_getConfigurationValue('ext_vid').','.ilObjMediaGallery::_getConfigurationValue('ext_img').','.ilObjMediaGallery::_getConfigurationValue('ext_oth')))
-			{
-				@unlink($file);
-				$saveData = false;
-			}
-		}
-		if ($saveData) $this->saveFileData($filename, '', '', $filename, '', $this->getFileDataCount()+1, $width, $height);
+		return true;
 	}
 
 	public function uploadPreview($a_is_a_copy_of = null)
@@ -510,6 +473,8 @@ class ilMediaGalleryFile
 			@copy($this->getFileSystem()->getFilePath(LOCATION_PREVIEWS,$a_is_a_copy_of),
 				$this->getFileSystem()->getFilePath(LOCATION_PREVIEWS,$this->getId()));
 		}
+
+		return true;
 	}
 
 
@@ -591,7 +556,8 @@ class ilMediaGalleryFile
 				else
 				{
 					$ret[$row["id"]] = $arr;
-
+					$ret[$row["id"]]['has_preview'] = self::$objects[$row["id"]]->hasPreviewImage();
+					$ret[$row["id"]]['content_type'] =  self::$objects[$row["id"]]->getContentType();
 				}
 			}
 
@@ -632,23 +598,52 @@ class ilMediaGalleryFile
 		{
 			$a_ext = str_replace('.', '' , $a_ext);
 
-			if (in_array($a_ext, array_map('strtolower',  ilObjMediaGallery::_getConfigurationValue('ext_img'))))
+			if (in_array($a_ext, self::_extConfigToArray('ext_img')))
 			{
 				return ilObjMediaGallery::CONTENT_TYPE_IMAGE;
 			}
 
-			if (in_array($a_ext, array_map('strtolower',  ilObjMediaGallery::_getConfigurationValue('ext_vid'))))
+			if (in_array($a_ext,  self::_extConfigToArray('ext_vid')))
 			{
 				return ilObjMediaGallery::CONTENT_TYPE_VIDEO;
 			}
 
-			if (in_array($a_ext, array_map('strtolower',  ilObjMediaGallery::_getConfigurationValue('ext_aud'))))
+			if (in_array($a_ext,  self::_extConfigToArray('ext_aud')))
 			{
 				return ilObjMediaGallery::CONTENT_TYPE_AUDIO;
 			}
 
 			return ilObjMediaGallery::CONTENT_TYPE_UNKNOWN;
 		}
+	}
+
+	protected static function _extConfigToArray($a_configuration_value)
+	{
+		if(strpos($a_configuration_value, 'ext_'))
+		{
+			$a_configuration_value = ilObjMediaGallery::_getConfigurationValue($a_configuration_value);
+		}
+		$array = explode(',', $a_configuration_value);
+		$array = array_map('strtolower', $array);
+		$array = array_map('trim', $array);
+		return $array;
+	}
+
+	public static function _hasExtension($file, $extensions)
+	{
+		$file_parts = pathinfo($file);
+		$arrExtensions = explode(",", $extensions);
+		foreach ($arrExtensions as $ext)
+		{
+			if (strlen(trim($ext)))
+			{
+				if (strcmp(strtolower($file_parts['extension']),strtolower(trim($ext))) == 0)
+				{
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	/**

@@ -373,8 +373,9 @@ if(count($objects) > 0)
 {
 	foreach((array) $objects as $obj_id)
 	{
-		rename($media_dir. $obj_id . "/media/", $media_dir. $obj_id);
 
+		rename($media_dir. $obj_id . "/media/", $media_dir. $obj_id);
+		rename($media_dir.$obj_id, $media_dir.'xmg_'.$obj_id);
 		//downloads
 		$d_path = $media_dir.'/'. $obj_id.'/downloads/';
 		$d = scandir($d_path);

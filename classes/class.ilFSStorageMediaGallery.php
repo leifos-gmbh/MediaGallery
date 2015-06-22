@@ -58,7 +58,7 @@ class ilFSStorageMediaGallery extends ilFileSystemStorage
 	}
 	function getPathPostfix()
 	{
-		return '';//'xmg';
+		return 'xmg';
 	}
 
 	/**
@@ -119,8 +119,13 @@ class ilFSStorageMediaGallery extends ilFileSystemStorage
 
 	protected function getFilename($a_file_id, $a_location = ilObjMediaGallery::LOCATION_ORIGINALS)
 	{
-		if(!$this->files_cache[$a_location])
+		if(!isset($this->files_cache[$a_location]))
 		{
+			if(!file_exists($this->getPath($a_location)))
+			{
+				ilUtil::makeDir($this->getPath($a_location));
+			}
+
 			$this->files_cache[$a_location] = scandir($this->getPath($a_location));
 		}
 
@@ -182,14 +187,8 @@ class ilFSStorageMediaGallery extends ilFileSystemStorage
 
 	public function getPath($a_location = null, $a_web = false)
 	{
-		if($a_web)
-		{
-			$path = $this->getWebPath();
-		}
-		else
-		{
-			$path = parent::getPath();
-		}
+
+		$path = parent::getPath().'/';
 
 		if(!$a_location)
 		{

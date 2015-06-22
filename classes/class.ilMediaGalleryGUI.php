@@ -29,7 +29,9 @@ class ilMediaGalleryGUI
 	protected $preview_flag = false;
 
 	protected $plugin;
-
+	/**
+	 * @var ilObjMediaGallery
+	 */
 	protected $object;
 
 	protected $counter = 0;
@@ -41,6 +43,8 @@ class ilMediaGalleryGUI
 		$this->object = $object;
 
 		$this->plugin = $plugin;
+
+		$this->tpl = $tpl;
 
 		$this->init();
 	}
@@ -463,5 +467,10 @@ class ilMediaGalleryGUI
 		$this->ctpl->setVariable("THEME", $this->object->getTheme());
 
 		return $this->ctpl->get();
+	}
+
+	protected function gallerysort($x, $y)
+	{
+		return strnatcasecmp($x[$this->sortkey], $y[$this->sortkey]);
 	}
 } 

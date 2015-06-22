@@ -37,6 +37,8 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		//   $ilCtrl->saveParameter($this, array("my_id"));
 		include_once "./Services/Component/classes/class.ilPlugin.php";
 		$this->plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, "Repository", "robj", "MediaGallery");
+		$this->plugin->includeClass("class.ilMediaGalleryFile.php");
+		$this->plugin->includeClass("class.ilMediaGalleryArchives.php");
 	}
 
 	/**
@@ -400,7 +402,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		global $ilTabs;
 	
 		$ilTabs->activateTab("gallery");
-
+		$this->plugin->includeClass("class.ilMediaGalleryGUI.php");
 		$gallery = new ilMediaGalleryGUI($this->object, $this->plugin);
 		$gallery->setFileData(ilMediaGalleryFile::_getMediaFilesInGallery($this->object_id, true));
 		$gallery->setArchiveData(ilMediaGalleryArchives::_getInstanceByXmgId($this->object_id)->getArchives());
@@ -803,7 +805,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		header("Pragma: no-cache");
 
 		// Settings
-		$targetDir = $this->object->getPath(LOCATION_ORIGINALS);
+		$targetDir = $this->object->fs->getPath(ilObjMediaGallery::LOCATION_ORIGINALS);
 		$cleanupTargetDir = true; // Remove old files
 		$maxFileAge = 5 * 3600; // Temp file age in seconds
 
@@ -931,7 +933,11 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		if (!$chunks || $chunk == $chunks - 1) {
 			// Strip the temp .part suffix off 
 			rename("{$filePath}.part", $filePath);
-			$this->object->processNewUpload($filePath);
+			$file = new ilMediaGalleryFile();
+			$file->setFilename($fileName);
+			$file->setGalleryId($this->object_id);
+			$file->create();
+			$file->uploadFile($filePath, $fileName);
 		}
 		// Return JSON-RPC response
 		die('{"jsonrpc" : "2.0", "result" : null, "id" : "id"}');
