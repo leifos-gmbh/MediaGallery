@@ -26,6 +26,10 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 {
 	protected $plugin;
 	protected $sortkey;
+	/**
+	 * @var ilObjMediaGallery
+	 */
+	public $object;
 	
 	/**
 	* Initialisation
@@ -805,7 +809,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		header("Pragma: no-cache");
 
 		// Settings
-		$targetDir = $this->object->fs->getPath(ilObjMediaGallery::LOCATION_ORIGINALS);
+		$targetDir = ilFSStorageMediaGallery::_getInstanceByXmgId($this->object_id)->getPath(ilObjMediaGallery::LOCATION_ORIGINALS);
 		$cleanupTargetDir = true; // Remove old files
 		$maxFileAge = 5 * 3600; // Temp file age in seconds
 

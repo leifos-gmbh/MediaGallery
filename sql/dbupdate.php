@@ -373,11 +373,9 @@ if(count($objects) > 0)
 {
 	foreach((array) $objects as $obj_id)
 	{
-
-		rename($media_dir. $obj_id . "/media/", $media_dir. $obj_id);
-		rename($media_dir.$obj_id, $media_dir.'xmg_'.$obj_id);
+		rename($media_dir. $obj_id . "/media/", $media_dir. 'xmg_'. $obj_id.'/');
 		//downloads
-		$d_path = $media_dir.'/'. $obj_id.'/downloads/';
+		$d_path = $media_dir.'xmg_' .$obj_id.'/downloads/';
 		$d = scandir($d_path);
 		foreach((array)$d as $file)
 		{
@@ -395,7 +393,7 @@ if(count($objects) > 0)
 		}
 
 		//previews
-		$p_path = $media_dir.'/'. $obj_id.'/previews/';
+		$p_path = $media_dir.'xmg_'. $obj_id.'/previews/';
 		$p = scandir($d_path);
 		foreach((array)$p as $file)
 		{
@@ -422,7 +420,7 @@ if(count($objects) > 0)
 
 		foreach($structure as $folder)
 		{
-			$f_path = $media_dir.'/'. $obj_id.'/'.$folder.'/';
+			$f_path = $media_dir.'xmg_'. $obj_id.'/'.$folder.'/';
 			$f = scandir($d_path);
 			foreach((array)$f as $file)
 			{

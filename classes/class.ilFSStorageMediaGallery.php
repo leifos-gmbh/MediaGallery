@@ -131,7 +131,7 @@ class ilFSStorageMediaGallery extends ilFileSystemStorage
 
 		foreach($this->files_cache[$a_location]  as $name)
 		{
-			$fname = pathinfo($this->getFilePath($a_location, $a_file_id), PATHINFO_FILENAME );
+			$fname = pathinfo($this->getPath($a_location). $name, PATHINFO_FILENAME );
 			if($fname == $name)
 			{
 				return $name;

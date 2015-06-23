@@ -64,7 +64,8 @@ class ilObjMediaGallery extends ilObjectPlugin
 		include_once "./Services/Component/classes/class.ilPlugin.php";
 		$this->plugin = self::_getPluginObject();
 		$this->plugin->includeClass("class.ilFSStorageMediaGallery.php");
-		$this->fs = ilFSStorageMediaGallery::_getInstanceByXmgId($this->getId());
+
+		$this->fs = ilFSStorageMediaGallery::_getInstanceByXmgId($this->id);
 	}
 	
 
