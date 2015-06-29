@@ -224,29 +224,11 @@ $setting = new ilSetting("xmg");
 $setting->set('max_upload', '100');
 
 ?>
-
 <#13>
 <?php
-
-$file_data = array();
-$previews = array();
-
-if ($ilDB->tableExists('rep_robj_xmg_filedata'))
-{
-	$res = $ilDB->query("SELECT * FROM rep_robj_xmg_filedata");
-
-	while($row = $ilDB->fetchAssoc($res))
-	{
-		$file_data[$row["xmg_id"]][$row["filename"]] = $row;
-		$previews[$row["xmg_id"]][$row["pfilename"]] =  $row["filename"];
-	}
-	$ilDB->manipulate("DROP TABLE rep_robj_xmg_filedata");
-}
-
-
 $downloads = array();
 
-if ($ilDB->tableExists('rep_robj_xmg_downloads'))
+if ($ilDB->tableExists('rep_robj_xmg_downloads') && !$ilDB->tableColumnExists('rep_robj_xmg_downloads', 'id') )
 {
 	$res = $ilDB->query("SELECT * FROM rep_robj_xmg_downloads");
 
@@ -254,7 +236,116 @@ if ($ilDB->tableExists('rep_robj_xmg_downloads'))
 	{
 		$downloads[$row["xmg_id"]][$row["filename"]] = $row;
 	}
+
 	$ilDB->manipulate("DROP TABLE rep_robj_xmg_downloads");
+}
+
+if (!$ilDB->tableExists('rep_robj_xmg_downloads'))
+{
+	$fields = array (
+		'id'		=> array(
+			'type' => 'integer',
+			'length'  => 4,
+			'notnull' => true,
+			'default' => 0),
+		'xmg_id'    => array(
+			'type' => 'integer',
+			'length'  => 4,
+			'notnull' => true,
+			'default' => 0),
+		'download_flag'=> array(
+			'type' => 'integer',
+			'length'  => 2,
+			'notnull' => true,
+			'default' => 0),
+		'filename'   => array(
+			'type' => 'text',
+			'notnull' => true,
+			'length' => 255,
+			'fixed' => false)
+	);
+	$ilDB->createTable('rep_robj_xmg_downloads', $fields);
+	$ilDB->addPrimaryKey('rep_robj_xmg_downloads', array('id'));
+	$ilDB->addIndex("rep_robj_xmg_downloads", array("xmg_id"), "i1");
+	$ilDB->createSequence('rep_robj_xmg_downloads');
+}
+
+if(count($downloads) > 0)
+{
+	foreach($downloads as $xmg_id => $data)
+	{
+		foreach($data as $download)
+		{
+			$id = $ilDB->nextId('rep_robj_xmg_downloads');
+
+			$arr = array(
+				"id" => array("integer", $id),
+				"xmg_id" => array("integer", $xmg_id),
+				"download_flag" => array("integer", 1),
+				"filename" => array("text", $download["filename"])
+			);
+
+			$ilDB->insert("rep_robj_xmg_downloads", $arr);
+		}
+	}
+}
+?>
+<#14>
+<?php
+$media_dir = ilUtil::getDataDir(). "/mediagallery/";
+$objects = scandir($media_dir);
+
+if(count($objects) > 0 && $ilDB->tableExists('rep_robj_xmg_downloads') && $ilDB->tableColumnExists('rep_robj_xmg_downloads', 'id'))
+{
+	$res = $ilDB->query("SELECT * FROM rep_robj_xmg_downloads");
+
+	while($row = $ilDB->fetchAssoc($res))
+	{
+		$downloads[$row["xmg_id"]][$row["filename"]] = $row;
+	}
+
+	foreach((array) $objects as $obj_id)
+	{
+		$downloads_path = $media_dir.$obj_id.'/media/downloads/';
+		if(file_exists($downloads_path))
+		{
+			$downloads = scandir($downloads_path);
+
+			foreach($downloads as $filename)
+			{
+				$ext = pathinfo($downloads_path.$filename, PATHINFO_EXTENSION);
+
+				if($ext == ".zip" || $ext == "zip" && !isset($downloads[$obj_id][$filename]))
+				{
+					$id = $ilDB->nextId('rep_robj_xmg_downloads');
+
+					$arr = array(
+						"id" => array("integer", $id),
+						"xmg_id" => array("integer", $obj_id),
+						"download_flag" => array("integer", 0),
+						"filename" => array("text", $filename)
+					);
+
+					$ilDB->insert("rep_robj_xmg_downloads", $arr);
+				}
+			}
+		}
+	}
+}
+?>
+<#15>
+<?php
+$file_data = array();
+
+if ($ilDB->tableExists('rep_robj_xmg_filedata') && !$ilDB->tableColumnExists('rep_robj_xmg_filedata', 'id') )
+{
+	$res = $ilDB->query("SELECT * FROM rep_robj_xmg_filedata");
+
+	while($row = $ilDB->fetchAssoc($res))
+	{
+		$file_data[$row["xmg_id"]][$row["filename"]] = $row;
+	}
+	$ilDB->manipulate("DROP TABLE rep_robj_xmg_filedata");
 }
 
 if (!$ilDB->tableExists('rep_robj_xmg_filedata'))
@@ -303,42 +394,17 @@ if (!$ilDB->tableExists('rep_robj_xmg_filedata'))
 			"type" => "integer",
 			'length'  => 4,
 			"notnull" => true,
-			"default" => 0)
-	);
-	$ilDB->createTable('rep_robj_xmg_filedata', $fields);
-	$ilDB->addPrimaryKey('rep_robj_xmg_filedata', array('id'));
-	$ilDB->addIndex("rep_robj_xmg_filedata", array("xmg_id"), "i1");
-	$ilDB->createSequence('rep_robj_xmg_filedata');
-}
-
-if (!$ilDB->tableExists('rep_robj_xmg_downloads'))
-{
-	$fields = array (
-		'id'		=> array(
-			'type' => 'integer',
-			'length'  => 4,
-			'notnull' => true,
-			'default' => 0),
-		'xmg_id'    => array(
-			'type' => 'integer',
-			'length'  => 4,
-			'notnull' => true,
-			'default' => 0),
-		'download_flag'=> array(
-			'type' => 'integer',
-			'length'  => 2,
-			'notnull' => true,
-			'default' => 0),
-		'filename'   => array(
+			"default" => 0),
+		'pfilename'   => array(
 			'type' => 'text',
 			'notnull' => true,
 			'length' => 255,
 			'fixed' => false)
 	);
-	$ilDB->createTable('rep_robj_xmg_downloads', $fields);
-	$ilDB->addPrimaryKey('rep_robj_xmg_downloads', array('id'));
-	$ilDB->addIndex("rep_robj_xmg_downloads", array("xmg_id"), "i1");
-	$ilDB->createSequence('rep_robj_xmg_downloads');
+	$ilDB->createTable('rep_robj_xmg_filedata', $fields);
+	$ilDB->addPrimaryKey('rep_robj_xmg_filedata', array('id'));
+	$ilDB->addIndex("rep_robj_xmg_filedata", array("xmg_id"), "i1");
+	$ilDB->createSequence('rep_robj_xmg_filedata');
 }
 
 if(count($file_data) > 0)
@@ -359,79 +425,59 @@ if(count($file_data) > 0)
 				"title" => array("text", $file["title"]),
 				"description" => array("text", $file["description"]),
 				"filename" => array("text", $file["filename"]),
-				"custom" => array("integer",$file["custom"]));
+				"custom" => array("integer",$file["custom"]),
+				"pfilename" => array("text", $file["filename"])
+			);
 
 			$ilDB->insert("rep_robj_xmg_filedata",$arr);
 		}
 	}
 }
-
+?>
+<#16>
+<?php
 $media_dir = ilUtil::getDataDir(). "/mediagallery/";
-$objects = scandir($media_dir);
 
-if(count($objects) > 0)
+if($ilDB->tableColumnExists('rep_robj_xmg_filedata', 'id'))
 {
-	foreach((array) $objects as $obj_id)
+	$structure = array(
+		"originals/",
+		"thumbs/",
+		"small/",
+		"medium/",
+		"large/"
+	);
+
+	$res = $ilDB->query("SELECT * FROM rep_robj_xmg_filedata");
+
+	while($row = $ilDB->fetchAssoc($res))
 	{
-		rename($media_dir. $obj_id . "/media/", $media_dir. 'xmg_'. $obj_id.'/');
-		//downloads
-		$d_path = $media_dir.'xmg_' .$obj_id.'/downloads/';
-		$d = scandir($d_path);
-		foreach((array)$d as $file)
-		{
-			$id = $ilDB->nextId('rep_robj_xmg_downloads');
-			$flag = isset($downloads[$obj_id], $file);
-
-			$arr = array(
-				"id" => array("integer", $id),
-				"xmg_id" => array("integer", $obj_id),
-				"download_flag" => array("integer", $flag ? 1 : 0),
-				"filename" => array("text", $file)
-			);
-
-			$ilDB->insert("rep_robj_xmg_downloads", $arr);
-		}
-
-		//previews
-		$p_path = $media_dir.'xmg_'. $obj_id.'/previews/';
-		$p = scandir($d_path);
-		foreach((array)$p as $file)
-		{
-			if(isset($previews[$obj_id][$file]) && $file_data[$obj_id][$previews[$obj_id][$file]]["id"])
-			{
-				$parent_file = $previews[$obj_id][$file];
-
-				if(isset($file_data[$obj_id][$parent_file]["id"]))
-				{
-					$id = $file_data[$obj_id][$parent_file]["id"];
-					$info = pathinfo($p_path.$file);
-					rename($p_path.$file, $p_path.$id.'.'.$info["extension"]);
-				}
-			}
-		}
-
-		$structure = array(
-			"originals",
-			"thumbs",
-			"small",
-			"medium",
-			"large"
-		);
-
 		foreach($structure as $folder)
 		{
-			$f_path = $media_dir.'xmg_'. $obj_id.'/'.$folder.'/';
-			$f = scandir($d_path);
-			foreach((array)$f as $file)
+			$path = $media_dir. $row["xmg_id"] . '/media/' . $folder;
+			if(file_exists($path. $row['filename']))
 			{
-				if(isset($file_data[$obj_id][$file]['id']))
-				{
-					$id = $file_data[$obj_id][$file]['id'];
-					$info = pathinfo($f_path.$file);
-					rename($f_path.$file, $f_path.$id.'.'.$info["extension"]);
-				}
+				rename($path. $row['filename'],$path . $row['id'] . '.' . pathinfo($path, PATHINFO_EXTENSION));
 			}
 		}
+	}
+}
+?>
+<#17>
+<?php
+$media_dir = ilUtil::getDataDir(). "/mediagallery/";
+$res = $ilDB->query("SELECT xmg_id FROM rep_robj_xmg_filedata GROUP BY xmg_id");
+
+while($row = $ilDB->fetchAssoc($res))
+{
+	if(file_exists($media_dir. $row['xmg_id'] . '/'))
+	{
+		rename($media_dir. $row['xmg_id'] . '/', $media_dir. 'xmg_' .$row['xmg_id'] . '/');
+	}
+
+	if(file_exists($media_dir. 'xmg_' .$row['xmg_id'] . '/media/'))
+	{
+		rename($media_dir. 'xmg_' .$row['xmg_id'] . '/media/', $media_dir. 'xmg_' .$row['xmg_id'] . '/');
 	}
 }
 ?>
