@@ -65,6 +65,9 @@ class ilMediaGalleryGUI
 		$this->init();
 	}
 
+	/**
+	 * init template
+	 */
 	protected function init()
 	{
 		$this->tpl->addCss($this->plugin->getStyleSheetLocation("xmg.css"));
@@ -107,6 +110,10 @@ class ilMediaGalleryGUI
 		return $this->archive_data;
 	}
 
+	/**
+	 * fill row
+	 * @param array $a_set
+	 */
 	protected function fillRow($a_set)
 	{
 		$a_set = ilMediaGalleryFile::_getInstanceById($a_set["id"]);
@@ -171,6 +178,11 @@ class ilMediaGalleryGUI
 		$this->ctpl->parseCurrentBlock();
 	}
 
+	/**
+	 * fill row video
+	 * @param ilMediaGalleryFile $a_set
+	 * @return ilTemplate
+	 */
 	protected function video($a_set)
 	{
 		$file_parts = $a_set->getFileInfo();
@@ -283,6 +295,11 @@ class ilMediaGalleryGUI
 		return $tpl_element;
 	}
 
+	/**
+	 * fill row image
+	 * @param ilMediaGalleryFile $a_set
+	 * @return ilTemplate
+	 */
 	protected function image($a_set)
 	{
 		$tpl_element = $this->plugin->getTemplate("tpl.gallery.img.html");
@@ -332,7 +349,11 @@ class ilMediaGalleryGUI
 
 		return $tpl_element;
 	}
-
+	/**
+	 * fill row audio
+	 * @param ilMediaGalleryFile $a_set
+	 * @return ilTemplate
+	 */
 	protected function audio($a_set)
 	{
 		$tpl_element = $this->plugin->getTemplate("tpl.gallery.aud.html");
@@ -378,7 +399,11 @@ class ilMediaGalleryGUI
 
 		return $tpl_element;
 	}
-
+	/**
+	 * fill row other
+	 * @param ilMediaGalleryFile $a_set
+	 * @return ilTemplate
+	 */
 	protected function other($a_set)
 	{
 		$tpl_element = $this->plugin->getTemplate("tpl.gallery.other.html");
@@ -437,6 +462,10 @@ class ilMediaGalleryGUI
 		return $tpl_element;
 	}
 
+	/**
+	 * returns media gallery html
+	 * @return string HTML
+	 */
 	public function getHTML()
 	{
 		$this->tpl->addCss($this->plugin->getStyleSheetLocation("xmg.css"));
@@ -487,6 +516,13 @@ class ilMediaGalleryGUI
 		return $this->ctpl->get();
 	}
 
+	/**
+	 * sort funciton
+	 *
+	 * @param array $x
+	 * @param array $y
+	 * @return int
+	 */
 	protected function gallerysort($x, $y)
 	{
 		return strnatcasecmp($x[$this->sortkey], $y[$this->sortkey]);

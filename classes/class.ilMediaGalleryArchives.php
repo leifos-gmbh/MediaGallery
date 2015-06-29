@@ -85,13 +85,18 @@ class ilMediaGalleryArchives
 		return ilFSStorageMediaGallery::_getInstanceByXmgId($this->getXmgId());
 	}
 
+	/**
+	 * read data from db
+	 *
+	 * @return array|bool
+	 */
 	public function read()
 	{
 		global $ilDB;
 
 		if(!$this->getXmgId())
 		{
-			return array();
+			return false;
 		}
 
 		$arr = array();
@@ -115,6 +120,12 @@ class ilMediaGalleryArchives
 		return true;
 	}
 
+	/**
+	 * write download flags into db
+	 *
+	 * @param array $a_archives
+	 * @return bool
+	 */
 	public function setDownloadFlags(array $a_archives)
 	{
 		global $ilDB;
@@ -142,6 +153,12 @@ class ilMediaGalleryArchives
 		return true;
 	}
 
+	/**
+	 * write archive into db
+	 *
+	 * @param string $filename
+	 * @return bool
+	 */
 	protected function addArchive($filename)
 	{
 		global $ilDB;
@@ -166,6 +183,12 @@ class ilMediaGalleryArchives
 		return true;
 	}
 
+	/**
+	 * delete archives in filesystem and in db
+	 *
+	 * @param array $a_archive_ids
+	 * @return bool
+	 */
 	public function deleteArchives(array $a_archive_ids)
 	{
 		global $ilDB;
@@ -191,6 +214,13 @@ class ilMediaGalleryArchives
 		return true;
 	}
 
+	/**
+	 * renames archive by archive name
+	 *
+	 * @param string $a_old_name
+	 * @param string $a_new_name
+	 * @return bool
+	 */
 	public function renameArchive($a_old_name, $a_new_name)
 	{
 		global $ilDB;
@@ -210,6 +240,13 @@ class ilMediaGalleryArchives
 		return true;
 	}
 
+	/**
+	 * creates new archive by file array
+	 *
+	 * @param array $a_file_array
+	 * @param string $a_zip_filename
+	 * @return bool
+	 */
 	public function createArchive($a_file_array, $a_zip_filename)
 	{
 		if(count($a_file_array) <= 0)
@@ -248,26 +285,54 @@ class ilMediaGalleryArchives
 		return true;
 	}
 
-	public function getPath($a_filename, $a_web = false)
+	/**
+	 * returns archive path
+	 *
+	 * @param string $a_filename
+	 * @return string
+	 */
+	public function getPath($a_filename)
 	{
-		return $this->getFileSystem()->getFilePath(ilObjMediaGallery::LOCATION_DOWNLOADS, $a_filename, $a_web);
+		return $this->getFileSystem()->getFilePath(ilObjMediaGallery::LOCATION_DOWNLOADS, $a_filename);
 	}
 
+	/**
+	 * reset all caches
+	 */
 	public function  resetCache()
 	{
 		$this->archives = array();
 	}
 
+	/**
+	 * returns archive filename by archive id
+	 *
+	 * @param int $a_id
+	 * @return string
+	 */
 	public function getArchiveFilename($a_id)
 	{
 		global $ilDB;
-		$res = $ilDB->query("SELECT filename FROM rep_robj_xmg_downloads WHERE id = ". $ilDB->quote($a_id, "integer"));
 
-		$row = $ilDB->fetchAssoc($res);
+		if(!$this->archives[$a_id])
+		{
+			$res = $ilDB->query("SELECT filename FROM rep_robj_xmg_downloads WHERE id = ". $ilDB->quote($a_id, "integer"));
 
-		return  $row["filename"];
+			$row = $ilDB->fetchAssoc($res);
+
+			return  $row["filename"];
+		}
+
+		return $this->archives[$a_id]['filename'];
+
 	}
 
+	/**
+	 * clones all archives from  source gallery object to destination gallery object
+	 *
+	 * @param int $a_source_xmg_id
+	 * @param int $a_dest_xmg_id
+	 */
 	public static function _clone($a_source_xmg_id, $a_dest_xmg_id)
 	{
 		$dest = self::_getInstanceByXmgId($a_dest_xmg_id);
@@ -283,6 +348,13 @@ class ilMediaGalleryArchives
 		}
 	}
 
+	/**
+	 * looks if archive exists by gallery id and archive id
+	 *
+	 * @param int $a_xmg_id
+	 * @param int $a_archive_id
+	 * @return bool
+	 */
 	public static function _archiveExist($a_xmg_id, $a_archive_id)
 	{
 		return in_array($a_archive_id, array_keys(self::_getInstanceByXmgId($a_xmg_id)->getArchives()));

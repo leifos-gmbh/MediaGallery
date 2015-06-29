@@ -562,7 +562,8 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 			$file = ilMediaGalleryFile::_getInstanceById($fid);
 			if($file)
 			{
-				$file->deletePreview();
+				$file->setPfilename(null);
+				$file->update();
 			}
 		}
 
@@ -579,15 +580,15 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		$this->initPreviewUploadForm();
 		if ($this->form->checkInput())
 		{
-			$last = null;
+			$this->object->uploadPreview();
 
 			foreach($_SESSION['previewFiles'] as $fid)
 			{
 				$file = ilMediaGalleryFile::_getInstanceById($fid);
 				if($file && $_FILES['filename']["tmp_name"])
 				{
-					$file->uploadPreview($last);
-					$last = $fid;
+					$file->setPfilename($_FILES['filename']["name"]);
+					$file->update();
 				}
 			}
 			unset($_SESSION['previewFiles']);

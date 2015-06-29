@@ -61,9 +61,16 @@ class ilFSStorageMediaGallery extends ilFileSystemStorage
 		return 'xmg';
 	}
 
-	function getFilePath($a_location,$a_file_id = 0, $a_web = false)
+	/**
+	 * returns file path of a given file id or file name at a given location
+	 *
+	 * @param int $a_location
+	 * @param int $a_file_id
+	 * @return string
+	 */
+	function getFilePath($a_location,$a_file_id = 0)
 	{
-		$path = $this->getPath($a_location, $a_web);
+		$path = $this->getPath($a_location);
 
 		switch ($a_location)
 		{
@@ -91,17 +98,22 @@ class ilFSStorageMediaGallery extends ilFileSystemStorage
 			case ilObjMediaGallery::LOCATION_ORIGINALS:
 				$path .= $this->getFilename($a_file_id);
 				break;
+			case ilObjMediaGallery::LOCATION_PREVIEWS:
 			case ilObjMediaGallery::LOCATION_DOWNLOADS:
 				$path .= $a_file_id;
-				break;
-			case ilObjMediaGallery::LOCATION_PREVIEWS:
-				$path .= $this->getFilename($a_file_id, ilObjMediaGallery::LOCATION_PREVIEWS);
 				break;
 		}
 
 		return $path;
 	}
 
+	/**
+	 * return exact file name of a give file id and location
+	 *
+	 * @param int $a_file_id
+	 * @param int $a_location
+	 * @return bool
+	 */
 	protected function getFilename($a_file_id, $a_location = ilObjMediaGallery::LOCATION_ORIGINALS)
 	{
 		if(!isset($this->files_cache[$a_location]))
@@ -126,6 +138,13 @@ class ilFSStorageMediaGallery extends ilFileSystemStorage
 		return false;
 	}
 
+	/**
+	 * deletes all file of a given file id or deletes a file at a given location
+	 *
+	 * @param int $a_file_id
+	 * @param int  $a_location
+	 * @return bool
+	 */
 	public function deleteFile($a_file_id, $a_location = null)
 	{
 		if($a_location == null)
@@ -161,6 +180,12 @@ class ilFSStorageMediaGallery extends ilFileSystemStorage
 		return $ret;
 	}
 
+	/**
+	 * delete directory
+	 *
+	 * @param int $a_location
+	 * @return bool
+	 */
 	public function deleteDir($a_location = null)
 	{
 		if($a_location == null)
@@ -184,14 +209,13 @@ class ilFSStorageMediaGallery extends ilFileSystemStorage
 		return true;
 	}
 
-	public function getWebPath()
-	{
-		include_once "./Services/Utilities/classes/class.ilUtil.php";
-		$datadir = ilUtil::removeTrailingPathSeparators(CLIENT_WEB_DIR) . self::_createPathFromId($this->getContainerId(),$this->getPathPostfix());
-		return str_replace(ilUtil::removeTrailingPathSeparators(ILIAS_ABSOLUTE_PATH),
-			ilUtil::removeTrailingPathSeparators(ILIAS_HTTP_PATH), $datadir);
-	}
-
+	/**
+	 * returns mime type of a give file at a given location
+	 *
+	 * @param int $a_file_id
+	 * @param int $a_location
+	 * @return string
+	 */
 	public function getMimeType($a_file_id, $a_location = ilObjMediaGallery::LOCATION_ORIGINALS)
 	{
 
@@ -204,7 +228,13 @@ class ilFSStorageMediaGallery extends ilFileSystemStorage
 		return 	$this->mime_cache[$a_file_id][$a_location];
 	}
 
-	public function getPath($a_location = null, $a_web = false)
+	/**
+	 * returns folder path of a given location
+	 *
+	 * @param int $a_location
+	 * @return string
+	 */
+	public function getPath($a_location = null)
 	{
 
 		$path = parent::getPath().'/';
@@ -241,6 +271,11 @@ class ilFSStorageMediaGallery extends ilFileSystemStorage
 		return $path;
 	}
 
+	/**
+	 * create directory structure
+	 *
+	 * @return bool
+	 */
 	public function create()
 	{
 		if(!parent::create())
@@ -258,6 +293,9 @@ class ilFSStorageMediaGallery extends ilFileSystemStorage
 		return true;
 	}
 
+	/**
+	 * reset all caches
+	 */
 	public function resetCache()
 	{
 		$this->files_cache = array();

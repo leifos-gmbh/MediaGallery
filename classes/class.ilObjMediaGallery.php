@@ -420,57 +420,6 @@ class ilObjMediaGallery extends ilObjectPlugin
 		}
 		return array("width" => $iwidth, "height" => $iheight);
 	}
-
-	public function updateFileDataAfterRotate($filename, $width, $height)
-	{
-		global $ilDB;
-		$result = $ilDB->manipulateF("UPDATE rep_robj_xmg_filedata SET width = %s, height = %s WHERE filename = %s",
-			array('integer','integer','text'),
-			array($width, $height, $filename)
-		);
-	}
-
-	public function updateFileDataAfterDeletePreview($filename)
-	{
-		global $ilDB;
-		$result = $ilDB->manipulateF("UPDATE rep_robj_xmg_filedata SET pwidth = %s, pheight = %s, pfilename = %s WHERE filename = %s",
-			array('integer','integer','text', 'text'),
-			array(0, 0, null, $filename)
-		);
-	}
-
-	public function updatePreviewSize($filename, $width, $height, $previewfilename)
-	{
-		global $ilDB;
-		$result = $ilDB->manipulateF("UPDATE rep_robj_xmg_filedata SET pwidth = %s, pheight = %s, pfilename = %s WHERE filename = %s",
-			array('integer','integer','text', 'text'),
-			array($width, $height, $previewfilename, $filename)
-		);
-	}
-
-	public function saveFileData($filename, $id, $topic, $title, $description, $custom, $width, $height)
-	{
-		global $ilDB;
-		$affectedRows = $ilDB->manipulateF("DELETE FROM rep_robj_xmg_filedata WHERE xmg_id = %s AND filename = %s",
-			array('integer','text'),
-			array($this->getId(), $filename)
-		);
-		$result = $ilDB->manipulateF("INSERT INTO rep_robj_xmg_filedata (xmg_id, filename, media_id, topic, title, description, custom, width, height) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
-			array('integer','text','text','text','text','text','float','integer','integer'),
-			array($this->getId(), $filename, $id, $topic, $title, $description, $custom, $width, $height)
-		);
-	}
-	
-	protected function getFileDataCount()
-	{
-		global $ilDB;
-		
-		$result = $ilDB->queryF("SELECT * FROM rep_robj_xmg_filedata WHERE xmg_id = %s",
-			array('integer'),
-			array($this->getId())
-		);
-		return $result->numRows();
-	}
 	
 	public function getMimeIconPath($a_id)
 	{
@@ -578,6 +527,21 @@ class ilObjMediaGallery extends ilObjectPlugin
 		}
 		
 		$xml_writer->xmlEndTag("mediagallery");
+	}
+
+	public function uploadPreview()
+	{
+		$ext = substr($_FILES['filename']["name"],strrpos($_FILES['filename']["name"], '.'));
+
+		if(ilMediaGalleryFile::_contentType($_FILES["filename"]["type"], $ext) != self::CONTENT_TYPE_IMAGE)
+		{
+			return false;
+		}
+
+		$preview_path = $this->getFS()->getFilePath(LOCATION_PREVIEWS, $_FILES['filename']["name"]);
+		@move_uploaded_file($_FILES['filename']["tmp_name"], $preview_path);
+
+		return true;
 	}
 }
 ?>
