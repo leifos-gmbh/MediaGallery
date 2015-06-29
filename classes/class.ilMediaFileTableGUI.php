@@ -63,7 +63,6 @@ class ilMediaFileTableGUI extends ilTable2GUI
     $this->setId("xmg_mft_".$a_parent_obj->object->getId());
 		$this->setFormName('mediaobjectlist');
 		$this->setStyle('table', 'fullwidth');
-		$this->counter = 1;
 		$this->addColumn('','f','1%');
 		$this->addColumn($this->lng->txt("filename"),'entry', '', '', 'xmg_fn');
 		$this->addColumn('','', '', '', 'xmg_preview');
@@ -141,18 +140,17 @@ class ilMediaFileTableGUI extends ilTable2GUI
 		global $ilUser,$ilAccess;
 
 		$this->plugin->includeClass("class.ilObjMediaGallery.php");
-		$this->tpl->setVariable('CB_ID', $this->counter++);
-		$this->tpl->setVariable("CB_FILE", $data['id']);
+		$this->tpl->setVariable('CB_ID', $data['id']);
 		$this->tpl->setVariable("FILENAME", ilUtil::prepareFormOutput($data['filename']));
 
 		if ($data['has_preview'])
 		{
-			$this->tpl->setVariable("PREVIEW", $this->parent_obj->object->fs->getFilePath(LOCATION_PREVIEWS,$data['id'], true));
+			$this->tpl->setVariable("PREVIEW", $this->parent_obj->object->getFS()->getFilePath(LOCATION_PREVIEWS,$data['id'], true));
 			$this->tpl->setVariable("PREVIEW_CLASS_BORDER", 'xmg_border');
 		}
 		else if ($data['content_type'] == ilObjMediaGallery::CONTENT_TYPE_IMAGE )
 		{
-			$this->tpl->setVariable("PREVIEW", $this->parent_obj->object->fs->getFilePath(LOCATION_THUMBS, $data['id'], true));
+			$this->tpl->setVariable("PREVIEW", $this->parent_obj->object->getFS()->getFilePath(LOCATION_THUMBS, $data['id'], true));
 			$this->tpl->setVariable("ROTATE_LEFT", $this->plugin->getDirectory() . '/templates/images/rotate_left.png');
 			$this->ctrl->setParameter($this->parent_obj, "id", $data['id']);
 			$this->ctrl->setParameter($this->parent_obj, "action", "rotateLeft");

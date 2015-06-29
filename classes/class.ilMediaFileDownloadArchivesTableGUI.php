@@ -33,7 +33,6 @@ include_once('./Services/Table/classes/class.ilTable2GUI.php');
 
 class ilMediaFileDownloadArchivesTableGUI extends ilTable2GUI
 {
-	protected $counter;
 	protected $plugin;
 	
 	/**
@@ -103,12 +102,11 @@ class ilMediaFileDownloadArchivesTableGUI extends ilTable2GUI
 		global $ilUser,$ilAccess;
 
 		$this->plugin->includeClass("class.ilObjMediaGallery.php");
-		$this->tpl->setVariable('CB_ID', $this->counter++);
-		$this->tpl->setVariable("CB_FILE",$data['id']);
+		$this->tpl->setVariable('CB_ID', $data['id']);
 		$this->tpl->setVariable("FILENAME", ilUtil::prepareFormOutput($data['filename']));
 		$this->tpl->setVariable("SIZE", ilUtil::prepareFormOutput($this->formatBytes($data['size'])));
 		$this->tpl->setVariable("CREATED", ilDatePresentation::formatDate(new ilDate($data["created"],IL_CAL_UNIX)));
-		if ($data['download'])
+		if ($data['download_flag'])
 		{
 			$this->tpl->setVariable("CHECKED_DOWNLOAD", ' checked="checked"');
 		}

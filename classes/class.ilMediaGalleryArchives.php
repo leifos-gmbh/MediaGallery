@@ -105,7 +105,8 @@ class ilMediaGalleryArchives
 				"xmg_id" => $row["xmg_id"],
 				"download_flag" => $row["download_flag"],
 				"filename" => $row["filename"],
-				"created" => filectime($this->getPath($row["filename"]))
+				"created" => filectime($this->getPath($row["filename"])),
+				"size" => filesize($this->getPath($row["filename"]))
 			);
 		}
 
@@ -118,14 +119,20 @@ class ilMediaGalleryArchives
 	{
 		global $ilDB;
 
-		if(!$this->getXmgId() && !count($a_archives) > 0)
+		if(!$this->getXmgId() && !is_array($a_archives))
 		{
 			return false;
 		}
+		$ilDB->manipulate("UPDATE rep_robj_xmg_downloads SET download_flag = ". $ilDB->quote(0, "integer").
+			" WHERE xmg_id = ". $ilDB->quote($this->getXmgId(), "integer"));
 
-		$ilDB->manipulate("UPDATE rep_robj_xmg_downloads SET downloag_flag = 1 ".
-			"WHERE xmg_id = ". $ilDB->quote($this->getXmgId(), "integer").
-			" AND ". $ilDB->in("id", $a_archives));
+		if(count($a_archives) > 0)
+		{
+			$ilDB->manipulate("UPDATE rep_robj_xmg_downloads SET download_flag = ". $ilDB->quote(1, "integer").
+				" WHERE xmg_id = ". $ilDB->quote($this->getXmgId(), "integer").
+				" AND ". $ilDB->in("id", $a_archives, false, "integer"));
+		}
+
 
 		foreach($a_archives as $id)
 		{
@@ -163,64 +170,82 @@ class ilMediaGalleryArchives
 	{
 		global $ilDB;
 
-		if(is_array($a_archive_ids))
+		if(!is_array($a_archive_ids))
 		{
 			return false;
 		}
 
+		$this->read();
+
 		$ilDB->manipulate("DELETE FROM rep_robj_xmg_downloads ".
-			"WHERE ".$ilDB->in("id",$a_archive_ids)."");
+			"WHERE ".$ilDB->in("id",$a_archive_ids, false, 'integer')."");
 
 		foreach($this->getArchives() as $archive)
 		{
-			if(in_array($archive["id"], $a_archive_ids))
+			if(in_array((string) $archive['id'], $a_archive_ids))
 			{
 				$this->getFileSystem()->deleteFile($archive["filename"], ilObjMediaGallery::LOCATION_DOWNLOADS);
 				unset($this->archives[$archive["id"]]);
 			}
 		}
-
 		return true;
 	}
 
-	public function renameArchive($a_archive_id, $a_new_name)
+	public function renameArchive($a_old_name, $a_new_name)
 	{
 		global $ilDB;
 
-		if($a_archive_id && !$a_new_name)
+		if($a_old_name && !$a_new_name)
 		{
 			return false;
 		}
 
 		$ilDB->manipulate("UPDATE rep_robj_xmg_downloads SET filename = ".$ilDB->quote($a_new_name, "text").
-			" WHERE id = ". $ilDB->quote($a_archive_id, "integer")."");
+			" WHERE filename = ". $ilDB->quote($a_old_name, "text")." AND xmg_id = " . $ilDB->quote($this->getXmgId(), "integer"));
 
-		$this->archives[$a_archive_id]["filename"] = $a_new_name;
+		rename($this->getPath($a_old_name), $this->getPath($a_new_name));
+
+		$this->resetCache();
 
 		return true;
 	}
 
 	public function createArchive($a_file_array, $a_zip_filename)
 	{
-		$files = array();
+		if(count($a_file_array) <= 0)
+		{
+			return false;
+		}
 		$a_zip_filename = ilUtil::getASCIIFilename($a_zip_filename);
 
-		$tmp_dir = $this->getFileSystem()->getPath()."tmp_".time();
+		$tmp_dir = ilUtil::getDataDir() . "/temp/"."tmp_".time();
 
 		ilUtil::createDirectory($tmp_dir);
 
 		foreach ((array) $a_file_array as $file_id)
 		{
 			$file = ilMediaGalleryFile::_getInstanceById($file_id);
+			$path = $tmp_dir. '/' .$file->getFilename();
 			$this->getFileSystem()->copyFile(
 				$file->getPath(ilObjMediaGallery::LOCATION_ORIGINALS),
-				$tmp_dir."/". $file->getFilename()
+				$path
 			);
 		}
 
-		ilUtil::zip($files, $this->getFileSystem()->getPath(ilObjMediaGallery::LOCATION_DOWNLOADS) . $a_zip_filename, false);
+		$ret = ilUtil::zip($tmp_dir,  $tmp_dir. '/' .$a_zip_filename, true);
+
+		rename($tmp_dir. '/' .$a_zip_filename, $this->getFileSystem()->getFilePath(ilObjMediaGallery::LOCATION_DOWNLOADS, $a_zip_filename));
+		//var_dump($ret, $files,$this->getFileSystem()->getFilePath(ilObjMediaGallery::LOCATION_DOWNLOADS, $a_zip_filename));
+		$this->getFileSystem()->deleteDir($tmp_dir);
+
+		if(!$ret)
+		{
+			return false;
+		}
 
 		$this->addArchive($a_zip_filename);
+
+		return true;
 	}
 
 	public function getPath($a_filename, $a_web = false)
@@ -231,6 +256,31 @@ class ilMediaGalleryArchives
 	public function  resetCache()
 	{
 		$this->archives = array();
+	}
+
+	public function getArchiveFilename($a_id)
+	{
+		global $ilDB;
+		$res = $ilDB->query("SELECT filename FROM rep_robj_xmg_downloads WHERE id = ". $ilDB->quote($a_id, "integer"));
+
+		$row = $ilDB->fetchAssoc($res);
+
+		return  $row["filename"];
+	}
+
+	public static function _clone($a_source_xmg_id, $a_dest_xmg_id)
+	{
+		$dest = self::_getInstanceByXmgId($a_dest_xmg_id);
+		$source = self::_getInstanceByXmgId($a_source_xmg_id);
+		foreach($source->getArchives() as $archive)
+		{
+			$s_path = $source->getPath($archive['filename']);
+			$d_path = $dest->getPath($archive['filename']);
+
+			@copy($s_path, $d_path);
+
+			$dest->addArchive($archive['filename']);
+		}
 	}
 
 	public static function _archiveExist($a_xmg_id, $a_archive_id)

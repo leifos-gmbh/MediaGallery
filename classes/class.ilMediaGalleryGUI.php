@@ -21,6 +21,8 @@ class ilMediaGalleryGUI
 	 */
 	protected $ctpl;
 
+	protected $sortkey;
+
 	/**
 	 * @var ilTemplate
 	 */
@@ -29,6 +31,16 @@ class ilMediaGalleryGUI
 	protected $preview_flag = false;
 
 	protected $plugin;
+
+	/**
+	 * @var ilCtrl
+	 */
+	protected $ctrl;
+
+	/**
+	 * @var ilObjMediaGalleryGUI
+	 */
+	protected $parent;
 	/**
 	 * @var ilObjMediaGallery
 	 */
@@ -36,15 +48,19 @@ class ilMediaGalleryGUI
 
 	protected $counter = 0;
 
-	public function __construct($object, $plugin)
+	public function __construct($parent, $plugin)
 	{
-		global $tpl;
+		global $tpl, $ilCtrl;
 
-		$this->object = $object;
+		$this->object = $parent->object;
+
+		$this->parent = $parent;
 
 		$this->plugin = $plugin;
 
 		$this->tpl = $tpl;
+
+		$this->ctrl = $ilCtrl;
 
 		$this->init();
 	}
@@ -93,7 +109,9 @@ class ilMediaGalleryGUI
 
 	protected function fillRow($a_set)
 	{
-		$this->preview_flag = $a_set->hasPreview();
+		$a_set = ilMediaGalleryFile::_getInstanceById($a_set["id"]);
+
+		$this->preview_flag = $a_set->hasPreviewImage();
 		$this->counter++;
 
 		switch($a_set->getContentType())
@@ -124,8 +142,8 @@ class ilMediaGalleryGUI
 			{
 				$tpl_title->setVariable('MEDIA_TITLE', ilUtil::prepareFormOutput($a_set->getFilename()));
 			}
-			$this->ctrl->setParameter($this, 'id', $a_set->getId());
-			$tpl_title->setVariable('URL_DOWNLOAD', $this->ctrl->getLinkTarget($this, "downloadOriginal"));
+			$this->ctrl->setParameter($this->parent, 'id', $a_set->getId());
+			$tpl_title->setVariable('URL_DOWNLOAD', $this->ctrl->getLinkTarget($this->parent, "downloadOriginal"));
 			$elementtitle = $tpl_title->get();
 		}
 		else if ($this->object->getShowTitle())
@@ -411,8 +429,8 @@ class ilMediaGalleryGUI
 			$tpl_element->setVariable('URL_THUMBNAIL', $this->object->getMimeIconPath($a_set->getId()));
 		}
 		$tpl_element->setVariable('INLINE_SECTION', "oth". $this->counter);
-		$this->ctrl->setParameter($this, 'id', $a_set->getId());
-		$tpl_element->setVariable('URL_DOWNLOAD', $this->ctrl->getLinkTarget($this, "downloadOther"));
+		$this->ctrl->setParameter($this->parent, 'id', $a_set->getId());
+		$tpl_element->setVariable('URL_DOWNLOAD', $this->ctrl->getLinkTarget($this->parent, "downloadOther"));
 		$tpl_element->setVariable('URL_DOWNLOADICON', $this->plugin->getDirectory() . '/templates/images/download.png');
 		$tpl_element->setVariable('ALT_THUMBNAIL', ilUtil::prepareFormOutput($a_set->getTitle()));
 
@@ -427,7 +445,7 @@ class ilMediaGalleryGUI
 		$this->tpl->addJavascript($this->plugin->getDirectory() . "/js/html5media-master/domready.js");
 		$this->tpl->addJavascript($this->plugin->getDirectory() . "/js/html5media-master/flowplayer.js");
 		$this->tpl->addJavascript($this->plugin->getDirectory() . "/js/html5media-master/html5media.js");
-		$mediafiles = ilMediaGalleryFile::_getMediaFilesInGallery($this->object_id, true);
+		$mediafiles = $this->getFileData();
 		$this->ctpl = $this->plugin->getTemplate("tpl.gallery.html");
 		$counter = 0;
 		$this->sortkey = $this->object->getSortOrder();
@@ -443,25 +461,25 @@ class ilMediaGalleryGUI
 			$this->fillRow($fdata);
 		}
 
-		$archives = ilMediaGalleryArchives::_getInstanceByXmgId($this->object_id);
+		$archives = $this->getArchiveData();
 		$downloads = array();
-		foreach ($archives->getArchives() as $id => $fdata)
+		foreach ($archives as $id => $fdata)
 		{
 			if ($fdata['download_flag'] == 1)
 			{
-				$size = filesize($archives->getPath($fdata["filename"]));
+				$size = filesize($this->object->getFS()->getFilePath(ilObjMediaGallery::LOCATION_DOWNLOADS,$fdata["filename"]));
 				$downloads[$id] = $fdata["filename"] . ' ('.$this->object->formatBytes($size).')';
 			}
 		}
 		if (count($downloads))
 		{
-			global $ilToolbar, $ilCtrl, $lng;
+			global $ilToolbar, $lng;
 			include_once("./Services/Form/classes/class.ilSelectInputGUI.php");
 			$si = new ilSelectInputGUI($this->plugin->txt("archive").':', "archive");
 			$si->setOptions($downloads);
 			$ilToolbar->addInputItem($si, true);
 			$ilToolbar->addFormButton($lng->txt("download"), 'download');
-			$ilToolbar->setFormAction($ilCtrl->getFormAction($this));
+			$ilToolbar->setFormAction($this->ctrl->getFormAction($this->parent));
 		}
 
 		$this->ctpl->setVariable("THEME", $this->object->getTheme());

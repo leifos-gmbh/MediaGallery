@@ -39,6 +39,8 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		// anything needed after object has been constructed
 		// - gallery: append my_id GET parameter to each request
 		//   $ilCtrl->saveParameter($this, array("my_id"));
+		//$this->object->setId($this->object_id);
+
 		include_once "./Services/Component/classes/class.ilPlugin.php";
 		$this->plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, "Repository", "robj", "MediaGallery");
 		$this->plugin->includeClass("class.ilMediaGalleryFile.php");
@@ -341,6 +343,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		{
 			$data = array_keys($_POST['download']);
 		}
+
 		$archives = ilMediaGalleryArchives::_getInstanceByXmgId($this->object_id);
 
 		$archives->setDownloadFlags($data);
@@ -351,15 +354,15 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 	
 	function deleteArchive()
 	{
-		if (!is_array($_POST['id']))
+		if (!is_array($_POST['file']))
 		{
 			ilUtil::sendInfo($this->plugin->txt('please_select_archive_to_delete'), true);
 		}
 		else
 		{
 			$archives = ilMediaGalleryArchives::_getInstanceByXmgId($this->object_id);
-			$archives->deleteArchives($_POST['id']);
-			ilUtil::sendSuccess(sprintf((count($_POST['id']) == 1) ? $this->plugin->txt('archive_deleted') : $this->plugin->txt('archives_deleted'), count($_POST['id'])), true);
+			$archives->deleteArchives($_POST['file']);
+			ilUtil::sendSuccess(sprintf((count($_POST['file']) == 1) ? $this->plugin->txt('archive_deleted') : $this->plugin->txt('archives_deleted'), count($_POST['file'])), true);
 		}
 		$this->ctrl->redirect($this, 'archives');
 	}
@@ -392,7 +395,8 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 	function download()
 	{
 		$archives = ilMediaGalleryArchives::_getInstanceByXmgId($this->object_id);
-		ilUtil::deliverFile($archives->getPath($_POST['archive']), $_POST['archive'], 'application/zip');
+		$filename = $archives->getArchiveFilename($_POST['archive']);
+		ilUtil::deliverFile($archives->getPath($filename), $filename, 'application/zip');
 		$this->ctrl->redirect($this, 'gallery');
 	}
 	
@@ -407,8 +411,8 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 	
 		$ilTabs->activateTab("gallery");
 		$this->plugin->includeClass("class.ilMediaGalleryGUI.php");
-		$gallery = new ilMediaGalleryGUI($this->object, $this->plugin);
-		$gallery->setFileData(ilMediaGalleryFile::_getMediaFilesInGallery($this->object_id, true));
+		$gallery = new ilMediaGalleryGUI($this, $this->plugin);
+		$gallery->setFileData(ilMediaGalleryFile::_getMediaFilesInGallery($this->object_id));
 		$gallery->setArchiveData(ilMediaGalleryArchives::_getInstanceByXmgId($this->object_id)->getArchives());
 		$this->tpl->setVariable("ADM_CONTENT", $gallery->getHTML());
 	}
@@ -617,6 +621,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 	public function changeArchiveFilename()
 	{
 		global $tpl, $ilTabs;
+		var_dump ($_POST);
 		
 		if (!is_array($_POST['file']))
 		{
@@ -630,9 +635,11 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		}
 		else
 		{
+			$archive = ilMediaGalleryArchives::_getInstanceByXmgId($this->object_id);
+
 			foreach ($_POST['file'] as $file)
 			{
-				$_SESSION['archiveFilename'] = substr($file, 0, -4);
+				$_SESSION['archiveFilename'] = substr($archive->getArchiveFilename($file), 0, -4);
 			}
 		}
 
@@ -670,9 +677,8 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		{
 			if (strlen($_SESSION['archiveFilename']) && strlen($_POST['filename']))
 			{
-				$this->object->renameArchive($_SESSION['archiveFilename'] . ".zip", $_POST['filename'] . ".zip");
 				$archives = ilMediaGalleryArchives::_getInstanceByXmgId($this->object_id);
-				$archives->renameArchive($_SESSION['archiveFilename'], $_POST['filename'] . ".zip");
+				$archives->renameArchive($_SESSION['archiveFilename'] . '.zip', $_POST['filename'] . '.zip');
 
 				unset($_SESSION['archiveFilename']);
 				$this->ctrl->redirect($this, 'archives');
@@ -724,9 +730,11 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 
 	public function saveAllFileData()
 	{
-		foreach ($_POST['id'] as $fid => $file_id)
+		foreach (array_keys($_POST['id']) as $fid)
 		{
+
 			$file = ilMediaGalleryFile::_getInstanceById($fid);
+			$file->setMediaId($_POST['id'][$fid]);
 			$file->setTopic( $_POST['topic'][$fid]);
 			$file->setTitle($_POST['title'][$fid]);
 			$file->setDescription($_POST['description'][$fid]);
@@ -938,7 +946,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 			// Strip the temp .part suffix off 
 			rename("{$filePath}.part", $filePath);
 			$file = new ilMediaGalleryFile();
-			$file->setFilename($fileName);
+			$file->setFilename(ilMediaGalleryFile::_getNextValidFilename($this->object_id, $fileName));
 			$file->setGalleryId($this->object_id);
 			$file->create();
 			$file->uploadFile($filePath, $fileName);

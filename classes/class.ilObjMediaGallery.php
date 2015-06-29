@@ -32,10 +32,6 @@ class ilObjMediaGallery extends ilObjectPlugin
 	protected $showTitle = 0;
 	protected $download = 0;
 	protected $theme = '';
-	/**
-	 * @var ilFSStorageMediaGallery
-	 */
-	public $fs;
 
 	const LOCATION_ROOT = 0;
 	const LOCATION_ORIGINALS = 1;
@@ -51,6 +47,11 @@ class ilObjMediaGallery extends ilObjectPlugin
 	const CONTENT_TYPE_IMAGE = 2;
 	const CONTENT_TYPE_AUDIO = 3;
 
+	const IMAGE_SIZE_THUMBS = 150;
+	const IMAGE_SIZE_SMALL = 800;
+	const IMAGE_SIZE_MEDIUM = 1280;
+	const IMAGE_SIZE_LARGE = 2048;
+
 
 	
 	/**
@@ -64,8 +65,6 @@ class ilObjMediaGallery extends ilObjectPlugin
 		include_once "./Services/Component/classes/class.ilPlugin.php";
 		$this->plugin = self::_getPluginObject();
 		$this->plugin->includeClass("class.ilFSStorageMediaGallery.php");
-
-		$this->fs = ilFSStorageMediaGallery::_getInstanceByXmgId($this->id);
 	}
 	
 
@@ -150,8 +149,8 @@ class ilObjMediaGallery extends ilObjectPlugin
 	{
 		global $ilDB;
 		// $myID = $this->getId();
-		ilUtil::delDir($this->fs->getPath(self::LOCATION_ROOT));
-		
+		ilUtil::delDir($this->getFS()->getPath(self::LOCATION_ROOT));
+
 		$affectedRows = $ilDB->manipulateF("DELETE FROM rep_robj_xmg_filedata WHERE xmg_id = %s",
 			array('integer'),
 			array($this->getId())
@@ -172,48 +171,23 @@ class ilObjMediaGallery extends ilObjectPlugin
 	*/
 	function doCloneObject($new_obj, $a_target_id,$a_copy_id)
 	{
-		ilUtil::rCopy($this->fs->getPath(self::LOCATION_PREVIEWS), $new_obj->fs->getPath(self::LOCATION_PREVIEWS));
+		/*ilUtil::rCopy($this->fs->getPath(self::LOCATION_PREVIEWS), $new_obj->fs->getPath(self::LOCATION_PREVIEWS));
 		ilUtil::rCopy($this->fs->getPath(self::LOCATION_DOWNLOADS), $new_obj->fs->getPath(self::LOCATION_DOWNLOADS));
 		ilUtil::rCopy($this->fs->getPath(self::LOCATION_ORIGINALS), $new_obj->fs->getPath(self::LOCATION_ORIGINALS));
 		$this->cloneMediaFiles($new_obj);
-		$this->cloneArchive($new_obj);
+		$this->cloneArchive($new_obj);*/
+
 		$new_obj->setSortOrder($this->getSortOrder());
 		$new_obj->setShowTitle($this->getShowTitle());
 		$new_obj->setDownload($this->getDownload());
 		$new_obj->setTheme($this->getTheme());
 		$new_obj->doUpdate();
-		$new_obj->createMissingPreviews();
-		$new_obj->restoreCustomPreviews();
-	}
-	
-	private function cloneMediaFiles($new_obj)
-	{
-		foreach($this->getMediaFiles() as $data)
-		{
-			$new_obj->saveFileData($data["filename"],
-					$data["media_id"],
-					$data["topic"],
-					$data["title"],
-					$data["description"],
-					$data["custom"],
-					$data["width"],
-					$data["height"]);
-		}
-	}
-	
-	private function cloneArchive($new_obj)
-	{
-		$files =  array();
-		
-		foreach($this->getArchives() as $data)
-		{
-			if($data["download"] === true)
-			{
-				$files[] = $data["entry"];
-			}
-		}
-		
-		$new_obj->saveArchiveData($files);
+		$fss = ilFSStorageMediaGallery::_getInstanceByXmgId($a_copy_id);
+		$fss->create();
+		ilMediaGalleryFile::_clone($a_target_id, $a_copy_id);
+		ilMediaGalleryArchives::_clone($a_target_id, $a_copy_id);
+		//$new_obj->createMissingPreviews();
+		//$new_obj->restoreCustomPreviews();
 	}
 
 	public function getSortOrder()
@@ -328,17 +302,12 @@ class ilObjMediaGallery extends ilObjectPlugin
 	}
 
 
-
-	private function getDataPath()
+	/**
+	 * @return \ilFSStorageMediaGallery
+	 */
+	public function getFS()
 	{
-		return CLIENT_WEB_DIR . "/mediagallery/" . $this->getId() . "/";
-	}
-
-	private function getDataPathWeb()
-	{
-		include_once "./Services/Utilities/classes/class.ilUtil.php";
-		$datadir = ilUtil::removeTrailingPathSeparators(CLIENT_WEB_DIR) . "/mediagallery/" . $this->getId() . "/";
-		return str_replace(ilUtil::removeTrailingPathSeparators(ILIAS_ABSOLUTE_PATH), ilUtil::removeTrailingPathSeparators(ILIAS_HTTP_PATH), $datadir);
+		return ilFSStorageMediaGallery::_getInstanceByXmgId($this->getId());
 	}
 
 	public static function _getConfigurationValue($key, $default = "")
@@ -390,91 +359,6 @@ class ilObjMediaGallery extends ilObjectPlugin
 			}
 		}
 		return false;
-	}
-	
-	public function processNewUpload($file)
-	{
-		$saveData = true;
-		$width = 0;
-		$height = 0;
-		$file_parts = pathinfo($file);
-		$filename = $file_parts['basename'];
-		if ($this->isImage($file))
-		{
-			if ($this->hasExtension($file, ilObjMediaGallery::_getConfigurationValue('ext_img')))
-			{
-				include_once "./Services/Utilities/classes/class.ilMimeTypeUtil.php";
-				if (ilUtil::deducibleSize(ilMimeTypeUtil::getMimeType("", $file, "")))
-				{
-					$imgsize = getimagesize($file);
-					if (is_array($imgsize))
-					{
-						$width = $imgsize[0];
-						$height = $imgsize[1];
-					}
-				}
-				$this->createPreviews($filename);
-			}
-			else
-			{
-
-				@unlink($file);
-				$saveData = false;
-			}
-		}
-		else if ($this->isAudio($file))
-		{
-			if (!$this->hasExtension($file, ilObjMediaGallery::_getConfigurationValue('ext_aud'))) 
-			{
-				@unlink($file);
-				$saveData = false;
-			}
-		}
-		else if ($this->isVideo($file))
-		{
-			if (!$this->hasExtension($file, ilObjMediaGallery::_getConfigurationValue('ext_vid')))
-			{
-				@unlink($file);
-				$saveData = false;
-			}
-			// rename mov files to mp4. gives better compatibility in most browsers
-			if ($saveData && $this->hasExtension($file, 'mov'))
-			{
-				$new_filename = preg_replace('/(\.mov)/is', '.mp4', $filename);
-				if (@rename($file, str_replace($filename, $new_filename, $file)))
-				{
-					$filename = $new_filename;
-				}
-			}
-		}
-		else
-		{
-			if (!$this->hasExtension($file, ilObjMediaGallery::_getConfigurationValue('ext_aud').','.ilObjMediaGallery::_getConfigurationValue('ext_vid').','.ilObjMediaGallery::_getConfigurationValue('ext_img').','.ilObjMediaGallery::_getConfigurationValue('ext_oth')))
-			{
-				@unlink($file);
-				$saveData = false;
-			}
-		}
-		if ($saveData) $this->saveFileData($filename, '', '', $filename, '', $this->getFileDataCount()+1, $width, $height);
-
-	}
-	
-	private function getFilesInDir($a_dir)
-	{
-		$current_dir = opendir($a_dir);
-
-		$files = array();
-		while($entry = readdir($current_dir))
-		{
-			if ($entry != "." && $entry != ".." && !@is_dir($a_dir."/".$entry) && strpos($entry, ".") !== 0)
-			{
-				$size = filesize($a_dir."/".$entry);
-				$files[$entry] = array("type" => "file", "entry" => $entry,
-				"size" => $size);
-			}
-		}
-		ksort($files);
-		return $files;
 	}
 
 	private static function getDirsInDir($a_dir)
@@ -673,7 +557,7 @@ class ilObjMediaGallery extends ilObjectPlugin
 			$xml_writer->xmlElement("file_description", array(),$data["description"]);
 			
 			// file exists abfrage
-			$content = @gzcompress(@file_get_contents($this->fs->getFilePath(self::LOCATION_ORIGINALS, $data['id'])), 9);
+			$content = @gzcompress(@file_get_contents($this->getFS()->getFilePath(self::LOCATION_ORIGINALS, $data['id'])), 9);
 			$content = base64_encode($content);
 			$xml_writer->xmlElement("content", array("mode" => "ZIP"), $content);
 

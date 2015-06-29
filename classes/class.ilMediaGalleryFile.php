@@ -44,6 +44,8 @@ class ilMediaGalleryFile
 	 */
 	protected $object;
 
+	protected static $loaded  = false;
+
 	protected static $objects = array();
 
 	public function __construct($a_id = null)
@@ -186,26 +188,6 @@ class ilMediaGalleryFile
 	}
 
 	/**
-	 * @param \ilObjMediaGallery $object
-	 */
-	public function setObject($object)
-	{
-		$this->object = $object;
-	}
-
-	/**
-	 * @return \ilObjMediaGallery
-	 */
-	public function getObject()
-	{
-		if(!$this->object)
-		{
-			//$this->setObject();
-		}
-		return $this->object;
-	}
-
-	/**
 	 * @return \ilFSStorageMediaGallery
 	 */
 	protected function getFileSystem()
@@ -213,9 +195,15 @@ class ilMediaGalleryFile
 		return ilFSStorageMediaGallery::_getInstanceByXmgId($this->getGalleryId());
 	}
 
+	public function getSize()
+	{
+		return filesize($this->getPath(ilObjMediaGallery::LOCATION_ORIGINALS));
+	}
+
 	public function hasPreviewImage()
 	{
-		return file_exists($this->getPath(ilObjMediaGallery::LOCATION_PREVIEWS));
+		$path = $this->getPath(ilObjMediaGallery::LOCATION_PREVIEWS);
+		return file_exists($path) && !is_dir($path) ;
 	}
 
 	/**
@@ -231,9 +219,9 @@ class ilMediaGalleryFile
 			return false;
 		}
 
-		$res = $ilDB->query("SELECT * FROM rep_robj_xmg_filedata WHERE file_id = ". $ilDB->quote($this->getId(), "integer"));
+		$res = $ilDB->query("SELECT * FROM rep_robj_xmg_filedata WHERE id = ". $ilDB->quote($this->getId(), "integer"));
 
-		if ($res->numRows() > 0)
+		if (!$res->numRows() > 0)
 		{
 			return false;
 		}
@@ -342,7 +330,7 @@ class ilMediaGalleryFile
 
 		$this->getFileSystem()->deleteFile($this->getId());
 
-		self::$objects[$this->getId()];
+		unset(self::$objects[$this->getId()]);
 
 		return true;
 	}
@@ -373,7 +361,7 @@ class ilMediaGalleryFile
 
 	public function deletePreview()
 	{
-		return $this->getFileSystem()->deleteFile(LOCATION_PREVIEWS, $this->getId());
+		return $this->getFileSystem()->deleteFile( $this->getId(), LOCATION_PREVIEWS);
 	}
 
 	public function createImagePreviews()
@@ -384,31 +372,31 @@ class ilMediaGalleryFile
 		{
 			// creates ".png" previews vor ".tif" pictures (tif support)
 			if($info["extension"] == "tif" || $info["extension"] == "tiff"){
-				ilUtil::convertImage($this->getPath(LOCATION_ORIGINALS), $this->getPath(LOCATION_THUMBS) .
-					$info["filename"]. ".png", "PNG",  $this->getObject()->getSizeThumbs());
+				ilUtil::convertImage($this->getPath(LOCATION_ORIGINALS), $this->getPath(LOCATION_THUMBS),
+					"PNG", ilObjMediaGallery::IMAGE_SIZE_THUMBS);
 
-				ilUtil::convertImage($this->getPath(LOCATION_ORIGINALS), $this->getPath(LOCATION_SIZE_SMALL) .
-					$info["filename"]. ".png", "PNG",  $this->getObject()->getSizeSmall());
+				ilUtil::convertImage($this->getPath(LOCATION_ORIGINALS), $this->getPath(LOCATION_SIZE_SMALL),
+					"PNG",  ilObjMediaGallery::IMAGE_SIZE_SMALL);
 
-				ilUtil::convertImage($this->getPath(LOCATION_ORIGINALS), $this->getPath(LOCATION_SIZE_MEDIUM) .
-					$info["filename"]. ".png","PNG",  $this->getObject()->getSizeMedium());
+				ilUtil::convertImage($this->getPath(LOCATION_ORIGINALS), $this->getPath(LOCATION_SIZE_MEDIUM),
+					"PNG",  ilObjMediaGallery::IMAGE_SIZE_MEDIUM);
 
-				ilUtil::convertImage($this->getPath(LOCATION_ORIGINALS), $this->getPath(LOCATION_SIZE_LARGE) .
-					$info["filename"]. ".png", "PNG",  $this->getObject()->getSizeLarge());
+				ilUtil::convertImage($this->getPath(LOCATION_ORIGINALS), $this->getPath(LOCATION_SIZE_LARGE),
+					"PNG",  ilObjMediaGallery::IMAGE_SIZE_LARGE);
 				return;
 			}
 
 			ilUtil::resizeImage($this->getPath(LOCATION_ORIGINALS) , $this->getPath(LOCATION_THUMBS),
-				$this->getObject()->getSizeThumbs(), $this->getObject()->getSizeThumbs(), true);
+				ilObjMediaGallery::IMAGE_SIZE_THUMBS,  ilObjMediaGallery::IMAGE_SIZE_THUMBS, true);
 
 			ilUtil::resizeImage($this->getPath(LOCATION_ORIGINALS) , $this->getPath(LOCATION_SIZE_SMALL),
-				$this->getObject()->getSizeSmall(), $this->getObject()->getSizeSmall(), true);
+				ilObjMediaGallery::IMAGE_SIZE_SMALL, ilObjMediaGallery::IMAGE_SIZE_SMALL, true);
 
 			ilUtil::resizeImage($this->getPath(LOCATION_ORIGINALS) , $this->getPath(LOCATION_SIZE_MEDIUM),
-				$this->getObject()->getSizeMedium(), $this->getObject()->getSizeMedium(), true);
+				ilObjMediaGallery::IMAGE_SIZE_MEDIUM,  ilObjMediaGallery::IMAGE_SIZE_MEDIUM, true);
 
 			ilUtil::resizeImage($this->getPath(LOCATION_ORIGINALS) , $this->getPath(LOCATION_SIZE_LARGE),
-				$this->getObject()->getSizeLarge(),  $this->getObject()->getSizeLarge(), true);
+				ilObjMediaGallery::IMAGE_SIZE_LARGE,   ilObjMediaGallery::IMAGE_SIZE_LARGE, true);
 		}
 	}
 
@@ -444,7 +432,10 @@ class ilMediaGalleryFile
 			return false;
 		}
 
-		rename($file, $this->getPath(ilObjMediaGallery::LOCATION_ORIGINALS));
+		$ext = pathinfo($file, PATHINFO_EXTENSION);
+
+		rename($file, $this->getFileSystem()->getPath(ilObjMediaGallery::LOCATION_ORIGINALS).$this->getId().'.'.$ext);
+		$this->getFileSystem()->resetCache();
 
 		if($this->getContentType() == ilObjMediaGallery::CONTENT_TYPE_IMAGE)
 		{
@@ -455,17 +446,18 @@ class ilMediaGalleryFile
 
 	public function uploadPreview($a_is_a_copy_of = null)
 	{
-		$ext = ilMimeTypeUtil::getExt2MimeMap($_FILES["filename"]["type"]);
+		$ext = substr($_FILES['filename']["name"],strrpos($_FILES['filename']["name"], '.'));
 
 		if(self::_contentType($_FILES["filename"]["type"], $ext) != ilObjMediaGallery::CONTENT_TYPE_IMAGE)
 		{
 			return false;
 		}
+
 		if(!$a_is_a_copy_of)
 		{
-		$preview_filename = $this->getFileSystem()->getPath(LOCATION_PREVIEWS) . $this->getId() .
-			ilMimeTypeUtil::getExt2MimeMap($_FILES["filename"]["type"]);
-		@move_uploaded_file($_FILES['filename']["tmp_name"], $preview_filename);
+			$this->deletePreview();
+			$preview_filename = $this->getFileSystem()->getPath(LOCATION_PREVIEWS) . $this->getId() . $ext;
+			@move_uploaded_file($_FILES['filename']["tmp_name"], $preview_filename);
 
 		}
 		else
@@ -558,6 +550,7 @@ class ilMediaGalleryFile
 					$ret[$row["id"]] = $arr;
 					$ret[$row["id"]]['has_preview'] = self::$objects[$row["id"]]->hasPreviewImage();
 					$ret[$row["id"]]['content_type'] =  self::$objects[$row["id"]]->getContentType();
+					$ret[$row["id"]]['size'] =  self::$objects[$row["id"]]->getSize();
 				}
 			}
 
@@ -658,5 +651,59 @@ class ilMediaGalleryFile
 		}
 
 		return self::$objects[$a_id];
+	}
+
+	public static function _clone($a_source_xmg_id, $a_dest_xmg_id)
+	{
+		$files = self::_getMediaFilesInGallery($a_source_xmg_id, true);
+		/**
+		 * @var $file self
+		 */
+		foreach($files as $file)
+		{
+			$fsource_id = $file->getId();
+			$file->setMediaId($a_dest_xmg_id);
+			$file->setId(0);
+			$file->create();
+
+			if($file->hasPreviewImage())
+			{
+				$sppath = ilFSStorageMediaGallery::_getInstanceByXmgId($a_source_xmg_id)->getFilePath(ilObjMediaGallery::LOCATION_PREVIEWS,$fsource_id);
+				$dppath = $file->getPath(ilObjMediaGallery::LOCATION_PREVIEWS);
+				@copy($sppath, $dppath);
+			}
+		}
+	}
+
+	public static function _getNextValidFilename($a_xmg_id, $a_filename, $a_objects = null, $a_counter = 0)
+	{
+		if($a_objects == null)
+		{
+			$objects = self::_getMediaFilesInGallery($a_xmg_id);
+		}else
+		{
+			$objects = $a_objects;
+		}
+
+		if($a_counter > 0)
+		{
+			$base_name = substr($a_filename, 0, strripos($a_filename, '.'));
+			$ext = substr($a_filename, strripos($a_filename, '.'));
+			$filename = $base_name . '_' . $a_counter. $ext;
+		}
+		else
+		{
+			$filename = $a_filename;
+		}
+
+		foreach($objects as $object)
+		{
+			if($object['filename'] == $filename)
+			{
+				return self::_getNextValidFilename($a_xmg_id, $a_filename, $objects, $a_counter+1);
+			}
+		}
+
+		return $filename;
 	}
 } 

@@ -61,28 +61,6 @@ class ilFSStorageMediaGallery extends ilFileSystemStorage
 		return 'xmg';
 	}
 
-	/**
-	 * Clone course data directory
-	 *
-	 * @access public
-	 * @static
-	 *
-	 * @param string $a_source_id obj_id source
-	 * @param string $a_target_id obj_id target
-	 */
-	public static function _clone($a_source_id,$a_target_id)
-	{
-		$source = new self($a_source_id);
-		$target = new self($a_target_id);
-
-		$target->create();
-		self::_copyDirectory($source->getAbsolutePath(),$target->getAbsolutePath());
-
-		unset($source);
-		unset($target);
-		return true;
-	}
-
 	function getFilePath($a_location,$a_file_id = 0, $a_web = false)
 	{
 		$path = $this->getPath($a_location, $a_web);
@@ -99,7 +77,14 @@ class ilFSStorageMediaGallery extends ilFileSystemStorage
 				}
 				else
 				{
-					$path .= $this->getFilename($a_file_id);
+					$fname = $this->getFilename($a_file_id);
+
+					if(!$fname)
+					{
+						$fname = $this->getFilename($a_file_id, $a_location);
+					}
+
+					$path .= $fname;
 				}
 
 				break;
@@ -132,7 +117,7 @@ class ilFSStorageMediaGallery extends ilFileSystemStorage
 		foreach($this->files_cache[$a_location]  as $name)
 		{
 			$fname = pathinfo($this->getPath($a_location). $name, PATHINFO_FILENAME );
-			if($fname == $name)
+			if($fname == $a_file_id)
 			{
 				return $name;
 			}
@@ -143,15 +128,25 @@ class ilFSStorageMediaGallery extends ilFileSystemStorage
 
 	public function deleteFile($a_file_id, $a_location = null)
 	{
-		if($a_location = null)
+		if($a_location == null)
 		{
-			$this->deleteFile($a_file_id,  ilObjMediaGallery::LOCATION_ORIGINALS);
 			$this->deleteFile($a_file_id,  ilObjMediaGallery::LOCATION_PREVIEWS);
 			$this->deleteFile($a_file_id,  ilObjMediaGallery::LOCATION_THUMBS);
 			$this->deleteFile($a_file_id,  ilObjMediaGallery::LOCATION_SIZE_LARGE);
 			$this->deleteFile($a_file_id,  ilObjMediaGallery::LOCATION_SIZE_MEDIUM);
 			$this->deleteFile($a_file_id,  ilObjMediaGallery::LOCATION_SIZE_SMALL);
+			$this->deleteFile($a_file_id,  ilObjMediaGallery::LOCATION_ORIGINALS);
+			return true;
 		}
+
+		$path = $this->getFilePath($a_location, $a_file_id);
+
+		if(is_dir($path))
+		{
+			return false;
+		}
+
+		$ret = parent::deleteFile($path);
 
 		if(isset($this->files_cache[$a_location]))
 		{
@@ -163,7 +158,30 @@ class ilFSStorageMediaGallery extends ilFileSystemStorage
 			unset($this->mime_cache[$a_file_id][$a_location]);
 		}
 
-		return parent::deleteFile($this->getFilePath($a_location, $a_file_id));
+		return $ret;
+	}
+
+	public function deleteDir($a_location = null)
+	{
+		if($a_location == null)
+		{
+			$this->deleteDir(ilObjMediaGallery::LOCATION_PREVIEWS);
+			$this->deleteDir(ilObjMediaGallery::LOCATION_THUMBS);
+			$this->deleteDir(ilObjMediaGallery::LOCATION_SIZE_LARGE);
+			$this->deleteDir(ilObjMediaGallery::LOCATION_SIZE_MEDIUM);
+			$this->deleteDir(ilObjMediaGallery::LOCATION_SIZE_SMALL);
+			$this->deleteDir(ilObjMediaGallery::LOCATION_ORIGINALS);
+			return true;
+		}
+
+		if(is_dir($a_location))
+		{
+			parent::deleteDirectory($a_location);
+			return true;
+		}
+
+		parent::deleteDirectory($this->getPath($a_location));
+		return true;
 	}
 
 	public function getWebPath()
@@ -176,10 +194,11 @@ class ilFSStorageMediaGallery extends ilFileSystemStorage
 
 	public function getMimeType($a_file_id, $a_location = ilObjMediaGallery::LOCATION_ORIGINALS)
 	{
-		if($this->mime_cache[$a_file_id][$a_location])
+
+		if(!isset($this->mime_cache[$a_file_id][$a_location]))
 		{
-			$this->mime_cache[$a_file_id][$a_location] =
-				ilMimeTypeUtil::getMimeType($this->getFilePath($a_location, $a_file_id));
+			include_once "./Services/Utilities/classes/class.ilMimeTypeUtil.php";
+			$this->mime_cache[$a_file_id][$a_location] = ilMimeTypeUtil::getMimeType($this->getFilePath($a_location, $a_file_id));
 		}
 
 		return 	$this->mime_cache[$a_file_id][$a_location];
