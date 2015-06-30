@@ -183,30 +183,32 @@ class ilFSStorageMediaGallery extends ilFileSystemStorage
 	/**
 	 * delete directory
 	 *
-	 * @param int $a_location
+	 * @param int|string $a_location
 	 * @return bool
 	 */
-	public function deleteDir($a_location = null)
+	public function deleteDir($a_location)
 	{
-		if($a_location == null)
-		{
-			$this->deleteDir(ilObjMediaGallery::LOCATION_PREVIEWS);
-			$this->deleteDir(ilObjMediaGallery::LOCATION_THUMBS);
-			$this->deleteDir(ilObjMediaGallery::LOCATION_SIZE_LARGE);
-			$this->deleteDir(ilObjMediaGallery::LOCATION_SIZE_MEDIUM);
-			$this->deleteDir(ilObjMediaGallery::LOCATION_SIZE_SMALL);
-			$this->deleteDir(ilObjMediaGallery::LOCATION_ORIGINALS);
-			return true;
-		}
-
 		if(is_dir($a_location))
 		{
 			parent::deleteDirectory($a_location);
 			return true;
 		}
 
-		parent::deleteDirectory($this->getPath($a_location));
-		return true;
+		if( in_array($a_location, array(
+				ilObjMediaGallery::LOCATION_PREVIEWS,
+				ilObjMediaGallery::LOCATION_ORIGINALS,
+				ilObjMediaGallery::LOCATION_DOWNLOADS,
+				ilObjMediaGallery::LOCATION_SIZE_LARGE,
+				ilObjMediaGallery::LOCATION_SIZE_MEDIUM,
+				ilObjMediaGallery::LOCATION_SIZE_SMALL,
+				ilObjMediaGallery::LOCATION_THUMBS,
+				ilObjMediaGallery::LOCATION_ROOT
+			)))
+		{
+			parent::deleteDirectory($this->getPath($a_location));
+			return true;
+		}
+		return false;
 	}
 
 	/**
