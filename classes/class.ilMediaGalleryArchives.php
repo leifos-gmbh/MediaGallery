@@ -257,6 +257,11 @@ class ilMediaGalleryArchives
 
 		$tmp_dir = ilUtil::getDataDir() . "/temp/"."tmp_".time();
 
+		if(!file_exists(ilUtil::getDataDir() . "/temp/"))
+		{
+			ilUtil::createDirectory(ilUtil::getDataDir() . "/temp/");
+		}
+
 		ilUtil::createDirectory($tmp_dir);
 
 		foreach ((array) $a_file_array as $file_id)

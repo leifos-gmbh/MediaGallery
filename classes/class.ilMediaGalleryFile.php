@@ -42,7 +42,7 @@ class ilMediaGalleryFile
 	/**
 	 * @var string
 	 */
-	protected $pfilename;
+	protected $pfilename = "";
 	/**
  	* @var ilObjMediaGallery
  	*/
@@ -646,8 +646,12 @@ class ilMediaGalleryFile
 
 				self::$objects[$row["id"]] = $obj;
 			}
+			else
+			{
+				$obj = self::$objects[$row["id"]];
+			}
 
-			if(count($a_filter) == 0 || in_array(self::$objects[$row["id"]]->getContentType, $a_filter))
+			if(count($a_filter) == 0 || in_array($obj->getContentType(), $a_filter))
 			{
 				if($a_return_objects)
 				{
@@ -655,12 +659,10 @@ class ilMediaGalleryFile
 				}
 				else
 				{
-					$object = self::$objects[$row["id"]];
-
 					$ret[$row["id"]] = $arr;
-					$ret[$row["id"]]['has_preview'] = $object->hasPreviewImage();
-					$ret[$row["id"]]['content_type'] =  $object->getContentType();
-					$ret[$row["id"]]['size'] =  $object->getSize();
+					$ret[$row["id"]]['has_preview'] = $obj->hasPreviewImage();
+					$ret[$row["id"]]['content_type'] =  $obj->getContentType();
+					$ret[$row["id"]]['size'] =  $obj->getSize();
 				}
 			}
 

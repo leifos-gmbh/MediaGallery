@@ -400,7 +400,7 @@ if (!$ilDB->tableExists('rep_robj_xmg_filedata'))
 			"default" => 0),
 		'pfilename'   => array(
 			'type' => 'text',
-			'notnull' => true,
+			'notnull' => false,
 			'length' => 255,
 			'fixed' => false)
 	);
