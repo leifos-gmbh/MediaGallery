@@ -43,7 +43,7 @@ filename#:#Dateiname
 created#:#Erstellt
 download_archive#:#Als Download anbieten
 show_title#:#Titel anzeigen
-show_title_description#:#Zeigt den Titel eines Medienobjektes in der Vorschau der Mediengalerie an.
+show_title_description#:#Zeigt statt dem Dateinamen den Titel eines Medienobjektes in der Vorschau der Mediengalerie an.
 show_download#:#Downloadbare Medien
 show_download_description#:#Bietet für alle Medien einen separaten Download-Link an.
 sort#:#Sortierung

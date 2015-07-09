@@ -48,9 +48,9 @@ if (!$ilDB->tableExists('rep_robj_xmg_filedata'))
 
 include_once './Services/Administration/classes/class.ilSetting.php';
 $setting = new ilSetting("xmg");
-$setting->set('ext_img', 'jpg,jpeg,png');
-$setting->set('ext_vid', 'mov,avi,m4v,mp4');
-$setting->set('ext_aud', 'mp3');
+$setting->set('ext_img', 'jpg,jpeg,tif,tiff,png,gif,bmp');
+$setting->set('ext_vid', 'mov,avi,m4v,mp4,flv');
+$setting->set('ext_aud', 'mp3,wav,ogg,m4a');
 $setting->set('sort', 'entry');
 
 ?>

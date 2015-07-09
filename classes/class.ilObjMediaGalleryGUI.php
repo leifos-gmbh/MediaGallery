@@ -122,13 +122,13 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		$info = new ilInfoScreenGUI($this);
 
 		$info->addSection($this->txt("plugininfo"));
-		$info->addProperty('Name', 'Media Gallery');
-		$info->addProperty('Version', xmg_version);
-		$info->addProperty('Developer', 'Helmut Schottmüller');
+		$info->addProperty($lng->txt("name"), $this->txt("obj_xmg"));
+		$info->addProperty($lng->txt("version"), xmg_version);
+		/*$info->addProperty('Developer', 'Helmut Schottmüller');
 		$info->addProperty('Kontakt', 'ilias@aurealis.de');
 		$info->addProperty('&nbsp;', 'Aurealis');
 		$info->addProperty('&nbsp;', '');
-		$info->addProperty('&nbsp;', "http://www.aurealis.de");
+		$info->addProperty('&nbsp;', "http://www.aurealis.de");*/
 
 
 

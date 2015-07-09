@@ -63,22 +63,22 @@ class ilMediaGalleryConfigGUI extends ilPluginConfigGUI
 	
 		$ext_img = new ilTextInputGUI($pl->txt("ext_img"), "ext_img");
 		$ext_img->setValue(ilObjMediaGallery::_getConfigurationValue('ext_img'));
-		$ext_img->setRequired(TRUE);
+		//$ext_img->setRequired(TRUE);
 		$form->addItem($ext_img);
 		
 		$ext_vid = new ilTextInputGUI($pl->txt("ext_vid"), "ext_vid");
 		$ext_vid->setValue(ilObjMediaGallery::_getConfigurationValue('ext_vid'));
-		$ext_vid->setRequired(TRUE);
+		//$ext_vid->setRequired(TRUE);
 		$form->addItem($ext_vid);
 		
 		$ext_aud = new ilTextInputGUI($pl->txt("ext_aud"), "ext_aud");
 		$ext_aud->setValue(ilObjMediaGallery::_getConfigurationValue('ext_aud'));
-		$ext_aud->setRequired(TRUE);
+		//$ext_aud->setRequired(TRUE);
 		$form->addItem($ext_aud);
 		
 		$ext_oth = new ilTextInputGUI($pl->txt("ext_oth"), "ext_oth");
 		$ext_oth->setValue(ilObjMediaGallery::_getConfigurationValue('ext_oth'));
-		$ext_oth->setRequired(TRUE);
+		//$ext_oth->setRequired(TRUE);
 		$form->addItem($ext_oth);
 
 		$theme = new ilSelectInputGUI($pl->txt("gallery_theme"), "theme");
@@ -112,10 +112,10 @@ class ilMediaGalleryConfigGUI extends ilPluginConfigGUI
 		if ($form->checkInput())
 		{
 			$pl->includeClass("class.ilObjMediaGallery.php");
-			ilObjMediaGallery::_setConfiguration('ext_img', $_POST['ext_img']);
-			ilObjMediaGallery::_setConfiguration('ext_vid', $_POST['ext_vid']);
-			ilObjMediaGallery::_setConfiguration('ext_aud', $_POST['ext_aud']);
-			ilObjMediaGallery::_setConfiguration('ext_oth', $_POST['ext_oth']);
+			ilObjMediaGallery::_setConfiguration('ext_img', str_replace(' ','', $_POST['ext_img']));
+			ilObjMediaGallery::_setConfiguration('ext_vid', str_replace(' ','', $_POST['ext_vid']));
+			ilObjMediaGallery::_setConfiguration('ext_aud', str_replace(' ','', $_POST['ext_aud']));
+			ilObjMediaGallery::_setConfiguration('ext_oth', str_replace(' ','', $_POST['ext_oth']));
 			ilObjMediaGallery::_setConfiguration('theme', $_POST['theme']);
             ilObjMediaGallery::_setConfiguration('max_upload', $_POST['max_upload']);
 			ilUtil::sendSuccess($pl->txt("configuration_saved"), true);
