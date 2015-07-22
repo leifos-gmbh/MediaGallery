@@ -20,6 +20,9 @@ define("LOCATION_PREVIEWS", 7);
 */
 class ilObjMediaGallery extends ilObjectPlugin
 {
+	/**
+	 * @var ilMediaGalleryPlugin
+	 */
 	protected $plugin;
 	protected $size_thumbs = 150;
 	protected $size_small = 800;
@@ -29,6 +32,27 @@ class ilObjMediaGallery extends ilObjectPlugin
 	protected $showTitle = 0;
 	protected $download = 0;
 	protected $theme = '';
+
+	const LOCATION_ROOT = 0;
+	const LOCATION_ORIGINALS = 1;
+	const LOCATION_THUMBS = 2;
+	const LOCATION_SIZE_SMALL = 3;
+	const LOCATION_SIZE_MEDIUM = 4;
+	const LOCATION_SIZE_LARGE = 5;
+	const LOCATION_DOWNLOADS = 6;
+	const LOCATION_PREVIEWS = 7;
+
+	const CONTENT_TYPE_UNKNOWN = 0;
+	const CONTENT_TYPE_VIDEO = 1;
+	const CONTENT_TYPE_IMAGE = 2;
+	const CONTENT_TYPE_AUDIO = 3;
+
+	const IMAGE_SIZE_THUMBS = 150;
+	const IMAGE_SIZE_SMALL = 800;
+	const IMAGE_SIZE_MEDIUM = 1280;
+	const IMAGE_SIZE_LARGE = 2048;
+
+
 	
 	/**
 	* Constructor
@@ -40,6 +64,7 @@ class ilObjMediaGallery extends ilObjectPlugin
 		parent::__construct($a_ref_id);
 		include_once "./Services/Component/classes/class.ilPlugin.php";
 		$this->plugin = self::_getPluginObject();
+		$this->plugin->includeClass("class.ilFSStorageMediaGallery.php");
 	}
 	
 
@@ -64,7 +89,7 @@ class ilObjMediaGallery extends ilObjectPlugin
 	{
 		global $ilDB;
 		// $myID = $this->getId();
-
+		ilFSStorageMediaGallery::_getInstanceByXmgId($this->getId())->create();
 	}
 	
 	/**
@@ -124,8 +149,8 @@ class ilObjMediaGallery extends ilObjectPlugin
 	{
 		global $ilDB;
 		// $myID = $this->getId();
-		ilUtil::delDir($this->getPath(LOCATION_ROOT));
-		
+		ilUtil::delDir($this->getFS()->getPath(self::LOCATION_ROOT));
+
 		$affectedRows = $ilDB->manipulateF("DELETE FROM rep_robj_xmg_filedata WHERE xmg_id = %s",
 			array('integer'),
 			array($this->getId())
@@ -146,48 +171,23 @@ class ilObjMediaGallery extends ilObjectPlugin
 	*/
 	function doCloneObject($new_obj, $a_target_id,$a_copy_id)
 	{
-		ilUtil::rCopy($this->getPath(LOCATION_PREVIEWS), $new_obj->getPath(LOCATION_PREVIEWS));
-		ilUtil::rCopy($this->getPath(LOCATION_DOWNLOADS), $new_obj->getPath(LOCATION_DOWNLOADS));
-		ilUtil::rCopy($this->getPath(LOCATION_ORIGINALS), $new_obj->getPath(LOCATION_ORIGINALS));
+		/*ilUtil::rCopy($this->fs->getPath(self::LOCATION_PREVIEWS), $new_obj->fs->getPath(self::LOCATION_PREVIEWS));
+		ilUtil::rCopy($this->fs->getPath(self::LOCATION_DOWNLOADS), $new_obj->fs->getPath(self::LOCATION_DOWNLOADS));
+		ilUtil::rCopy($this->fs->getPath(self::LOCATION_ORIGINALS), $new_obj->fs->getPath(self::LOCATION_ORIGINALS));
 		$this->cloneMediaFiles($new_obj);
-		$this->cloneArchive($new_obj);
+		$this->cloneArchive($new_obj);*/
+
 		$new_obj->setSortOrder($this->getSortOrder());
 		$new_obj->setShowTitle($this->getShowTitle());
 		$new_obj->setDownload($this->getDownload());
 		$new_obj->setTheme($this->getTheme());
 		$new_obj->doUpdate();
-		$new_obj->createMissingPreviews();
-		$new_obj->restoreCustomPreviews();
-	}
-	
-	private function cloneMediaFiles($new_obj)
-	{
-		foreach($this->getMediaFiles() as $data)
-		{
-			$new_obj->saveFileData($data["filename"],
-					$data["media_id"],
-					$data["topic"],
-					$data["title"],
-					$data["description"],
-					$data["custom"],
-					$data["width"],
-					$data["height"]);
-		}
-	}
-	
-	private function cloneArchive($new_obj)
-	{
-		$files =  array();
-		
-		foreach($this->getArchives() as $data)
-		{
-			if($data["download"] === true)
-			{
-				$files[] = $data["entry"];
-			}
-		}
-		
-		$new_obj->saveArchiveData($files);
+		$fss = ilFSStorageMediaGallery::_getInstanceByXmgId($a_copy_id);
+		$fss->create();
+		ilMediaGalleryFile::_clone($a_target_id, $a_copy_id);
+		ilMediaGalleryArchives::_clone($a_target_id, $a_copy_id);
+		//$new_obj->createMissingPreviews();
+		//$new_obj->restoreCustomPreviews();
 	}
 
 	public function getSortOrder()
@@ -237,16 +237,77 @@ class ilObjMediaGallery extends ilObjectPlugin
 		$this->theme = $theme;
 	}
 
-	private function getDataPath()
+	/**
+	 * @param int $size_large
+	 */
+	public function setSizeLarge($size_large)
 	{
-		return CLIENT_WEB_DIR . "/mediagallery/" . $this->getId() . "/";
+		$this->size_large = $size_large;
 	}
 
-	private function getDataPathWeb()
+	/**
+	 * @return int
+	 */
+	public function getSizeLarge()
 	{
-		include_once "./Services/Utilities/classes/class.ilUtil.php";
-		$datadir = ilUtil::removeTrailingPathSeparators(CLIENT_WEB_DIR) . "/mediagallery/" . $this->getId() . "/";
-		return str_replace(ilUtil::removeTrailingPathSeparators(ILIAS_ABSOLUTE_PATH), ilUtil::removeTrailingPathSeparators(ILIAS_HTTP_PATH), $datadir);
+		return $this->size_large;
+	}
+
+	/**
+	 * @param int $size_medium
+	 */
+	public function setSizeMedium($size_medium)
+	{
+		$this->size_medium = $size_medium;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getSizeMedium()
+	{
+		return $this->size_medium;
+	}
+
+	/**
+	 * @param int $size_thumbs
+	 */
+	public function setSizeThumbs($size_thumbs)
+	{
+		$this->size_thumbs = $size_thumbs;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getSizeThumbs()
+	{
+		return $this->size_thumbs;
+	}
+
+	/**
+	 * @param int $size_small
+	 */
+	public function setSizeSmall($size_small)
+	{
+		$this->size_small = $size_small;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getSizeSmall()
+	{
+		return $this->size_small;
+	}
+
+
+	/**
+	 * @return \ilFSStorageMediaGallery
+	 */
+	public function getFS()
+	{
+		return ilFSStorageMediaGallery::_getInstanceByXmgId($this->getId());
 	}
 
 	public static function _getConfigurationValue($key, $default = "")
@@ -268,125 +329,6 @@ class ilObjMediaGallery extends ilObjectPlugin
 		include_once './Services/Administration/classes/class.ilSetting.php';
 		$setting = new ilSetting("xmg");
 		$setting->set($key, $value);
-	}
-
-	/**
-	 * Returns a full path for a location.
-	 *
-	 * @param int $location Location Const
-	 * @param string $filename returns the path with filename
-	 * @return string path
-	 */
-	public function getPath($location = 0, $filename = "")
-	{
-		switch ($location)
-		{
-			case LOCATION_ORIGINALS:
-				$path = $this->getDataPath() . "media/originals/";
-				break;
-			case LOCATION_THUMBS:
-				$path = $this->getDataPath() . "media/thumbs/";
-				break;
-			case LOCATION_SIZE_SMALL:
-				$path = $this->getDataPath() . "media/small/";
-				break;
-			case LOCATION_SIZE_MEDIUM:
-				$path = $this->getDataPath() . "media/medium/";
-				break;
-			case LOCATION_SIZE_LARGE:
-				$path = $this->getDataPath() . "media/large/";
-				break;
-			case LOCATION_DOWNLOADS:
-				$path = $this->getDataPath() . "media/downloads/";
-				break;
-			case LOCATION_PREVIEWS:
-				$path = $this->getDataPath() . "media/previews/";
-				break;
-			default:
-				$path = $this->getDataPath();
-				break;
-		}
-
-		if (!@file_exists($path)) ilUtil::makeDirParents($path);
-
-
-		if($filename)
-		{
-			//returns the path as a ".png" file if ".tiff" is given. Originals stay ".tiff". (tiff support)
-			$fpath = $path . $filename;
-			$ext = pathinfo($fpath, PATHINFO_EXTENSION);
-			$name = pathinfo($fpath, PATHINFO_FILENAME);
-
-			if ($location != LOCATION_ORIGINALS && ($ext == "tif" || $ext == "tiff"))
-			{
-				return $path.$name.".png";
-			}
-
-			return $fpath;
-		}
-		else
-		{
-			return $path;
-		}
-
-
-	}
-
-	/**
-	 * Returns a full web path for a location.
-	 *
-	 * @param int $location Location Const
-	 * @param string $filename returns the path with filename
-	 * @return string webpath
-	 */
-	public function getPathWeb($location = 0, $filename = "")
-	{
-		switch ($location)
-		{
-			case LOCATION_ORIGINALS:
-				$path = $this->getDataPathWeb() . "media/originals/";
-				break;
-			case LOCATION_THUMBS:
-				$path = $this->getDataPathWeb() . "media/thumbs/";
-				break;
-			case LOCATION_SIZE_SMALL:
-				$path = $this->getDataPathWeb() . "media/small/";
-				break;
-			case LOCATION_SIZE_MEDIUM:
-				$path = $this->getDataPathWeb() . "media/medium/";
-				break;
-			case LOCATION_SIZE_LARGE:
-				$path = $this->getDataPathWeb() . "media/large/";
-				break;
-			case LOCATION_DOWNLOADS:
-				$path = $this->getDataPathWeb() . "media/downloads/";
-				break;
-			case LOCATION_PREVIEWS:
-				$path = $this->getDataPathWeb() . "media/previews/";
-				break;
-			default:
-				$path = $this->getDataPathWeb();
-				break;
-		}
-
-		if($filename)
-		{
-			//returns the path as a ".png" file if ".tiff" is given. Originals stay ".tiff". (tiff support)
-			$fpath = $path . $filename;
-			$ext = pathinfo($fpath, PATHINFO_EXTENSION);
-			$name = pathinfo($fpath, PATHINFO_FILENAME);
-
-			if ($location != LOCATION_ORIGINALS && ($ext == "tif" || $ext == "tiff"))
-			{
-				return $path.$name.".png";
-			}
-
-			return $fpath;
-		}
-		else
-		{
-			return $path;
-		}
 	}
 
 	/**
@@ -417,91 +359,6 @@ class ilObjMediaGallery extends ilObjectPlugin
 			}
 		}
 		return false;
-	}
-	
-	public function processNewUpload($file)
-	{
-		$saveData = true;
-		$width = 0;
-		$height = 0;
-		$file_parts = pathinfo($file);
-		$filename = $file_parts['basename'];
-		if ($this->isImage($file))
-		{
-			if ($this->hasExtension($file, ilObjMediaGallery::_getConfigurationValue('ext_img')))
-			{
-				include_once "./Services/Utilities/classes/class.ilMimeTypeUtil.php";
-				if (ilUtil::deducibleSize(ilMimeTypeUtil::getMimeType("", $file, "")))
-				{
-					$imgsize = getimagesize($file);
-					if (is_array($imgsize))
-					{
-						$width = $imgsize[0];
-						$height = $imgsize[1];
-					}
-				}
-				$this->createPreviews($filename);
-			}
-			else
-			{
-
-				@unlink($file);
-				$saveData = false;
-			}
-		}
-		else if ($this->isAudio($file))
-		{
-			if (!$this->hasExtension($file, ilObjMediaGallery::_getConfigurationValue('ext_aud'))) 
-			{
-				@unlink($file);
-				$saveData = false;
-			}
-		}
-		else if ($this->isVideo($file))
-		{
-			if (!$this->hasExtension($file, ilObjMediaGallery::_getConfigurationValue('ext_vid')))
-			{
-				@unlink($file);
-				$saveData = false;
-			}
-			// rename mov files to mp4. gives better compatibility in most browsers
-			if ($saveData && $this->hasExtension($file, 'mov'))
-			{
-				$new_filename = preg_replace('/(\.mov)/is', '.mp4', $filename);
-				if (@rename($file, str_replace($filename, $new_filename, $file)))
-				{
-					$filename = $new_filename;
-				}
-			}
-		}
-		else
-		{
-			if (!$this->hasExtension($file, ilObjMediaGallery::_getConfigurationValue('ext_aud').','.ilObjMediaGallery::_getConfigurationValue('ext_vid').','.ilObjMediaGallery::_getConfigurationValue('ext_img').','.ilObjMediaGallery::_getConfigurationValue('ext_oth')))
-			{
-				@unlink($file);
-				$saveData = false;
-			}
-		}
-		if ($saveData) $this->saveFileData($filename, '', '', $filename, '', $this->getFileDataCount()+1, $width, $height);
-
-	}
-	
-	private function getFilesInDir($a_dir)
-	{
-		$current_dir = opendir($a_dir);
-
-		$files = array();
-		while($entry = readdir($current_dir))
-		{
-			if ($entry != "." && $entry != ".." && !@is_dir($a_dir."/".$entry) && strpos($entry, ".") !== 0)
-			{
-				$size = filesize($a_dir."/".$entry);
-				$files[$entry] = array("type" => "file", "entry" => $entry,
-				"size" => $size);
-			}
-		}
-		ksort($files);
-		return $files;
 	}
 
 	private static function getDirsInDir($a_dir)
@@ -545,170 +402,6 @@ class ilObjMediaGallery extends ilObjectPlugin
 		return $themes;
 	}
 	
-	public function deleteFile($filename)
-	{
-		global $ilDB;
-
-		$path = $this->getPath(LOCATION_ORIGINALS) . $filename;
-		$ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-		$name = pathinfo($path, PATHINFO_FILENAME);
-
-		$file = $this->getPath(LOCATION_ORIGINALS, $filename);
-		if(file_exists($file))unlink($file);
-		$file = $this->getPath(LOCATION_THUMBS, $filename);
-		if(file_exists($file))unlink($file);
-		$file = $this->getPath(LOCATION_SIZE_SMALL, $filename);
-		if(file_exists($file))unlink($file);
-		$file = $this->getPath(LOCATION_SIZE_MEDIUM, $filename);
-		if(file_exists($file))unlink($file);
-		$file = $this->getPath(LOCATION_SIZE_LARGE, $filename);
-		if(file_exists($file))unlink($file);
-
-
-		//fallback if old .tif previews existing
-
-		if($ext == "tif" || $ext == "tiff")
-		{
-			$file = $this->getPath(LOCATION_THUMBS). $filename;
-			if(file_exists($file))unlink($file);
-			$file = $this->getPath(LOCATION_SIZE_SMALL). $filename;
-			if(file_exists($file))unlink($file);
-			$file = $this->getPath(LOCATION_SIZE_MEDIUM). $filename;
-			if(file_exists($file))unlink($file);
-			$file = $this->getPath(LOCATION_SIZE_LARGE). $filename;
-			if(file_exists($file))unlink($file);
-		}
-
-		$data = $this->getMediaFileData($filename);
-		if (strlen($data['pfilename']))
-		{
-			@unlink($this->getPath(LOCATION_PREVIEWS) . $data['pfilename']);
-		}
-		
-		$affectedRows = $ilDB->manipulateF("DELETE FROM rep_robj_xmg_filedata WHERE xmg_id = %s AND filename = %s",
-			array('integer','text'),
-			array($this->getId(), $filename)
-		);
-	}
-	
-	public function deletePreview($files)
-	{
-		if (is_array($files))
-		{
-			foreach ($files as $filename)
-			{
-				$data = $this->getMediaFileData($filename);
-				if (strlen($data['pfilename']))
-				{
-					@unlink($this->getPath(LOCATION_PREVIEWS) . $data['pfilename']);
-					$this->updateFileDataAfterDeletePreview($filename);
-				}
-			}
-		}
-	}
-
-	public function deleteArchive($filename)
-	{
-		global $ilDB;
-		
-		@unlink($this->getPath(LOCATION_DOWNLOADS) . $filename);
-		
-		$affectedRows = $ilDB->manipulateF("DELETE FROM rep_robj_xmg_downloads WHERE xmg_id = %s AND filename = %s",
-			array('integer','text'),
-			array($this->getId(), $filename)
-		);
-	}
-
-	public function downloadArchiveExists($filename)
-	{
-		if (file_exists($this->getPath(LOCATION_DOWNLOADS) . ilUtil::getASCIIFilename($filename)))
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-
-	public function renameArchive($old, $new)
-	{
-		rename($this->getPath(LOCATION_DOWNLOADS) . ilUtil::getASCIIFilename($old), $this->getPath(LOCATION_DOWNLOADS) . ilUtil::getASCIIFilename($new));
-	}
-	
-	public function zipSelectedFiles($fileArray, $zipFilename)
-	{
-		$files = array();
-		foreach ($fileArray as $filename)
-		{
-			array_push($files, $this->getPath(LOCATION_ORIGINALS, $filename) );
-		}
-		ilUtil::zip($files, $this->getPath(LOCATION_ORIGINALS) . ilUtil::getASCIIFilename($zipFilename), false);
-		rename($this->getPath(LOCATION_ORIGINALS) . ilUtil::getASCIIFilename($zipFilename), $this->getPath(LOCATION_DOWNLOADS) . ilUtil::getASCIIFilename($zipFilename));
-	}
-	
-	public function rotate($filename, $direction)
-	{
-		if ($this->isImage($filename))
-		{
-			include_once "./Services/Utilities/classes/class.ilUtil.php";
-			$rotation = ($direction) ? "-90" : "90";
-			$cmd = "-rotate $rotation ";
-
-			$source = ilUtil::escapeShellCmd($this->getPath(LOCATION_THUMBS, $filename) );
-			$target = ilUtil::escapeShellCmd($this->getPath(LOCATION_THUMBS, $filename) );
-			$convert_cmd = $source . " " . $cmd." ".$target;
-			ilUtil::execConvert($convert_cmd);
-
-			$source = ilUtil::escapeShellCmd($this->getPath(LOCATION_SIZE_SMALL, $filename) );
-			$target = ilUtil::escapeShellCmd($this->getPath(LOCATION_SIZE_SMALL, $filename) );
-			$convert_cmd = $source . " " . $cmd." ".$target;
-			ilUtil::execConvert($convert_cmd);
-
-			$source = ilUtil::escapeShellCmd($this->getPath(LOCATION_SIZE_MEDIUM, $filename) );
-			$target = ilUtil::escapeShellCmd($this->getPath(LOCATION_SIZE_MEDIUM, $filename) );
-			$convert_cmd = $source . " " . $cmd." ".$target;
-			ilUtil::execConvert($convert_cmd);
-
-			$source = ilUtil::escapeShellCmd($this->getPath(LOCATION_SIZE_LARGE, $filename) );
-			$target = ilUtil::escapeShellCmd($this->getPath(LOCATION_SIZE_LARGE, $filename) );
-			$convert_cmd = $source . " " . $cmd." ".$target;
-			ilUtil::execConvert($convert_cmd);
-
-			$source = ilUtil::escapeShellCmd($this->getPath(LOCATION_ORIGINALS, $filename));
-			$target = ilUtil::escapeShellCmd($this->getPath(LOCATION_ORIGINALS, $filename));
-			$convert_cmd = $source . " " . $cmd." ".$target;
-			ilUtil::execConvert($convert_cmd);
-
-			$imgsize = getimagesize($this->getPath(LOCATION_ORIGINALS, $filename) );
-			$width = $imgsize[0];
-			$height = $imgsize[1];
-			$this->updateFileDataAfterRotate($filename, $width, $height);
-		}
-	}
-	
-	public function saveArchiveData($downloads)
-	{
-		global $ilDB;
-		$affectedRows = $ilDB->manipulateF("DELETE FROM rep_robj_xmg_downloads WHERE xmg_id = %s",
-			array('integer'),
-			array($this->getId())
-		);
-		if (is_array($downloads))
-		{
-			foreach ($downloads as $filename)
-			{
-				if (strlen($filename))
-				{
-					$result = $ilDB->manipulateF("INSERT INTO rep_robj_xmg_downloads (xmg_id, filename) VALUES (%s, %s)",
-						array('integer','text'),
-						array($this->getId(), $filename)
-					);
-				}
-			}
-		}
-	}
-	
 	public function scaleDimensions($width, $height, $scale)
 	{
 		if ($width == 0 || $height == 0 || $scale == 0) return array("width" => $width, "height" => $height);
@@ -727,310 +420,18 @@ class ilObjMediaGallery extends ilObjectPlugin
 		}
 		return array("width" => $iwidth, "height" => $iheight);
 	}
-
-	public function updateFileDataAfterRotate($filename, $width, $height)
-	{
-		global $ilDB;
-		$result = $ilDB->manipulateF("UPDATE rep_robj_xmg_filedata SET width = %s, height = %s WHERE filename = %s",
-			array('integer','integer','text'),
-			array($width, $height, $filename)
-		);
-	}
-
-	public function updateFileDataAfterDeletePreview($filename)
-	{
-		global $ilDB;
-		$result = $ilDB->manipulateF("UPDATE rep_robj_xmg_filedata SET pwidth = %s, pheight = %s, pfilename = %s WHERE filename = %s",
-			array('integer','integer','text', 'text'),
-			array(0, 0, null, $filename)
-		);
-	}
-
-	public function updatePreviewSize($filename, $width, $height, $previewfilename)
-	{
-		global $ilDB;
-		$result = $ilDB->manipulateF("UPDATE rep_robj_xmg_filedata SET pwidth = %s, pheight = %s, pfilename = %s WHERE filename = %s",
-			array('integer','integer','text', 'text'),
-			array($width, $height, $previewfilename, $filename)
-		);
-	}
-
-	public function saveFileData($filename, $id, $topic, $title, $description, $custom, $width, $height)
-	{
-		global $ilDB;
-		$affectedRows = $ilDB->manipulateF("DELETE FROM rep_robj_xmg_filedata WHERE xmg_id = %s AND filename = %s",
-			array('integer','text'),
-			array($this->getId(), $filename)
-		);
-		$result = $ilDB->manipulateF("INSERT INTO rep_robj_xmg_filedata (xmg_id, filename, media_id, topic, title, description, custom, width, height) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
-			array('integer','text','text','text','text','text','float','integer','integer'),
-			array($this->getId(), $filename, $id, $topic, $title, $description, $custom, $width, $height)
-		);
-	}
 	
-	protected function getFileDataCount()
-	{
-		global $ilDB;
-		
-		$result = $ilDB->queryF("SELECT * FROM rep_robj_xmg_filedata WHERE xmg_id = %s",
-			array('integer'),
-			array($this->getId())
-		);
-		return $result->numRows();
-	}
-	
-	public function getArchives()
-	{
-		global $ilDB;
-		
-		$data = $this->getFilesInDir($this->getPath(LOCATION_DOWNLOADS));
-		$result = $ilDB->queryF("SELECT * FROM rep_robj_xmg_downloads WHERE xmg_id = %s",
-			array('integer'),
-			array($this->getId())
-		);
-		$allowed = array();
-		if ($result->numRows() > 0)
-		{
-			while ($row = $ilDB->fetchAssoc($result))
-			{
-				array_push($allowed, $row['filename']);
-			}
-		}
-		foreach ($data as $fn => $filedata)
-		{
-			$data[$fn]['created'] = filectime($this->getPath(LOCATION_DOWNLOADS).$fn);
-			if (in_array($fn, $allowed)) 
-			{
-				$data[$fn]['download'] = true;
-			}
-			else
-			{
-				$data[$fn]['download'] = false;
-			}
-		}
-		return $data;
-	}
-	
-	public function getMediaFiles($arrFilter = array())
-	{
-		global $ilDB;
-		
-		$filter = (count($arrFilter) > 0) ? true : false;
-		$data = $this->getFilesInDir($this->getPath(LOCATION_ORIGINALS));
-		$result = $ilDB->queryF("SELECT * FROM rep_robj_xmg_filedata WHERE xmg_id = %s",
-			array('integer'),
-			array($this->getId())
-		);
-		$filteredData = array();
-		if ($result->numRows() > 0)
-		{
-			while ($row = $ilDB->fetchAssoc($result))
-			{
-				$data[$row['filename']] = array_merge($data[$row['filename']], $row);
-
-				if ($filter)
-				{
-					$inFilter = true;
-					foreach ($arrFilter as $key => $value)
-					{
-						if ($inFilter)
-						{
-							if (strcmp($key, 'type') == 0)
-							{
-								switch ($value)
-								{
-									case 'image':
-										$inFilter = $this->isImage($row['filename']);
-										break;
-									case 'audio':
-										$inFilter = $this->isAudio($row['filename']);
-										break;
-									case 'video':
-										$inFilter = $this->isVideo($row['filename']);
-										break;
-									case 'unknown':
-										$inFilter = $this->isUnknown($row['filename']);
-										break;
-								}
-							}
-							else
-							{
-								if (strpos($data[$row['filename']][$key], $value) === false)
-								{
-									$inFilter = false;
-								}
-							}
-						}
-					}
-					if ($inFilter)
-					{
-						$filteredData[$row['filename']] = $data[$row['filename']];
-					}
-				}
-			}
-		}
-		if ($filter)
-		{
-			return $filteredData;
-		}
-		else
-		{
-			return $data;
-		}
-	}
-
-	public function getMediaFileData($filename)
-	{
-		global $ilDB;
-		
-		$result = $ilDB->queryF("SELECT * FROM rep_robj_xmg_filedata WHERE xmg_id = %s AND filename = %s",
-			array('integer','text'),
-			array($this->getId(), $filename)
-		);
-		if ($result->numRows() > 0)
-		{
-			while ($row = $ilDB->fetchAssoc($result))
-			{
-				return $row;
-			}
-		}
-		return array();
-	}
-
-	public function getMediaObjectCount()
-	{
-		$dir = $this->getFilesInDir($this->getPath(LOCATION_ORIGINALS));
-		return count($dir);
-	}
-
-	public function createMissingPreviews()
-	{
-		$files = $this->getMediaFiles();
-		foreach ($files as $filename => $data)
-		{
-			if (!@file_exists($this->getPath(LOCATION_THUMBS,$filename)))
-			{
-				$this->createPreviews($filename);
-			}
-		}
-	}
-	
-	/**
-	 * Reads all preview pics and write them into the database
-	 */
-	public function restoreCustomPreviews()
-	{
-		$previews = $this->getFilesInDir($this->getPath(LOCATION_PREVIEWS));
-		
-		foreach ($previews as $preview => $data)
-		{
-			$filename = substr($preview, 0, (strrpos($preview,'.')-strlen($preview)));
-			$data = getimagesize($this->getPath(LOCATION_PREVIEWS)."/".$preview);
-			$width = $data[0];
-			$height = $data[1];
-			$this->updatePreviewSize($filename, $width, $height, $preview);
-			var_dump($filename,$width,$height,$preview);
-		}
-	}
-
-	protected function createPreviews($filename)
-	{
-		$path = $this->getPath(LOCATION_ORIGINALS) . $filename;
-		$ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-		$name = pathinfo($path, PATHINFO_FILENAME);
-
-
-		if($this->isImage($filename))
-		{
-			// creates ".png" previews vor ".tif" pictures (tif support)
-			if($ext == "tif" || $ext == "tiff"){
-				ilUtil::convertImage($this->getPath(LOCATION_ORIGINALS) . $filename, $this->getPath(LOCATION_THUMBS) . $name. ".png", "PNG",  $this->size_thumbs);
-				ilUtil::convertImage($this->getPath(LOCATION_ORIGINALS) . $filename, $this->getPath(LOCATION_SIZE_SMALL) . $name. ".png", "PNG",  $this->size_small);
-				ilUtil::convertImage($this->getPath(LOCATION_ORIGINALS) . $filename, $this->getPath(LOCATION_SIZE_MEDIUM) . $name. ".png","PNG",  $this->size_medium);
-				ilUtil::convertImage($this->getPath(LOCATION_ORIGINALS) . $filename, $this->getPath(LOCATION_SIZE_LARGE) . $name. ".png", "PNG",  $this->size_large);
-				return;
-			}
-			ilUtil::resizeImage($this->getPath(LOCATION_ORIGINALS) . $filename, $this->getPath(LOCATION_THUMBS) . $filename, $this->size_thumbs, $this->size_thumbs, true);
-			ilUtil::resizeImage($this->getPath(LOCATION_ORIGINALS) . $filename, $this->getPath(LOCATION_SIZE_SMALL) . $filename, $this->size_small, $this->size_small, true);
-			ilUtil::resizeImage($this->getPath(LOCATION_ORIGINALS) . $filename, $this->getPath(LOCATION_SIZE_MEDIUM) . $filename, $this->size_medium, $this->size_medium, true);
-			ilUtil::resizeImage($this->getPath(LOCATION_ORIGINALS) . $filename, $this->getPath(LOCATION_SIZE_LARGE) . $filename, $this->size_large, $this->size_large, true);
-		}
-
-	}
-	
-	public function uploadPreviewForFiles($filenames, $tempfile, $filetype)
-	{
-		if (is_array($filenames))
-		{
-			$extension = '';
-			if ($_FILES["filename"]["type"] == "image/png")
-			{
-				$extension = ".png";
-			}
-			else
-			{
-				$extension = ".jpg";
-			}
-			$first = true;
-			$preview_filename = '';
-			$width = 0;
-			$height = 0;
-			foreach ($filenames as $filename)
-			{
-				if ($first)
-				{
-					$preview_filename = $this->getPath(LOCATION_PREVIEWS) . $filename . $extension;
-					@move_uploaded_file($tempfile, $preview_filename);
-					$imgsize = getimagesize($preview_filename);
-					$width = $imgsize[0];
-					$height = $imgsize[1];
-					$this->updatePreviewSize($filename, $width, $height, $filename . $extension);
-					$first = false;
-				}
-				else
-				{
-					@copy($preview_filename, $this->getPath(LOCATION_PREVIEWS) . $filename . $extension);
-					$this->updatePreviewSize($filename, $width, $height, $filename . $extension);
-				}
-			}
-		}
-	}
-	
-	public function isImage($filename)
-	{
-		if (strcmp($this->plugin->txt('image'), ilObjMediaGallery::getContentType($filename)) == 0)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-
-	public function isVideo($filename)
-	{
-		if (strcmp($this->plugin->txt('video'), ilObjMediaGallery::getContentType($filename)) == 0)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-	
-	public function getMimeIconPath($filename)
+	public function getMimeIconPath($a_id)
 	{
 		include_once("./Services/Utilities/classes/class.ilFileUtils.php");
-		$mime = ilFileUtils::_lookupMimeType($this->getPath(LOCATION_ORIGINALS, $filename) );
+		$mime = ilMediaGalleryFile::_getInstanceById($a_id)->getMimeType();
 		$res = explode(";", $mime);
 		if ($res !== false)
 		{
 			$mime = $res[0];
 		}
-		$file_parts = pathinfo($this->getPath(LOCATION_ORIGINALS, $filename) );
-		switch (strtolower($file_parts['extension']))
+		$ext = ilMediaGalleryFile::_getInstanceById($a_id)->getFileInfo('extension');
+		switch (strtolower($ext))
 		{
 			case 'xls':
 			case 'xlsx':
@@ -1056,73 +457,6 @@ class ilObjMediaGallery extends ilObjectPlugin
 		}
 	}
 
-	public function isAudio($filename)
-	{
-		if (strcmp($this->plugin->txt('audio'), ilObjMediaGallery::getContentType($filename)) == 0)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-
-	public function isUnknown($filename)
-	{
-		if (strcmp($this->plugin->txt('unknown'), ilObjMediaGallery::getContentType($filename)) == 0)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-
-	public static function _hasExtension($file, $extensions)
-	{
-		$file_parts = pathinfo($file);
-		$arrExtensions = split(",", $extensions);
-		foreach ($arrExtensions as $ext)
-		{
-			if (strlen(trim($ext)))
-			{
-				if (strcmp(strtolower($file_parts['extension']),strtolower(trim($ext))) == 0)
-				{
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	
-	public static function getContentType($filename)
-	{
-		include_once "./Services/Utilities/classes/class.ilMimeTypeUtil.php";
-		include_once "./Services/Component/classes/class.ilPlugin.php";
-		$plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, "Repository", "robj", "MediaGallery");
-		$mime = ilMimeTypeUtil::getMimeType("", $filename, "");
-		if (strpos($mime, 'image') !== false)
-		{
-			return $plugin->txt("image");
-		}
-		else if (strpos($mime, 'audio') !== false)
-		{
-			return $plugin->txt("audio");
-		}
-		else if (strpos($mime, 'video') !== false)
-		{
-			return $plugin->txt("video");
-		}
-		else
-		{
-			if (ilObjMediaGallery::_hasExtension($filename, ilObjMediaGallery::_getConfigurationValue('ext_img'))) return $plugin->txt("image");
-			if (ilObjMediaGallery::_hasExtension($filename, ilObjMediaGallery::_getConfigurationValue('ext_vid'))) return $plugin->txt("video");
-			if (ilObjMediaGallery::_hasExtension($filename, ilObjMediaGallery::_getConfigurationValue('ext_aud'))) return $plugin->txt("audio");
-			return $plugin->txt("unknown");
-		}
-	}
 
 	public function formatBytes($bytes, $precision = 2) 
 	{
@@ -1155,7 +489,7 @@ class ilObjMediaGallery extends ilObjectPlugin
 		$xml_writer->xmlElement("title", array(),$this->getTitle());
 		$xml_writer->xmlElement("description", array(), $this->getDescription());
 		
-		foreach($this->getMediaFiles() as $data)
+		foreach(ilMediaGalleryFile::_getMediaFilesInGallery($this->getId()) as $data)
 		{
 			$filedata_attr = array(
 				"filename" => $data["filename"],
@@ -1172,18 +506,18 @@ class ilObjMediaGallery extends ilObjectPlugin
 			$xml_writer->xmlElement("file_description", array(),$data["description"]);
 			
 			// file exists abfrage
-			$content = @gzcompress(@file_get_contents($this->getPath(LOCATION_ORIGINALS.$data["filename"])), 9);
+			$content = @gzcompress(@file_get_contents($this->getFS()->getFilePath(self::LOCATION_ORIGINALS, $data['id'])), 9);
 			$content = base64_encode($content);
 			$xml_writer->xmlElement("content", array("mode" => "ZIP"), $content);
+
+			$prev_path = $this->plugin->getFileSystem()->getFilePath(self::LOCATION_PREVIEWS, $data["id"]);
 			
-			if($data["pfilename"] && file_exists($this->getPath(LOCATION_PREVIEWS).$data["pfilename"]))
+			if(file_exists($prev_path))
 			{
-				$preview = @gzcompress(@file_get_contents($this->getPath(LOCATION_PREVIEWS).$data["pfilename"]), 9);
+				$preview = @gzcompress(@file_get_contents($prev_path), 9);
 				$preview = base64_encode($preview);
 				$preview_attr = array(
-					"pfilename" => $data["pfilename"],
-					"pwidth" => $data["pwidth"],
-					"pheight" => $data["pheight"],
+					"pfilename" => $data["filename"],
 					"mode" => "ZIP"
 				);
 				
@@ -1195,6 +529,19 @@ class ilObjMediaGallery extends ilObjectPlugin
 		$xml_writer->xmlEndTag("mediagallery");
 	}
 
+	public function uploadPreview()
+	{
+		$ext = substr($_FILES['filename']["name"],strrpos($_FILES['filename']["name"], '.'));
 
+		if(ilMediaGalleryFile::_contentType($_FILES["filename"]["type"], $ext) != self::CONTENT_TYPE_IMAGE)
+		{
+			return false;
+		}
+
+		$preview_path = $this->getFS()->getFilePath(LOCATION_PREVIEWS, $_FILES['filename']["name"]);
+		@move_uploaded_file($_FILES['filename']["tmp_name"], $preview_path);
+
+		return true;
+	}
 }
 ?>

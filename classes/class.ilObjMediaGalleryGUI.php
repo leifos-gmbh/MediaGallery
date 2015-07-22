@@ -26,6 +26,10 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 {
 	protected $plugin;
 	protected $sortkey;
+	/**
+	 * @var ilObjMediaGallery
+	 */
+	public $object;
 	
 	/**
 	* Initialisation
@@ -35,8 +39,12 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		// anything needed after object has been constructed
 		// - gallery: append my_id GET parameter to each request
 		//   $ilCtrl->saveParameter($this, array("my_id"));
+		//$this->object->setId($this->object_id);
+
 		include_once "./Services/Component/classes/class.ilPlugin.php";
 		$this->plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, "Repository", "robj", "MediaGallery");
+		$this->plugin->includeClass("class.ilMediaGalleryFile.php");
+		$this->plugin->includeClass("class.ilMediaGalleryArchives.php");
 	}
 
 	/**
@@ -335,7 +343,11 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		{
 			$data = array_keys($_POST['download']);
 		}
-		$this->object->saveArchiveData($data);
+
+		$archives = ilMediaGalleryArchives::_getInstanceByXmgId($this->object_id);
+
+		$archives->setDownloadFlags($data);
+
 		ilUtil::sendSuccess($this->plugin->txt('archive_data_saved'), true);
 		$this->ctrl->redirect($this, 'archives');
 	}
@@ -348,10 +360,8 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		}
 		else
 		{
-			foreach ($_POST['file'] as $file)
-			{
-				$this->object->deleteArchive($file);
-			}
+			$archives = ilMediaGalleryArchives::_getInstanceByXmgId($this->object_id);
+			$archives->deleteArchives($_POST['file']);
 			ilUtil::sendSuccess(sprintf((count($_POST['file']) == 1) ? $this->plugin->txt('archive_deleted') : $this->plugin->txt('archives_deleted'), count($_POST['file'])), true);
 		}
 		$this->ctrl->redirect($this, 'archives');
@@ -359,7 +369,9 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 	
 	function createNewArchive()
 	{
-		ilUtil::zip($this->object->getPath(LOCATION_ORIGINALS), $this->object->getPath(LOCATION_DOWNLOADS) . ilUtil::getASCIIFilename(sprintf("%s_%s.zip", $this->object->getTitle(), time())), true);
+		$zip_name = ilUtil::getASCIIFilename(sprintf("%s_%s.zip", $this->object->getTitle(), time()));
+		$archives = ilMediaGalleryArchives::_getInstanceByXmgId($this->object_id);
+		$archives->createArchive(array_keys(ilMediaGalleryFile::_getMediaFilesInGallery($this->object_id)), $zip_name);
 		$this->ctrl->redirect($this, "archives");
 	}
 	
@@ -371,8 +383,8 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		$ilTabs->activateTab("archives");
 		$this->plugin->includeClass("class.ilMediaFileDownloadArchivesTableGUI.php");
 		$table_gui = new ilMediaFileDownloadArchivesTableGUI($this, 'archives');
-		$archives = $this->object->getArchives();
-		$table_gui->setData($archives);
+		$archives = ilMediaGalleryArchives::_getInstanceByXmgId($this->object_id);
+		$table_gui->setData($archives->getArchives());
 
 		$ilToolbar->addButton($this->plugin->txt("new_archive"), $ilCtrl->getLinkTarget($this, "createNewArchive"));
 		$ilToolbar->setFormAction($ilCtrl->getFormAction($this));
@@ -382,7 +394,9 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 
 	function download()
 	{
-		ilUtil::deliverFile($this->object->getPath(LOCATION_DOWNLOADS).$_POST['archive'], $_POST['archive']);
+		$archives = ilMediaGalleryArchives::_getInstanceByXmgId($this->object_id);
+		$filename = $archives->getArchiveFilename($_POST['archive']);
+		ilUtil::deliverFile($archives->getPath($filename), $filename, 'application/zip');
 		$this->ctrl->redirect($this, 'gallery');
 	}
 	
@@ -396,364 +410,20 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		global $ilTabs;
 	
 		$ilTabs->activateTab("gallery");
-		$this->tpl->addCss($this->plugin->getStyleSheetLocation("xmg.css"));
-		$this->tpl->addCss($this->plugin->getDirectory() . "/js/prettyphoto_3.1.5/css/prettyPhoto.css");
-		$this->tpl->addJavascript($this->plugin->getDirectory() . "/js/prettyphoto_3.1.5/js/jquery.prettyPhoto.js");
-		$this->tpl->addJavascript($this->plugin->getDirectory() . "/js/html5media-master/domready.js");
-		$this->tpl->addJavascript($this->plugin->getDirectory() . "/js/html5media-master/flowplayer.js");
-		$this->tpl->addJavascript($this->plugin->getDirectory() . "/js/html5media-master/html5media.js");
-		$mediafiles = $this->object->getMediaFiles();
-		$template = $this->plugin->getTemplate("tpl.gallery.html");
-		$counter = 0;
-		$this->sortkey = $this->object->getSortOrder();
-		if (!strlen($this->sortkey)) $this->sortkey = 'entry';
-		uasort($mediafiles, array($this, 'gallerysort'));
-		foreach ($mediafiles as $fn => $fdata)
-		{
-			$counter++;
-			if ($this->object->isImage($fn))
-			{
-				$tpl_element = $this->plugin->getTemplate("tpl.gallery.img.html");
-				$iwidth = $fdata['width'];
-				$iheight = $fdata['height'];
-				if ($fdata['pwidth'] > 0) 
-				{
-					$iwidth = $fdata['pwidth'];
-					$iheight = $fdata['pheight'];
-				}
-				if ($iwidth > 0 && $iheight > 0)
-				{
-					$scale = $this->object->scaleDimensions($iwidth, $iheight, 150);
-					$width = $scale['width'];
-					$height = $scale['height'];
-					$tpl_element->setCurrentBlock('size');
-					$tpl_element->setVariable('WIDTH', $width+2);
-					$tpl_element->setVariable('HEIGHT', $height+2);
-					$tpl_element->setVariable('MARGIN_TOP', round((158.0-$height)/2.0));
-					$tpl_element->setVariable('MARGIN_LEFT', round((158.0-$width)/2.0));
-					$tpl_element->parseCurrentBlock();
-					$tpl_element->setCurrentBlock('imgsize');
-					$tpl_element->setVariable('IMG_WIDTH', $width);
-					$tpl_element->setVariable('IMG_HEIGHT', $height);
-					$tpl_element->parseCurrentBlock();
-				}
-				else
-				{
-					$tpl_element->setCurrentBlock('size');
-					$tpl_element->setVariable('WIDTH', "150");
-					$tpl_element->setVariable('HEIGHT', "150");
-					$tpl_element->setVariable('MARGIN_TOP', "4");
-					$tpl_element->setVariable('MARGIN_LEFT', "4");
-					$tpl_element->parseCurrentBlock();
-				}
-				$tpl_element->setVariable('URL_FULLSCREEN', $this->object->getPathWeb(LOCATION_SIZE_LARGE, $fdata['filename'] ) . "?t=" . time());
-				$tpl_element->setVariable('CAPTION', ilUtil::prepareFormOutput($fdata['description']));
-				if ($fdata['pwidth'] > 0)
-				{
-					$tpl_element->setVariable('URL_THUMBNAIL', $this->object->getPathWeb(LOCATION_PREVIEWS, $fdata['pfilename'])  . "?t=" . time());
-				}
-				else
-				{
-					$tpl_element->setVariable('URL_THUMBNAIL', $this->object->getPathWeb(LOCATION_THUMBS, $fdata['filename'])  . "?t=" . time());
-				}
-				$tpl_element->setVariable('ALT_THUMBNAIL', ilUtil::prepareFormOutput($fdata['title']));
-			}
-			else if ($this->object->isAudio($fn))
-			{
-				$tpl_element = $this->plugin->getTemplate("tpl.gallery.aud.html");
-				$iwidth = $fdata['width'];
-				$iheight = $fdata['height'];
-				if ($fdata['pwidth'] > 0) 
-				{
-					$iwidth = $fdata['pwidth'];
-					$iheight = $fdata['pheight'];
-				}
-				if ($iwidth > 0 && $iheight > 0)
-				{
-					$scale = $this->object->scaleDimensions($iwidth, $iheight, 150);
-					$width = $scale['width'];
-					$height = $scale['height'];
-					$tpl_element->setCurrentBlock('size');
-					$tpl_element->setVariable('WIDTH', $width+2);
-					$tpl_element->setVariable('HEIGHT', $height+2);
-					$tpl_element->setVariable('MARGIN_TOP', round((158.0-$height)/2.0));
-					$tpl_element->setVariable('MARGIN_LEFT', round((158.0-$width)/2.0));
-					$tpl_element->parseCurrentBlock();
-					$tpl_element->setCurrentBlock('imgsize');
-					$tpl_element->setVariable('IMG_WIDTH', $width);
-					$tpl_element->setVariable('IMG_HEIGHT', $height);
-					$tpl_element->parseCurrentBlock();
-				}
-				else
-				{
-					$tpl_element->setCurrentBlock('size');
-					$tpl_element->setVariable('WIDTH', "150");
-					$tpl_element->setVariable('HEIGHT', "150");
-					$tpl_element->setVariable('MARGIN_TOP', "4");
-					$tpl_element->setVariable('MARGIN_LEFT', "4");
-					$tpl_element->parseCurrentBlock();
-				}
-				$tpl_element->setVariable('INLINE_SECTION', "aud$counter");
-				$tpl_element->setVariable('URL_AUDIO', $this->object->getPathWeb(LOCATION_ORIGINALS, $fn) );
-				$tpl_element->setVariable('CAPTION', ilUtil::prepareFormOutput($fdata['description']));
-				if ($fdata['pwidth'] > 0)
-				{
-					$tpl_element->setVariable('URL_THUMBNAIL', $this->object->getPathWeb(LOCATION_PREVIEWS) . $fdata['pfilename'] . "?t=" . time());
-				}
-				else
-				{
-					$tpl_element->setVariable('URL_THUMBNAIL', $this->plugin->getDirectory() . '/templates/images/audio.png');
-				}
-				$tpl_element->setVariable('ALT_THUMBNAIL', ilUtil::prepareFormOutput($fdata['title']));
-			}
-			else if ($this->object->isVideo($fn))
-			{
-				$file_parts = pathinfo($fn);
-				switch(strtolower($file_parts['extension']))
-				{
-					case "swf":
-						$tpl_element = $this->plugin->getTemplate("tpl.gallery.qt.html");
-						$iwidth = $fdata['pwidth'];
-						$iheight = $fdata['pheight'];
-						if ($fdata['pwidth'] > 0) 
-						{
-							$iwidth = $fdata['pwidth'];
-							$iheight = $fdata['pheight'];
-						}
-						if ($iwidth > 0 && $iheight > 0)
-						{
-							$scale = $this->object->scaleDimensions($iwidth, $iheight, 150);
-							$width = $scale['width'];
-							$height = $scale['height'];
-							$tpl_element->setCurrentBlock('size');
-							$tpl_element->setVariable('WIDTH', $width+2);
-							$tpl_element->setVariable('HEIGHT', $height+2);
-							$tpl_element->setVariable('MARGIN_TOP', round((158.0-$height)/2.0));
-							$tpl_element->setVariable('MARGIN_LEFT', round((158.0-$width)/2.0));
-							$tpl_element->parseCurrentBlock();
-							$tpl_element->setCurrentBlock('imgsize');
-							$tpl_element->setVariable('IMG_WIDTH', $width);
-							$tpl_element->setVariable('IMG_HEIGHT', $height);
-							$tpl_element->parseCurrentBlock();
-						}
-						else
-						{
-							$tpl_element->setCurrentBlock('size');
-							$tpl_element->setVariable('WIDTH', "150");
-							$tpl_element->setVariable('HEIGHT', "150");
-							$tpl_element->setVariable('MARGIN_TOP', "4");
-							$tpl_element->setVariable('MARGIN_LEFT', "4");
-							$tpl_element->parseCurrentBlock();
-						}
-						$tpl_element->setVariable('URL_VIDEO', $this->object->getPathWeb(LOCATION_ORIGINALS) . $fn);
-						$tpl_element->setVariable('CAPTION', ilUtil::prepareFormOutput($fdata['description']));
-						if ($fdata['pwidth'] > 0)
-						{
-							$tpl_element->setVariable('URL_THUMBNAIL', $this->object->getPathWeb(LOCATION_PREVIEWS) . $fdata['pfilename'] . "?t=" . time());
-						}
-						else
-						{
-							$tpl_element->setVariable('URL_THUMBNAIL', $this->plugin->getDirectory() . '/templates/images/video.png');
-						}
-						$tpl_element->setVariable('ALT_THUMBNAIL', ilUtil::prepareFormOutput($fdata['title']));
-						break;
-					case "mov":
-					default:
-						$tpl_element = $this->plugin->getTemplate("tpl.gallery.vid.html");
-						$iwidth = $fdata['pwidth'];
-						$iheight = $fdata['pheight'];
-						if ($fdata['pwidth'] > 0) 
-						{
-							$iwidth = $fdata['pwidth'];
-							$iheight = $fdata['pheight'];
-						}
-						if ($iwidth > 0 && $iheight > 0)
-						{
-							$scale = $this->object->scaleDimensions($iwidth, $iheight, 150);
-							$width = $scale['width'];
-							$height = $scale['height'];
-							$tpl_element->setCurrentBlock('size');
-							$tpl_element->setVariable('WIDTH', $width+2);
-							$tpl_element->setVariable('HEIGHT', $height+2);
-							$tpl_element->setVariable('MARGIN_TOP', round((158.0-$height)/2.0));
-							$tpl_element->setVariable('MARGIN_LEFT', round((158.0-$width)/2.0));
-							$tpl_element->parseCurrentBlock();
-							$tpl_element->setCurrentBlock('imgsize');
-							$tpl_element->setVariable('IMG_WIDTH', $width);
-							$tpl_element->setVariable('IMG_HEIGHT', $height);
-							$tpl_element->parseCurrentBlock();
-						}
-						else
-						{
-							$tpl_element->setCurrentBlock('size');
-							$tpl_element->setVariable('WIDTH', "150");
-							$tpl_element->setVariable('HEIGHT', "150");
-							$tpl_element->setVariable('MARGIN_TOP', "4");
-							$tpl_element->setVariable('MARGIN_LEFT', "4");
-							$tpl_element->parseCurrentBlock();
-						}
-						$tpl_element->setVariable('INLINE_SECTION', "aud$counter");
-						$tpl_element->setVariable('URL_VIDEO', $this->object->getPathWeb(LOCATION_ORIGINALS) . $fn);
-						switch (strtolower($file_parts['extension']))
-						{
-							case 'webm':
-								$tpl_element->setVariable('TYPE_VIDEO', "video/webm");
-								break;
-							case 'ogv':
-								$tpl_element->setVariable('TYPE_VIDEO', "video/ogg");
-								break;
-							case 'mov':
-								$tpl_element->setVariable('TYPE_VIDEO', "video/mp4; codecs=avc1.42E01E, mp4a.40.2");
-								break;
-							case 'mp4':
-							default:
-								$tpl_element->setVariable('TYPE_VIDEO', "video/mp4");
-								break;
-						}
-						$tpl_element->setVariable('CAPTION', ilUtil::prepareFormOutput($fdata['description']));
-						if ($fdata['pwidth'] > 0)
-						{
-							$tpl_element->setVariable('URL_THUMBNAIL', $this->object->getPathWeb(LOCATION_PREVIEWS) . $fdata['pfilename'] . "?t=" . time());
-						}
-						else
-						{
-							$tpl_element->setVariable('URL_THUMBNAIL', $this->plugin->getDirectory() . '/templates/images/video.png');
-						}
-						$tpl_element->setVariable('ALT_THUMBNAIL', ilUtil::prepareFormOutput($fdata['title']));
-						break;
-				}
-			}
-			else
-			{
-				$tpl_element = $this->plugin->getTemplate("tpl.gallery.other.html");
-				$iwidth = 0;
-				$iheight = 0;
-				if ($fdata['pwidth'] > 0) 
-				{
-					$scale = $this->object->scaleDimensions($fdata['pwidth'], $fdata['pheight'], 150);
-					$iwidth = $scale['width'];
-					$iheight = $scale['height'];
-				}
-				if ($iwidth > 0 && $iheight > 0)
-				{
-					$tpl_element->setCurrentBlock('size');
-					$tpl_element->setVariable('WIDTH', $iwidth+2);
-					$tpl_element->setVariable('HEIGHT', $iheight+2);
-					$tpl_element->setVariable('MARGIN_TOP', round((158.0-$iheight)/2.0));
-					$tpl_element->setVariable('MARGIN_LEFT', round((158.0-$iwidth)/2.0));
-					$tpl_element->parseCurrentBlock();
-					$tpl_element->setCurrentBlock('imgsize');
-					$tpl_element->setVariable('IMG_WIDTH', $iwidth);
-					$tpl_element->setVariable('IMG_HEIGHT', $iheight);
-					$tpl_element->parseCurrentBlock();
-					$fullwidth = $iwidth;
-					$fullheight = $iheight;
-					if ($fdata['pwidth'] > 500 || $fdata['pheight'] > 500)
-					{
-						$scale = $this->object->scaleDimensions($fullwidth, $fullheight, 500);
-						$fullwidth = $scale['width'];
-						$fullheight = $scale['height'];
-					}
-					$tpl_element->setCurrentBlock('imgsizeinline');
-					$tpl_element->setVariable('IMG_WIDTH', $fullwidth);
-					$tpl_element->setVariable('IMG_HEIGHT', $fullheight);
-					$tpl_element->parseCurrentBlock();
-				}
-				else
-				{
-					$tpl_element->setCurrentBlock('size');
-					$tpl_element->setVariable('WIDTH', "150");
-					$tpl_element->setVariable('HEIGHT', "150");
-					$tpl_element->setVariable('MARGIN_TOP', "4");
-					$tpl_element->setVariable('MARGIN_LEFT', "4");
-					$tpl_element->parseCurrentBlock();
-				}
-				$tpl_element->setVariable('CAPTION', ilUtil::prepareFormOutput($fdata['description']));
-				if ($fdata['pwidth'] > 0)
-				{
-					$tpl_element->setVariable('URL_THUMBNAIL', $this->object->getPathWeb(LOCATION_PREVIEWS) . $fdata['pfilename'] . "?t=" . time());
-				}
-				else
-				{
-					$tpl_element->setVariable('URL_THUMBNAIL', $this->object->getMimeIconPath($fdata['entry']));
-				}
-				$tpl_element->setVariable('INLINE_SECTION', "oth$counter");
-				$this->ctrl->setParameter($this, 'file', $fdata['entry']);
-				$tpl_element->setVariable('URL_DOWNLOAD', $this->ctrl->getLinkTarget($this, "downloadOther"));
-				$tpl_element->setVariable('URL_DOWNLOADICON', $this->plugin->getDirectory() . '/templates/images/download.png');
-				$tpl_element->setVariable('ALT_THUMBNAIL', ilUtil::prepareFormOutput($fdata['title']));
-			}
-
-			$elementtitle = '';
-			if ($this->object->getDownload())
-			{
-				$tpl_title = $this->plugin->getTemplate("tpl.gallery.download.html");
-				if ($this->object->getShowTitle() && strlen($fdata['title']))
-				{
-					$tpl_title->setVariable('MEDIA_TITLE', ilUtil::prepareFormOutput($fdata['title']));
-				}
-				else
-				{
-					$tpl_title->setVariable('MEDIA_TITLE', ilUtil::prepareFormOutput($fdata['entry']));
-				}
-				$this->ctrl->setParameter($this, 'file', $fdata['entry']);
-				$tpl_title->setVariable('URL_DOWNLOAD', $this->ctrl->getLinkTarget($this, "downloadOriginal"));
-				$elementtitle = $tpl_title->get();
-			}
-			else if ($this->object->getShowTitle())
-			{
-				$tpl_title = $this->plugin->getTemplate("tpl.gallery.title.html");
-				if (strlen($fdata['title']))
-				{
-					$tpl_title->setVariable('MEDIA_TITLE', ilUtil::prepareFormOutput($fdata['title']));
-				}
-				else
-				{
-					$tpl_title->setVariable('MEDIA_TITLE', '&nbsp;');
-				}
-				$elementtitle = $tpl_title->get();
-			}
-
-			$template->setVariable("TXT_EXPAND_IMAGE_TITLE", $this->plugin->txt("expand_image_title"));
-			$template->setVariable("TXT_EXPAND_IMAGE", $this->plugin->txt("expand_image"));
-			$template->setVariable("TXT_NEXT", $this->plugin->txt("next"));
-			$template->setVariable("TXT_PREVIOUS", $this->plugin->txt("previous"));
-			$template->setVariable("TXT_CLOSE", $this->plugin->txt("close"));
-			$template->setVariable("TXT_START_SLIDESHOW", $this->plugin->txt("playpause"));
-			$template->setCurrentBlock('media');
-			$template->setVariable('GALLERY_ELEMENT', $tpl_element->get() . $elementtitle);
-			$template->parseCurrentBlock();
-		}
-
-		$archives = $this->object->getArchives();
-		$downloads = array();
-		foreach ($archives as $fn => $fdata)
-		{
-			if ($fdata['download'])
-			{
-				$downloads[$fn] = $fn . ' ('.$this->object->formatBytes($fdata['size']).')';
-			}
-		}
-		if (count($downloads))
-		{
-			global $ilToolbar, $ilCtrl, $lng;
-			include_once("./Services/Form/classes/class.ilSelectInputGUI.php");
-			$si = new ilSelectInputGUI($this->plugin->txt("archive").':', "archive");
-			$si->setOptions($downloads);
-			$ilToolbar->addInputItem($si, true);
-			$ilToolbar->addFormButton($lng->txt("download"), 'download');
-			$ilToolbar->setFormAction($ilCtrl->getFormAction($this));
-		}
-
-		$template->setVariable("THEME", $this->object->getTheme());
-		$this->tpl->setVariable("ADM_CONTENT", $template->get());
+		$this->plugin->includeClass("class.ilMediaGalleryGUI.php");
+		$gallery = new ilMediaGalleryGUI($this, $this->plugin);
+		$gallery->setFileData(ilMediaGalleryFile::_getMediaFilesInGallery($this->object_id));
+		$gallery->setArchiveData(ilMediaGalleryArchives::_getInstanceByXmgId($this->object_id)->getArchives());
+		$this->tpl->setVariable("ADM_CONTENT", $gallery->getHTML());
 	}
 	
 	function downloadOriginal()
 	{
+		$file = ilMediaGalleryFile::_getInstanceById($_GET['id']);
+
 		if ($this->object->getDownload())
 		{
-			ilUtil::deliverFile($this->object->getPath(LOCATION_ORIGINALS) . $_GET['file'], $_GET['file']);
+			ilUtil::deliverFile($file->getPath(ilObjMediaGallery::LOCATION_ORIGINALS) , $file->getFilename(), $file->getMimeType());
 		}
 		else
 		{
@@ -763,7 +433,9 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 
 	function downloadOther()
 	{
-		ilUtil::deliverFile($this->object->getPath(LOCATION_ORIGINALS) . $_GET['file'], $_GET['file']);
+		$file = ilMediaGalleryFile::_getInstanceById($_GET['id']);
+
+		ilUtil::deliverFile($file->getPath(ilObjMediaGallery::LOCATION_ORIGINALS) , $file->getFilename(), $file->getMimeType());
 	}
 	
 	function filterMedia()
@@ -789,21 +461,22 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		global $ilTabs;
 		if (strcmp($_GET['action'], 'rotateLeft') && strlen($_GET['id']))
 		{
-			$this->object->rotate($_GET['id'], 0);
+			$file = ilMediaGalleryFile::_getInstanceById($_GET['id']);
+			$file->rotate(0);
 			$this->ctrl->setParameter($this, "action", "");
 			$this->ctrl->redirect($this, 'mediafiles');
 			return;
 		}
 		else if (strcmp($_GET['action'], 'rotateRight') && strlen($_GET['id']))
 		{
-			$this->object->rotate($_GET['id'], 1);
+			$file = ilMediaGalleryFile::_getInstanceById($_GET['id']);
+			$file->rotate(1);
 			$this->ctrl->setParameter($this, "action", "");
 			$this->ctrl->redirect($this, 'mediafiles');
 			return;
 		}
 		$this->setSubTabs("mediafiles");
 		$ilTabs->activateTab("mediafiles");
-		$count = $this->object->getMediaObjectCount();
 		$this->tpl->addCss($this->plugin->getStyleSheetLocation("xmg.css"));
 		$this->plugin->includeClass("class.ilMediaFileTableGUI.php");
 		$table_gui = new ilMediaFileTableGUI($this, 'mediafiles');
@@ -815,15 +488,15 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 				$arrFilter[substr($item->getPostVar(), 2)] = $item->getValue();
 			}
 		}
-		$mediafiles = $this->object->getMediaFiles($arrFilter);
+		$mediafiles = ilMediaGalleryFile::_getMediaFilesInGallery($this->object_id, false, $arrFilter);
 		// recalculate custom sort keys
 		$tmpsortkey = $this->sortkey;
 		$this->sortkey = 'custom';
 		uasort($mediafiles, array($this, 'gallerysort'));
 		$counter = 1.0;
-		foreach ($mediafiles as $fn => $fdata)
+		foreach ($mediafiles as $id => $fdata)
 		{
-			$mediafiles[$fn]['custom'] = $counter;
+			$mediafiles[$id]['custom'] = $counter;
 			$counter += 1.0;
 		}
 		$this->sortkey = $tmpsortkey;
@@ -833,7 +506,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 	
 	public function createMissingPreviews()
 	{
-		$this->object->createMissingPreviews();
+		ilMediaGalleryFile::_createMissingPreviews($this->object_id);
 		$this->ctrl->redirect($this, 'gallery');
 	}
 	
@@ -847,7 +520,9 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		else
 		{
 			$zipfile = sprintf("%s_%s", $this->object->getTitle(), time());
-			$this->object->zipSelectedFiles($_POST['file'], $zipfile . ".zip");
+
+			$archive = ilMediaGalleryArchives::_getInstanceByXmgId($this->object_id);
+			$archive->createArchive($_POST['file'], $zipfile . ".zip");
 			$_SESSION['archiveFilename'] = $zipfile;
 			$this->ctrl->redirect($this, 'setArchiveFilename');
 		}
@@ -881,12 +556,17 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 			ilUtil::sendInfo($this->plugin->txt('please_select_file_to_delete_preview'), true);
 			$this->ctrl->redirect($this, 'mediafiles');
 		}
-		else
+
+		foreach($_POST['file'] as $fid)
 		{
-			$_SESSION['previewFiles'] = $_POST['file'];
+			$file = ilMediaGalleryFile::_getInstanceById($fid);
+			if($file)
+			{
+				$file->setPfilename(null);
+				$file->update();
+			}
 		}
-		$this->object->deletePreview($_SESSION['previewFiles']);
-		unset($_SESSION['previewFiles']);
+
 		ilUtil::sendSuccess($this->plugin->txt('previews_deleted'), true);
 		$this->ctrl->redirect($this, 'mediafiles');
 	}
@@ -900,7 +580,17 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		$this->initPreviewUploadForm();
 		if ($this->form->checkInput())
 		{
-			$this->object->uploadPreviewForFiles($_SESSION['previewFiles'], $_FILES['filename']["tmp_name"], $_FILES['filename']['type']);
+			$this->object->uploadPreview();
+
+			foreach($_SESSION['previewFiles'] as $fid)
+			{
+				$file = ilMediaGalleryFile::_getInstanceById($fid);
+				if($file && $_FILES['filename']["tmp_name"])
+				{
+					$file->setPfilename($_FILES['filename']["name"]);
+					$file->update();
+				}
+			}
 			unset($_SESSION['previewFiles']);
 			$ilCtrl->redirect($this, "mediafiles");
 		}
@@ -932,6 +622,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 	public function changeArchiveFilename()
 	{
 		global $tpl, $ilTabs;
+		var_dump ($_POST);
 		
 		if (!is_array($_POST['file']))
 		{
@@ -945,9 +636,11 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		}
 		else
 		{
+			$archive = ilMediaGalleryArchives::_getInstanceByXmgId($this->object_id);
+
 			foreach ($_POST['file'] as $file)
 			{
-				$_SESSION['archiveFilename'] = substr($file, 0, -4);
+				$_SESSION['archiveFilename'] = substr($archive->getArchiveFilename($file), 0, -4);
 			}
 		}
 
@@ -975,7 +668,8 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 
 	public function renameArchiveFilename()
 	{
-		if ($this->object->downloadArchiveExists($_POST['filename'] . ".zip"))
+		if (file_exists($this->plugin->getFileSystem()->getFilePath($_POST['filename'].".zip",
+			ilObjMediaGallery::LOCATION_DOWNLOADS)))
 		{
 			ilUtil::sendFailure($this->plugin->txt('please_select_unique_archive_name'), true);
 			$this->ctrl->redirect($this, 'setArchiveFilename');
@@ -984,7 +678,9 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		{
 			if (strlen($_SESSION['archiveFilename']) && strlen($_POST['filename']))
 			{
-				$this->object->renameArchive($_SESSION['archiveFilename'] . ".zip", $_POST['filename'] . ".zip");
+				$archives = ilMediaGalleryArchives::_getInstanceByXmgId($this->object_id);
+				$archives->renameArchive($_SESSION['archiveFilename'] . '.zip', $_POST['filename'] . '.zip');
+
 				unset($_SESSION['archiveFilename']);
 				$this->ctrl->redirect($this, 'archives');
 			}
@@ -1024,9 +720,9 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		}
 		else
 		{
-			foreach ($_POST['file'] as $file)
+			foreach ($_POST['file'] as $fid)
 			{
-				$this->object->deleteFile($file);
+				ilMediaGalleryFile::_getInstanceById($fid)->delete();
 			}
 			ilUtil::sendSuccess(sprintf((count($_POST['file']) == 1) ? $this->plugin->txt('file_deleted') : $this->plugin->txt('files_deleted'), count($_POST['file'])), true);
 		}
@@ -1035,18 +731,17 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 
 	public function saveAllFileData()
 	{
-		foreach ($_POST['id'] as $filename => $file_id)
+		foreach (array_keys($_POST['id']) as $fid)
 		{
-			$file_topic = $_POST['topic'][$filename];
-			$file_title = $_POST['title'][$filename];
-			$file_description = $_POST['description'][$filename];
-			$file_custom = $_POST['custom'][$filename];
-			$file_width = $_POST['width'][$filename];
-			$file_height = $_POST['height'][$filename];
-			if (!is_numeric($file_custom)) $file_custom = 0.0;
-			$this->object->saveFileData($filename, $file_id, $file_topic, $file_title, $file_description, $file_custom, $file_width, $file_height);
+
+			$file = ilMediaGalleryFile::_getInstanceById($fid);
+			$file->setMediaId($_POST['id'][$fid]);
+			$file->setTopic( $_POST['topic'][$fid]);
+			$file->setTitle($_POST['title'][$fid]);
+			$file->setDescription($_POST['description'][$fid]);
+			$file->setSorting(is_numeric($_POST['custom'][$fid])?$_POST['custom'][$fid]:0);
+			$file->update();
 		}
-		$this->object->restoreCustomPreviews();
 		ilUtil::sendSuccess($this->plugin->txt('file_data_saved'), true);
 		$this->ctrl->redirect($this, 'mediafiles');
 	}
@@ -1123,7 +818,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		header("Pragma: no-cache");
 
 		// Settings
-		$targetDir = $this->object->getPath(LOCATION_ORIGINALS);
+		$targetDir = ilFSStorageMediaGallery::_getInstanceByXmgId($this->object_id)->getPath(ilObjMediaGallery::LOCATION_ORIGINALS);
 		$cleanupTargetDir = true; // Remove old files
 		$maxFileAge = 5 * 3600; // Temp file age in seconds
 
@@ -1251,7 +946,11 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		if (!$chunks || $chunk == $chunks - 1) {
 			// Strip the temp .part suffix off 
 			rename("{$filePath}.part", $filePath);
-			$this->object->processNewUpload($filePath);
+			$file = new ilMediaGalleryFile();
+			$file->setFilename(ilMediaGalleryFile::_getNextValidFilename($this->object_id, $fileName));
+			$file->setGalleryId($this->object_id);
+			$file->create();
+			$file->uploadFile($filePath, $fileName);
 		}
 		// Return JSON-RPC response
 		die('{"jsonrpc" : "2.0", "result" : null, "id" : "id"}');
