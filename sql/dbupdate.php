@@ -458,9 +458,18 @@ if($ilDB->tableColumnExists('rep_robj_xmg_filedata', 'id'))
 		foreach($structure as $folder)
 		{
 			$path = $media_dir. $row["xmg_id"] . '/media/' . $folder;
-			if(file_exists($path. $row['filename']))
+			$filename = $row['filename'];
+			$extension = pathinfo($path. $filename, PATHINFO_EXTENSION);
+
+			if($folder != "originals/" && (substr($filename, -5) == '.tiff' || substr($filename, -4) == '.tif'))
 			{
-				rename($path. $row['filename'],$path . $row['id'] . '.' . pathinfo($path. $row['filename'], PATHINFO_EXTENSION));
+				$extension = "png";
+				$filename = str_replace(array(".tiff", ".tif"), ".png", $filename);
+			}
+
+			if(file_exists($path. $filename))
+			{
+				rename($path. $filename,$path . $row['id'] . '.' . $extension);
 			}
 		}
 	}
