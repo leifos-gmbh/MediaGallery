@@ -230,6 +230,10 @@ class ilMediaGalleryArchives
 			return false;
 		}
 
+		if($a_new_name == $a_old_name)
+		{
+			return true;
+		}
 		$ilDB->manipulate("UPDATE rep_robj_xmg_downloads SET filename = ".$ilDB->quote($a_new_name, "text").
 			" WHERE filename = ". $ilDB->quote($a_old_name, "text")." AND xmg_id = " . $ilDB->quote($this->getXmgId(), "integer"));
 

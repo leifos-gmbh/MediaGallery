@@ -86,6 +86,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 			case "saveAllArchiveData":
 			case "createNewArchive":
             case "importFile":
+			case "saveNewArchive":
 				$this->checkPermission("write");
 				$this->$cmd();
 				break;
@@ -512,6 +513,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 	
 	public function createArchiveFromSelection()
 	{
+		global $ilTabs, $tpl;
 		if (!is_array($_POST['file']))
 		{
 			ilUtil::sendInfo($this->plugin->txt('please_select_file_to_create_archive'), true);
@@ -521,11 +523,26 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		{
 			$zipfile = sprintf("%s_%s", $this->object->getTitle(), time());
 
-			$archive = ilMediaGalleryArchives::_getInstanceByXmgId($this->object_id);
-			$archive->createArchive($_POST['file'], $zipfile . ".zip");
-			$_SESSION['archiveFilename'] = $zipfile;
-			$this->ctrl->redirect($this, 'setArchiveFilename');
+			$_SESSION["archive_files"] = $_POST["file"];
+			$ilTabs->activateTab("archives");
+			$this->initArchiveFilenameForm("create");
+			$this->form->getItemByPostVar("filename")->setValue($zipfile);
+			$tpl->setContent($this->form->getHTML());
 		}
+	}
+
+	public function saveNewArchive()
+	{
+		if (!is_array($_SESSION['archive_files']))
+		{
+			ilUtil::sendInfo($this->plugin->txt('please_select_file_to_create_archive'), true);
+			$this->ctrl->redirect($this, 'archives');
+		}
+
+		$archive = ilMediaGalleryArchives::_getInstanceByXmgId($this->object_id);
+		$archive->createArchive($_SESSION['archive_files'], $_POST["filename"] . ".zip");
+		unset($_SESSION["archive_files"]);
+		$this->ctrl->redirect($this, 'archives');
 	}
 	
 	public function addPreview()
@@ -691,7 +708,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		}
 	}
 
-	protected function initArchiveFilenameForm()
+	protected function initArchiveFilenameForm($a_mode = "edit")
 	{
 		global $ilCtrl;
 
@@ -705,11 +722,19 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		$ti->setValue($_SESSION['archiveFilename']);
 		$this->form->addItem($ti);
 
-		$this->form->addCommandButton("renameArchiveFilename", $this->txt("save"));
-		$this->form->addCommandButton("archives", $this->txt("cancel"));
-
 		$this->form->setTitle($this->plugin->txt("saveArchiveFilename"));
 		$this->form->setFormAction($ilCtrl->getFormAction($this));
+
+		if($a_mode == "edit")
+		{
+			$this->form->addCommandButton("renameArchiveFilename", $this->txt("save"));
+			$this->form->addCommandButton("archives", $this->txt("cancel"));
+		}
+		elseif($a_mode == "create")
+		{
+			$this->form->addCommandButton("saveNewArchive", $this->txt("save"));
+			$this->form->addCommandButton("mediafiles", $this->txt("cancel"));
+		}
 	}
 
 	public function deleteFile()
@@ -970,16 +995,30 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		$template = $this->plugin->getTemplate("tpl.upload.html");
 		$template->setVariable("FILE_ALERT", $this->plugin->txt('upload_file_alert'));
 		$this->plugin->includeClass("class.ilObjMediaGallery.php");
-		$ext_img = ilObjMediaGallery::_getConfigurationValue('ext_img');
-		$ext_vid = ilObjMediaGallery::_getConfigurationValue('ext_vid');
-		$ext_aud = ilObjMediaGallery::_getConfigurationValue('ext_aud');
-		$ext_oth = ilObjMediaGallery::_getConfigurationValue('ext_oth');
-		$template->setVariable("FILTERS", 'filters: [' .
-			'{title : "' . $this->plugin->txt('image_files') . '", extensions : "' . $ext_img . '"},' .
-			'{title : "' . $this->plugin->txt('video_files') . '", extensions : "' . $ext_vid . '"},' .
-			'{title : "' . $this->plugin->txt('audio_files') . '", extensions : "' . $ext_aud . '"},' .
-			'{title : "' . $this->plugin->txt('other_files') . '", extensions : "' . $ext_oth . '"}' .
-			'],');
+
+		$filter = array(
+			$this->plugin->txt('image_files') => $ext_img = ilObjMediaGallery::_getConfigurationValue('ext_img'),
+			$this->plugin->txt('video_files') => $ext_vid = ilObjMediaGallery::_getConfigurationValue('ext_vid'),
+			$this->plugin->txt('audio_files') => $ext_aud = ilObjMediaGallery::_getConfigurationValue('ext_aud'),
+			$this->plugin->txt('other_files') => $ext_oth = ilObjMediaGallery::_getConfigurationValue('ext_oth')
+		);
+		$filter_txt =  'filters: [';
+		$first = true;
+
+		foreach($filter as $title => $value)
+		{
+			if(!$first){$filter_txt .= ',';}
+			$filter_txt .= '{title : "' . $title . '", extensions : "' . $value . '"}';
+			$first = false;
+
+			$template->setCurrentBlock('file_extensions');
+			$template->setVariable('TYPE_TITLE', $title);
+			$template->setVariable('ALLOWED_EXTENSIONS', $value);
+			$template->parseCurrentBlock();
+		}
+		$filter_txt .= '],';
+		$template->setVariable("FILTERS", $filter_txt);
+
 		$template->setVariable("UPLOAD_URL", html_entity_decode(ILIAS_HTTP_PATH . "/" . $ilCtrl->getLinkTarget($this, 'uploadFile')));
 		$template->setVariable("MAX_FILE_SIZE", ilObjMediaGallery::_getConfigurationValue("max_upload", 100) . "mb");
 		$this->tpl->addCss($this->plugin->getDirectory() . "/js/jquery.plupload.queue/css/jquery.plupload.queue.css");

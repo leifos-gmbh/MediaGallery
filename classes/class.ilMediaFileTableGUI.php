@@ -50,6 +50,7 @@ class ilMediaFileTableGUI extends ilTable2GUI
 	 */
 	public function __construct($a_parent_obj, $a_parent_cmd)
 	{
+		$this->setId("xmg_mft_".$a_parent_obj->object->getId());
 		parent::__construct($a_parent_obj, $a_parent_cmd);
 
 		global $lng, $ilCtrl;
@@ -60,7 +61,6 @@ class ilMediaFileTableGUI extends ilTable2GUI
 		$this->plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, "Repository", "robj", "MediaGallery");
 	
 		$this->customsort = 1.0;
-    $this->setId("xmg_mft_".$a_parent_obj->object->getId());
 		$this->setFormName('mediaobjectlist');
 		$this->setStyle('table', 'fullwidth');
 		$this->addColumn('','f','1%');
