@@ -456,22 +456,39 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		$table_gui->resetFilter();
 		$this->ctrl->redirect($this, 'mediafiles');
 	}
+
+	protected function performAction($a_file, $a_action)
+	{
+		$file = ilMediaGalleryFile::_getInstanceById($a_file);
+
+		switch($a_action)
+		{
+			case "rotateLeft":
+				$ret = $file->rotate(0);
+				break;
+			case "rotateRight":
+				$ret = $file->rotate(1);
+				break;
+			case "rotateLeftPreview":
+				$ret = $file->rotatePreview(0);
+				break;
+
+			case "rotateRightPreview":
+				$ret = $file->rotatePreview(1);
+				break;
+			default:
+				return false;
+				break;
+		}
+		return $ret;
+	}
 	
 	public function mediafiles()
 	{
 		global $ilTabs;
-		if (strcmp($_GET['action'], 'rotateLeft') && strlen($_GET['id']))
+		if (isset($_GET['action']) && isset($_GET['id']))
 		{
-			$file = ilMediaGalleryFile::_getInstanceById($_GET['id']);
-			$file->rotate(0);
-			$this->ctrl->setParameter($this, "action", "");
-			$this->ctrl->redirect($this, 'mediafiles');
-			return;
-		}
-		else if (strcmp($_GET['action'], 'rotateRight') && strlen($_GET['id']))
-		{
-			$file = ilMediaGalleryFile::_getInstanceById($_GET['id']);
-			$file->rotate(1);
+			$this->performAction($_GET['id'], $_GET['action']);
 			$this->ctrl->setParameter($this, "action", "");
 			$this->ctrl->redirect($this, 'mediafiles');
 			return;
@@ -533,13 +550,23 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 
 	public function saveNewArchive()
 	{
+		global $tpl, $ilTabs;
 		if (!is_array($_SESSION['archive_files']))
 		{
 			ilUtil::sendInfo($this->plugin->txt('please_select_file_to_create_archive'), true);
 			$this->ctrl->redirect($this, 'archives');
 		}
-
 		$archive = ilMediaGalleryArchives::_getInstanceByXmgId($this->object_id);
+
+		if(file_exists($archive->getPath($_POST["filename"] . ".zip")))
+		{
+			ilUtil::sendFailure($this->plugin->txt('please_select_unique_archive_name'));
+			$ilTabs->activateTab("archives");
+			$this->initArchiveFilenameForm("create");
+			$this->form->getItemByPostVar("filename")->setValue($_POST["filename"]);
+			$tpl->setContent($this->form->getHTML());
+		}
+
 		$archive->createArchive($_SESSION['archive_files'], $_POST["filename"] . ".zip");
 		unset($_SESSION["archive_files"]);
 		$this->ctrl->redirect($this, 'archives');

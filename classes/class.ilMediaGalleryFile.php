@@ -43,10 +43,11 @@ class ilMediaGalleryFile
 	 * @var string
 	 */
 	protected $pfilename = "";
+
 	/**
- 	* @var ilObjMediaGallery
- 	*/
-	protected $object;
+	 * @var ilMediaGalleryPlugin
+	 */
+	protected $plugin;
 
 	protected static $loaded = false;
 
@@ -54,6 +55,8 @@ class ilMediaGalleryFile
 
 	public function __construct($a_id = null)
 	{
+		$this->plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, "Repository", "robj", "MediaGallery");
+
 		if($a_id)
 		{
 			$this->setId($a_id);
@@ -217,6 +220,7 @@ class ilMediaGalleryFile
 	 */
 	protected function getFileSystem()
 	{
+		$this->plugin->includeClass("class.ilFSStorageMediaGallery.php");
 		return ilFSStorageMediaGallery::_getInstanceByXmgId($this->getGalleryId());
 	}
 
@@ -564,6 +568,15 @@ class ilMediaGalleryFile
 		return true;
 	}
 
+	protected function performRotate($a_location, $a_direction)
+	{
+		$cmd = "-rotate " . (($a_direction) ? "-90" : "90") . " ";
+		$source = ilUtil::escapeShellCmd($this->getPath($a_location) );
+		$target = ilUtil::escapeShellCmd($this->getPath($a_location) );
+		$convert_cmd = $source . " " . $cmd." ".$target;
+		ilUtil::execConvert($convert_cmd);
+	}
+
 	/**
 	 * rotate image
 	 *
@@ -574,34 +587,33 @@ class ilMediaGalleryFile
 		if ($this->getContentType() == ilObjMediaGallery::CONTENT_TYPE_IMAGE)
 		{
 			include_once "./Services/Utilities/classes/class.ilUtil.php";
-			$rotation = ($direction) ? "-90" : "90";
-			$cmd = "-rotate $rotation ";
 
-			$source = ilUtil::escapeShellCmd($this->getPath(LOCATION_THUMBS) );
-			$target = ilUtil::escapeShellCmd($this->getPath(LOCATION_THUMBS) );
-			$convert_cmd = $source . " " . $cmd." ".$target;
-			ilUtil::execConvert($convert_cmd);
+			$this->performRotate(LOCATION_THUMBS, $direction);
+			$this->performRotate(LOCATION_SIZE_SMALL, $direction);
+			$this->performRotate(LOCATION_SIZE_MEDIUM, $direction);
+			$this->performRotate(LOCATION_SIZE_LARGE, $direction);
+			$this->performRotate(LOCATION_ORIGINALS, $direction);
 
-			$source = ilUtil::escapeShellCmd($this->getPath(LOCATION_SIZE_SMALL) );
-			$target = ilUtil::escapeShellCmd($this->getPath(LOCATION_SIZE_SMALL) );
-			$convert_cmd = $source . " " . $cmd." ".$target;
-			ilUtil::execConvert($convert_cmd);
-
-			$source = ilUtil::escapeShellCmd($this->getPath(LOCATION_SIZE_MEDIUM) );
-			$target = ilUtil::escapeShellCmd($this->getPath(LOCATION_SIZE_MEDIUM) );
-			$convert_cmd = $source . " " . $cmd." ".$target;
-			ilUtil::execConvert($convert_cmd);
-
-			$source = ilUtil::escapeShellCmd($this->getPath(LOCATION_SIZE_LARGE) );
-			$target = ilUtil::escapeShellCmd($this->getPath(LOCATION_SIZE_LARGE) );
-			$convert_cmd = $source . " " . $cmd." ".$target;
-			ilUtil::execConvert($convert_cmd);
-
-			$source = ilUtil::escapeShellCmd($this->getPath(LOCATION_ORIGINALS));
-			$target = ilUtil::escapeShellCmd($this->getPath(LOCATION_ORIGINALS));
-			$convert_cmd = $source . " " . $cmd." ".$target;
-			ilUtil::execConvert($convert_cmd);
+			return true;
 		}
+		return false;
+	}
+
+	/**
+	 * rotate preview image
+	 *
+	 * @param $direction
+	 */
+	public function rotatePreview($direction)
+	{
+		if($this->hasPreviewImage())
+		{
+			include_once "./Services/Utilities/classes/class.ilUtil.php";
+			$this->performRotate(LOCATION_PREVIEWS, $direction);
+			return true;
+		}
+
+		return false;
 	}
 
 	/**

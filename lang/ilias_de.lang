@@ -107,8 +107,8 @@ freie_alben#:#freigegebene Alben
 plugininfo#:#Plugin-Information
 Bild#:#Bild
 Bilder#:#Bilder
-rotate_left#:#Um 90 Grad nach links drehen
-rotate_right#:#Um 90 Grad nach rechts drehen
+rotate_left#:#Um 90° nach links drehen
+rotate_right#:#Um 90° nach rechts drehen
 add_to_archive#:#In Exportdatei speichern
 please_select_file_to_create_archive#:#Bitte wählen Sie mindestens eine Mediendatei zum Hinzufügen zu einem Download-Archiv aus.
 please_select_unique_archive_name#:#Der Archivname existiert bereits.
@@ -129,3 +129,5 @@ pause#:#Slideshow pausieren
 playpause#:#Slideshow starten/pausieren
 max_upload_size#:#Maximale Dateigröße
 new_file_added#:#Die Datei(en) wurde(n) erfolgreich hochgeladen.
+rotate_right_preview#:#Vorschaubild um 90° nach rechts drehen
+rotate_left_preview#:#Vorschaubild um 90° nach links drehen

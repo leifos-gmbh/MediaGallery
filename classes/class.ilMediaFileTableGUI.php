@@ -128,6 +128,26 @@ class ilMediaFileTableGUI extends ilTable2GUI
 		}
 	}
 
+
+	protected function addRotateFields($a_file, $a_preview = false)
+	{
+		$this->tpl->setCurrentBlock('rotate');
+		$this->tpl->setVariable("ROTATE_LEFT", $this->plugin->getDirectory() . '/templates/images/rotate_left.png');
+		$this->ctrl->setParameter($this->parent_obj, "id", $a_file);
+		$this->ctrl->setParameter($this->parent_obj, "action", "rotateLeft". ($a_preview ? "Preview": ""));
+		$this->tpl->setVariable("URL_ROTATE_LEFT", $this->ctrl->getLinkTarget($this->parent_obj, 'mediafiles'));
+		$this->ctrl->setParameter($this->parent_obj, "action", "");
+		$this->ctrl->setParameter($this->parent_obj, "id", "");
+		$this->tpl->setVariable("TEXT_ROTATE_LEFT", $this->plugin->txt("rotate_left" . ($a_preview ? "_preview": "")));
+		$this->tpl->setVariable("ROTATE_RIGHT", $this->plugin->getDirectory() . '/templates/images/rotate_right.png');
+		$this->ctrl->setParameter($this->parent_obj, "id", $a_file);
+		$this->ctrl->setParameter($this->parent_obj, "action", "rotateRight". ($a_preview ? "Preview": ""));
+		$this->tpl->setVariable("URL_ROTATE_RIGHT", $this->ctrl->getLinkTarget($this->parent_obj, 'mediafiles'));
+		$this->ctrl->setParameter($this->parent_obj, "action", "");
+		$this->ctrl->setParameter($this->parent_obj, "id", "");
+		$this->tpl->setVariable("TEXT_ROTATE_RIGHT", $this->plugin->txt("rotate_right". ($a_preview ? "_preview" : "")));
+		$this->tpl->parseCurrentBlock();
+	}
 	/**
 	 * fill row 
 	 *
@@ -145,26 +165,20 @@ class ilMediaFileTableGUI extends ilTable2GUI
 
 		if ($data['has_preview'])
 		{
+			if($data['content_type'] == ilObjMediaGallery::CONTENT_TYPE_IMAGE)
+			{
+				$this->addRotateFields($data['id']);
+			}
 			$this->tpl->setVariable("PREVIEW", $this->parent_obj->object->getFS()->getFilePath(LOCATION_PREVIEWS,$data['pfilename'], true));
+			$this->addRotateFields($data['id'], true);
 			$this->tpl->setVariable("PREVIEW_CLASS_BORDER", 'xmg_border');
+
+
 		}
 		else if ($data['content_type'] == ilObjMediaGallery::CONTENT_TYPE_IMAGE )
 		{
 			$this->tpl->setVariable("PREVIEW", $this->parent_obj->object->getFS()->getFilePath(LOCATION_THUMBS, $data['id'], true));
-			$this->tpl->setVariable("ROTATE_LEFT", $this->plugin->getDirectory() . '/templates/images/rotate_left.png');
-			$this->ctrl->setParameter($this->parent_obj, "id", $data['id']);
-			$this->ctrl->setParameter($this->parent_obj, "action", "rotateLeft");
-			$this->tpl->setVariable("URL_ROTATE_LEFT", $this->ctrl->getLinkTarget($this->parent_obj, 'mediafiles'));
-			$this->ctrl->setParameter($this->parent_obj, "action", "");
-			$this->ctrl->setParameter($this->parent_obj, "id", "");
-			$this->tpl->setVariable("TEXT_ROTATE_LEFT", $this->lng->txt("rotate_left"));
-			$this->tpl->setVariable("ROTATE_RIGHT", $this->plugin->getDirectory() . '/templates/images/rotate_right.png');
-			$this->ctrl->setParameter($this->parent_obj, "id", $data['id']);
-			$this->ctrl->setParameter($this->parent_obj, "action", "rotateRight");
-			$this->tpl->setVariable("URL_ROTATE_RIGHT", $this->ctrl->getLinkTarget($this->parent_obj, 'mediafiles'));
-			$this->ctrl->setParameter($this->parent_obj, "action", "");
-			$this->ctrl->setParameter($this->parent_obj, "id", "");
-			$this->tpl->setVariable("TEXT_ROTATE_RIGHT", $this->lng->txt("rotate_right"));
+			$this->addRotateFields($data['id']);
 			$this->tpl->setVariable("PREVIEW_CLASS_BORDER", 'xmg_no_border');
 		}
 		else if ($data['content_type'] == ilObjMediaGallery::CONTENT_TYPE_VIDEO)
