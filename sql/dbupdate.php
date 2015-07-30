@@ -511,3 +511,21 @@ if ($ilDB->tableExists('rep_robj_xmg_filedata'))
 	}
 }
 ?>
+<#18>
+<?php
+$media_dir = ilUtil::getWebspaceDir(). "/mediagallery/";
+
+if(file_exists($media_dir))
+{
+	$sec_dir = ilUtil::getWebspaceDir()."/sec/";
+
+	if(!file_exists($sec_dir))
+	{
+		mkdir($sec_dir);
+	}
+	if(!file_exists($sec_dir."ilXmg/"))
+	{
+		rename($media_dir, $sec_dir."ilXmg/");
+	}
+}
+?>

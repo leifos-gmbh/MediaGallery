@@ -49,12 +49,12 @@ class ilFSStorageMediaGallery extends ilFileSystemStorage
 		global $log;
 
 		$this->log = $log;
-		parent::__construct(ilFileSystemStorage::STORAGE_WEB,false,$a_container_id);
+		parent::__construct(ilFileSystemStorage::STORAGE_SECURED,false,$a_container_id);
 	}
 
 	function getPathPrefix()
 	{
-		return 'mediagallery';
+		return 'ilXmg';
 	}
 	function getPathPostfix()
 	{
