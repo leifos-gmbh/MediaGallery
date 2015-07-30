@@ -44,9 +44,10 @@ class ilObjMediaGallerySubItemListGUI extends ilSubItemListGUI
 			if(is_object($this->getHighlighter()) and strlen($this->getHighlighter()->getContent($this->getObjId(),$sub_item)))
 			{
 				$this->tpl->setCurrentBlock('sea_fragment');
-				$this->tpl->setVariable('TXT_FRAGMENT',$this->getHighlighter()->getContent($this->getObjId(),$sub_item));
+				$this->tpl->setVariable('TXT_FRAGMENT', $this->getHighlighter()->getContent($this->getObjId(),$sub_item));
 				$this->tpl->parseCurrentBlock();
 			}
+
 			$plugin = $this->getPluginObject();
 			$plugin->includeClass("class.ilMediaGalleryFile.php");
 			$file = ilMediaGalleryFile::_getInstanceById($sub_item);
@@ -71,12 +72,6 @@ class ilObjMediaGallerySubItemListGUI extends ilSubItemListGUI
 					break;
 			}
 
-			$this->tpl->setVariable('SUBITEM_TYPE',$plugin->txt($type));
-			$this->tpl->setVariable('SEPERATOR',':');
-
-			$this->tpl->setVariable('LINK', $this->getItemListGUI()->getCommandLink("gallery"));
-			$this->tpl->setVariable('TARGET',$this->getItemListGUI()->getCommandFrame('123'));
-
 			$title = $file->getTitle();
 
 			if(!$title)
@@ -84,15 +79,33 @@ class ilObjMediaGallerySubItemListGUI extends ilSubItemListGUI
 				$title = $file->getFilename();
 			}
 
+			if($file->hasPreviewImage())
+			{
+				$image = $file->getPath(ilObjMediaGallery::LOCATION_PREVIEWS);
+			}
+			else if(!$file->hasPreviewImage() && $type == "image")
+			{
+				$image = $file->getPath(ilObjMediaGallery::LOCATION_THUMBS);
+			}
+			else if($type != "image" && !$file->hasPreviewImage() )
+			{
+				$image = $this->plugin->getDirectory() . '/templates/images/'.$type.'.png';
+			}
+
+			$this->tpl->setVariable('SUB_ITEM_IMAGE', ilUtil::img($image,$title,'50px'));
+			//$this->tpl->setVariable('SUBITEM_TYPE',$plugin->txt($type));
+			//$this->tpl->setVariable('SEPERATOR',':');
 			$this->tpl->setVariable('TITLE',$title);
+
+			$this->tpl->setVariable('LINK', $this->getItemListGUI()->getCommandLink("gallery"));
+			$this->tpl->setVariable('TARGET',$this->getItemListGUI()->getCommandFrame('123'));
+
 			$this->tpl->parseCurrentBlock();
 
 			if(count($this->getSubItemIds(true)) > 1)
 			{
 				$this->parseRelevance($sub_item);
 			}
-
-			$this->tpl->parseCurrentBlock();
 		}
 
 		$this->showDetailsLink();

@@ -7,7 +7,7 @@
     <Document type="subItem">
         <DataSource type="JDBC" action="create">
             <Query>
-                SELECT id, xmg_id, media_id, topic, title, description, filename
+                SELECT 'file' type, id, xmg_id, media_id, topic, title, description, filename
                 FROM rep_robj_xmg_filedata
                 WHERE xmg_id IN (?)
             </Query>
@@ -17,9 +17,21 @@
             <Field store="YES" index="ANALYZED" column="title" type="text" name="propertyHigh" />
             <Field store="YES" index="ANALYZED" column="description" type="text" name="propertyLow" />
             <Field store="YES" index="ANALYZED" column="filename" type="text" name="propertyHigh" />
+            <Field global="NO" store="YES" index="NOT_ANALYZED" column="type" type="text" name="type" />
             <Field store="YES" index="NOT_ANALYZED" column="id" type="integer" name="subItem" />
             <Field global="NO" store="YES" index="NOT_ANALYZED" column="xmg_id" type="integer" name="objId" />
 
+        </DataSource>
+        <DataSource type="JDBC" action="create">
+            <Query>
+                SELECT xmg_id, 'archive' type, filename
+                FROM rep_robj_xmg_downloads
+                WHERE download_flag = 1 AND xmg_id IN (?)
+            </Query>
+            <Param format="list" type="int" value="objId" />
+            <Field store="YES" index="ANALYZED" column="filename" type="text" name="propertyHigh" />
+            <Field global="NO" store="YES" index="NOT_ANALYZED" column="type" type="text" name="type" />
+            <Field global="NO" store="YES" index="NOT_ANALYZED" column="xmg_id" type="integer" name="objId" />
         </DataSource>
     </Document>
 </ObjectDefinition>
