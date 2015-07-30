@@ -5,6 +5,13 @@
  * Time: 14:38
  */
 
+/**
+ * Class ilMediaGalleryFile
+ *
+ * @author Fabian Wolf <wolf@leifos.com>
+ * @version $Id$
+ *
+ */
 class ilMediaGalleryFile
 {
 	/**

@@ -4,7 +4,13 @@
  * Date: 15.06.15
  * Time: 12:03
  */
-
+/**
+ * Class ilMediaGalleryArchives
+ *
+ * @author Fabian Wolf <wolf@leifos.com>
+ * @version $Id$
+ *
+ */
 class ilMediaGalleryArchives
 {
 	/**

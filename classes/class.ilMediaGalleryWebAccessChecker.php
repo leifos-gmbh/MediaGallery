@@ -6,11 +6,10 @@ include_once "Services/FileSystem/classes/class.ilFileSystemStorageWebAccessChec
 /**
 * Class ilMediaGalleryWebAccessChecker
 *
-* @author Fabian Wolf <wolf@leifos.com>
-* @version $Id$
-*
-* @ingroup ModulesPoll
-*/
+ * @author Fabian Wolf <wolf@leifos.com>
+ * @version $Id$
+ *
+ */
 class ilMediaGalleryWebAccessChecker extends ilFileSystemStorageWebAccessChecker
 {
 	public function isValidPath(array $a_path)

@@ -4,14 +4,12 @@
 include_once './Services/Object/classes/class.ilSubItemListGUI.php';
 
 /** 
-* Show forum threads
-* 
-* @author Stefan Meyer <meyer@leifos.com>
-* @version $Id$
-* 
+* Show MediaGallery files
 *
-* @ingroup ModulesForum
-*/
+ * @author Fabian Wolf <wolf@leifos.com>
+ * @version $Id$
+ *
+ */
 class ilObjMediaGallerySubItemListGUI extends ilSubItemListGUI
 {
 	/**

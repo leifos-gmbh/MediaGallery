@@ -6,6 +6,13 @@
  */
 include_once("./Services/FileSystem/classes/class.ilFileSystemStorage.php");
 
+/**
+ * Class ilFSStorageMediaGallery
+ *
+ * @author Fabian Wolf <wolf@leifos.com>
+ * @version $Id$
+ *
+ */
 class ilFSStorageMediaGallery extends ilFileSystemStorage
 {
 	private $log;
