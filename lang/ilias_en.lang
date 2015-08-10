@@ -133,5 +133,7 @@ pause#:#Pause
 playpause#:#Play/Pause
 max_upload_size#:#Maximum file size
 new_file_added#:#All files have been uploaded successfully.
-rotate_right_preview#:#Rotate image preview 90 degrees left
-rotate_left_preview#:#Rotate image preview 90 degrees right
+rotate_right_preview#:#Rotate preview image 90 degrees left
+rotate_left_preview#:#Rotate preview image 90 degrees right
+rotate_image#:#Rotate Image
+rotate_image_preview#:#Rotate Preview Image

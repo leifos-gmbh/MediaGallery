@@ -464,17 +464,17 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		switch($a_action)
 		{
 			case "rotateLeft":
-				$ret = $file->rotate(0);
-				break;
-			case "rotateRight":
 				$ret = $file->rotate(1);
 				break;
+			case "rotateRight":
+				$ret = $file->rotate(0);
+				break;
 			case "rotateLeftPreview":
-				$ret = $file->rotatePreview(0);
+				$ret = $file->rotatePreview(1);
 				break;
 
 			case "rotateRightPreview":
-				$ret = $file->rotatePreview(1);
+				$ret = $file->rotatePreview(0);
 				break;
 			default:
 				return false;

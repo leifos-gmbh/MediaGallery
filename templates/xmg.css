@@ -85,17 +85,14 @@ td.xmg_desc input {
 }
 
 td.xmg_type img {
+    width: 75px;
     height: auto;
-    width: auto;
-    min-width: 25px;
-    min-height: 25px;
-    max-height: 50px;
+    min-width: 75px;
 }
 td.xmg_action img {
-    width: 30px;
-    height: 25px;
-    min-width: 12px;
-    min-height: 12px;
+    height: 17px;
+    width: auto;
+    min-width: 17px;
 }
 
 .xmg_no_border {

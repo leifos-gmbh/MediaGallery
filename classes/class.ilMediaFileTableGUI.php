@@ -132,14 +132,13 @@ class ilMediaFileTableGUI extends ilTable2GUI
 	protected function addRotateFields($a_file, $a_preview = false)
 	{
 		$this->tpl->setCurrentBlock('rotate');
-		$this->tpl->setVariable("ROTATE_LEFT", $this->plugin->getDirectory() . '/templates/images/rotate_left.png');
+		$this->tpl->setVariable("CONTENT_TYPE", $this->plugin->txt("rotate_image". ($a_preview ? "_preview" : "")));
 		$this->ctrl->setParameter($this->parent_obj, "id", $a_file);
 		$this->ctrl->setParameter($this->parent_obj, "action", "rotateLeft". ($a_preview ? "Preview": ""));
 		$this->tpl->setVariable("URL_ROTATE_LEFT", $this->ctrl->getLinkTarget($this->parent_obj, 'mediafiles'));
 		$this->ctrl->setParameter($this->parent_obj, "action", "");
 		$this->ctrl->setParameter($this->parent_obj, "id", "");
 		$this->tpl->setVariable("TEXT_ROTATE_LEFT", $this->plugin->txt("rotate_left" . ($a_preview ? "_preview": "")));
-		$this->tpl->setVariable("ROTATE_RIGHT", $this->plugin->getDirectory() . '/templates/images/rotate_right.png');
 		$this->ctrl->setParameter($this->parent_obj, "id", $a_file);
 		$this->ctrl->setParameter($this->parent_obj, "action", "rotateRight". ($a_preview ? "Preview": ""));
 		$this->tpl->setVariable("URL_ROTATE_RIGHT", $this->ctrl->getLinkTarget($this->parent_obj, 'mediafiles'));

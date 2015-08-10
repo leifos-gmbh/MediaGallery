@@ -131,3 +131,5 @@ max_upload_size#:#Maximale Dateigröße
 new_file_added#:#Die Datei(en) wurde(n) erfolgreich hochgeladen.
 rotate_right_preview#:#Vorschaubild um 90° nach rechts drehen
 rotate_left_preview#:#Vorschaubild um 90° nach links drehen
+rotate_image#:#Bild drehen
+rotate_image_preview#:#Vorschaubild drehen
