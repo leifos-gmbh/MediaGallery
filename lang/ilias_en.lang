@@ -137,3 +137,4 @@ rotate_right_preview#:#Rotate preview image 90 degrees left
 rotate_left_preview#:#Rotate preview image 90 degrees right
 rotate_image#:#Rotate Image
 rotate_image_preview#:#Rotate Preview Image
+image_rotated#:#Image has been rotated successfully.

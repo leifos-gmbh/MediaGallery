@@ -489,6 +489,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		if (isset($_GET['action']) && isset($_GET['id']))
 		{
 			$this->performAction($_GET['id'], $_GET['action']);
+			ilUtil::sendSuccess($this->plugin->txt("image_rotated"), true);
 			$this->ctrl->setParameter($this, "action", "");
 			$this->ctrl->redirect($this, 'mediafiles');
 			return;
