@@ -180,7 +180,7 @@ class ilMediaFileTableGUI extends ilTable2GUI
 			$this->addRotateFields($data['id']);
 			$this->tpl->setVariable("PREVIEW_CLASS_BORDER", 'xmg_no_border');
 		}
-		else if ($data['content_type'] == ilObjMediaGallery::CONTENT_TYPE_VIDEO)
+		else if ($data['content_type'] == ilObjMediaGallery::CONTENT_TYPE_AUDIO)
 		{
 			$this->tpl->setVariable("PREVIEW", $this->plugin->getDirectory() . '/templates/images/audio.png');
 		}
