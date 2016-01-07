@@ -22,6 +22,7 @@
 */
 
 include_once('./Services/Table/classes/class.ilTable2GUI.php');
+include_once('./Services/WebAccessChecker/classes/class.ilWACSignedPath.php');
 
 /**
 *
@@ -168,7 +169,7 @@ class ilMediaFileTableGUI extends ilTable2GUI
 			{
 				$this->addRotateFields($data['id']);
 			}
-			$this->tpl->setVariable("PREVIEW", $this->parent_obj->object->getFS()->getFilePath(LOCATION_PREVIEWS,$data['pfilename'], true));
+			$this->tpl->setVariable("PREVIEW", ilWACSignedPath::signFile($this->parent_obj->object->getFS()->getFilePath(LOCATION_PREVIEWS,$data['pfilename'])));
 			$this->addRotateFields($data['id'], true);
 			$this->tpl->setVariable("PREVIEW_CLASS_BORDER", 'xmg_border');
 
@@ -176,7 +177,7 @@ class ilMediaFileTableGUI extends ilTable2GUI
 		}
 		else if ($data['content_type'] == ilObjMediaGallery::CONTENT_TYPE_IMAGE )
 		{
-			$this->tpl->setVariable("PREVIEW", $this->parent_obj->object->getFS()->getFilePath(LOCATION_THUMBS, $data['id'], true));
+			$this->tpl->setVariable("PREVIEW", ilWACSignedPath::signFile($this->parent_obj->object->getFS()->getFilePath(LOCATION_THUMBS, $data['id'])));
 			$this->addRotateFields($data['id']);
 			$this->tpl->setVariable("PREVIEW_CLASS_BORDER", 'xmg_no_border');
 		}

@@ -293,7 +293,13 @@ if(count($downloads) > 0)
 <#14>
 <?php
 $media_dir = ilUtil::getWebspaceDir(). "/mediagallery/";
-$objects = scandir($media_dir);
+
+$objects = array();
+
+if(file_exists($media_dir))
+{
+	$objects = scandir($media_dir);
+}
 
 if(count($objects) > 0 && $ilDB->tableExists('rep_robj_xmg_downloads') && $ilDB->tableColumnExists('rep_robj_xmg_downloads', 'id'))
 {
@@ -528,4 +534,18 @@ if(file_exists($media_dir))
 		rename($media_dir, $sec_dir."ilXmg/");
 	}
 }
+?>
+<#19>
+<?php
+$query = "DELETE FROM il_wac_secure_path ".
+	"WHERE path = ".$ilDB->quote('ilXmg','text');
+
+$res = $ilDB->manipulate($query);
+
+$ilDB->insert('il_wac_secure_path', array(
+	"path" 	=> array('text', 'ilXmg'),
+	"component_directory" => array('text', realpath('./Customizing/global/plugins/Services/Repository/RepositoryObject/MediaGallery/')),
+	"checking_class"	=> array('text', 'ilObjMediaGalleryAccess'),
+	"in_sec_folder" => array('integer', 1)
+));
 ?>

@@ -5,6 +5,8 @@
  * Time: 14:42
  */
 
+include_once('./Services/WebAccessChecker/classes/class.ilWACSignedPath.php');
+
 /**
  * Class ilMediaGalleryGUI
  *
@@ -225,11 +227,11 @@ class ilMediaGalleryGUI
 					$tpl_element->setVariable('MARGIN_LEFT', "4");
 					$tpl_element->parseCurrentBlock();
 				}
-				$tpl_element->setVariable('URL_VIDEO', $a_set->getPath(ilObjMediaGallery::LOCATION_ORIGINALS, true));
+				$tpl_element->setVariable('URL_VIDEO', ilWACSignedPath::signFile($a_set->getPath(ilObjMediaGallery::LOCATION_ORIGINALS, true)));
 				$tpl_element->setVariable('CAPTION', ilUtil::prepareFormOutput($a_set->getDescription()));
 				if ($this->preview_flag)
 				{
-					$tpl_element->setVariable('URL_THUMBNAIL', $a_set->getPath(ilObjMediaGallery::LOCATION_PREVIEWS, true) . "?t=" . time());
+					$tpl_element->setVariable('URL_THUMBNAIL', ilWACSignedPath::signFile($a_set->getPath(ilObjMediaGallery::LOCATION_PREVIEWS, true)));
 				}
 				else
 				{
@@ -269,7 +271,7 @@ class ilMediaGalleryGUI
 					$tpl_element->parseCurrentBlock();
 				}
 				$tpl_element->setVariable('INLINE_SECTION', "aud".$this->counter);
-				$tpl_element->setVariable('URL_VIDEO', $a_set->getPath(ilObjMediaGallery::LOCATION_ORIGINALS));
+				$tpl_element->setVariable('URL_VIDEO', ilWACSignedPath::signFile($a_set->getPath(ilObjMediaGallery::LOCATION_ORIGINALS)));
 				switch (strtolower($file_parts['extension']))
 				{
 					case 'webm':
@@ -289,7 +291,7 @@ class ilMediaGalleryGUI
 				$tpl_element->setVariable('CAPTION', ilUtil::prepareFormOutput($a_set->getDescription()));
 				if ($this->preview_flag)
 				{
-					$tpl_element->setVariable('URL_THUMBNAIL', $a_set->getPath(ilObjMediaGallery::LOCATION_PREVIEWS) . "?t=" . time());
+					$tpl_element->setVariable('URL_THUMBNAIL', ilWACSignedPath::signFile($a_set->getPath(ilObjMediaGallery::LOCATION_PREVIEWS)));
 				}
 				else
 				{
@@ -342,15 +344,15 @@ class ilMediaGalleryGUI
 			$tpl_element->setVariable('MARGIN_LEFT', "4");
 			$tpl_element->parseCurrentBlock();
 		}
-		$tpl_element->setVariable('URL_FULLSCREEN', $a_set->getPath(ilObjMediaGallery::LOCATION_SIZE_LARGE, true) . "?t=" . time());
+		$tpl_element->setVariable('URL_FULLSCREEN', ilWACSignedPath::signFile($a_set->getPath(ilObjMediaGallery::LOCATION_SIZE_LARGE, true)));
 		$tpl_element->setVariable('CAPTION', ilUtil::prepareFormOutput($a_set->getDescription()));
 		if ($this->preview_flag)
 		{
-			$tpl_element->setVariable('URL_THUMBNAIL', $a_set->getPath(ilObjMediaGallery::LOCATION_PREVIEWS, true)  . "?t=" . time());
+			$tpl_element->setVariable('URL_THUMBNAIL', ilWACSignedPath::signFile($a_set->getPath(ilObjMediaGallery::LOCATION_PREVIEWS, true)));
 		}
 		else
 		{
-			$tpl_element->setVariable('URL_THUMBNAIL', $a_set->getPath(ilObjMediaGallery::LOCATION_THUMBS, true) . "?t=" . time());
+			$tpl_element->setVariable('URL_THUMBNAIL',ilWACSignedPath::signFile( $a_set->getPath(ilObjMediaGallery::LOCATION_THUMBS, true)));
 		}
 		$tpl_element->setVariable('ALT_THUMBNAIL', ilUtil::prepareFormOutput($a_set->getTitle()));
 
@@ -392,11 +394,11 @@ class ilMediaGalleryGUI
 			$tpl_element->parseCurrentBlock();
 		}
 		$tpl_element->setVariable('INLINE_SECTION', "aud".$this->counter);
-		$tpl_element->setVariable('URL_AUDIO', $a_set->getPath(ilObjMediaGallery::LOCATION_ORIGINALS, true) );
+		$tpl_element->setVariable('URL_AUDIO', ilWACSignedPath::signFile($a_set->getPath(ilObjMediaGallery::LOCATION_ORIGINALS, true)) );
 		$tpl_element->setVariable('CAPTION', ilUtil::prepareFormOutput($a_set->getDescription()));
 		if ($this->preview_flag)
 		{
-			$tpl_element->setVariable('URL_THUMBNAIL', $a_set->getPath(ilObjMediaGallery::LOCATION_ORIGINALS, true) . "?t=" . time());
+			$tpl_element->setVariable('URL_THUMBNAIL',ilWACSignedPath::signFile( $a_set->getPath(ilObjMediaGallery::LOCATION_ORIGINALS, true)));
 		}
 		else
 		{
@@ -454,7 +456,7 @@ class ilMediaGalleryGUI
 		$tpl_element->setVariable('CAPTION', ilUtil::prepareFormOutput($a_set->getDescription()));
 		if ($this->preview_flag)
 		{
-			$tpl_element->setVariable('URL_THUMBNAIL', $a_set->getPath(ilObjMediaGallery::LOCATION_PREVIEWS) . "?t=" . time());
+			$tpl_element->setVariable('URL_THUMBNAIL', ilWACSignedPath::signFile($a_set->getPath(ilObjMediaGallery::LOCATION_PREVIEWS)));
 		}
 		else
 		{

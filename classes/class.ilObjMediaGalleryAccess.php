@@ -1,6 +1,7 @@
 <?php
 
 include_once("./Services/Repository/classes/class.ilObjectPluginAccess.php");
+include_once("./Services/WebAccessChecker/interfaces/interface.ilWACCheckingClass.php");
 
 /**
 * Access/Condition checking for MediaGallery object
@@ -11,7 +12,7 @@ include_once("./Services/Repository/classes/class.ilObjectPluginAccess.php");
 * @author Helmut Schottmüller <ilias@aurealis.de>
 * @version $Id$
 */
-class ilObjMediaGalleryAccess extends ilObjectPluginAccess
+class ilObjMediaGalleryAccess extends ilObjectPluginAccess  implements ilWACCheckingClass
 {
 
 	/**
@@ -50,7 +51,24 @@ class ilObjMediaGalleryAccess extends ilObjectPluginAccess
 
 		return true;
 	}
-	
+
+	/**
+	 * @param ilWACPath $ilWACPath
+	 *
+	 * @return bool
+	 */
+	public function canBeDelivered(ilWACPath $ilWACPath) {
+		global $ilAccess;
+		preg_match("/\\/xmg_([\\d]*)\\//uism", $ilWACPath->getPath(), $results);
+
+		foreach (ilObject2::_getAllReferences($results[1]) as $ref_id) {
+			if ($ilAccess->checkAccess('read', '', $ref_id)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 	
 }
 
