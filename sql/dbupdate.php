@@ -293,7 +293,13 @@ if(count($downloads) > 0)
 <#14>
 <?php
 $media_dir = ilUtil::getWebspaceDir(). "/mediagallery/";
-$objects = scandir($media_dir);
+$objects = array();
+
+if(file_exists($media_dir))
+{
+	$objects = scandir($media_dir);
+}
+
 
 if(count($objects) > 0 && $ilDB->tableExists('rep_robj_xmg_downloads') && $ilDB->tableColumnExists('rep_robj_xmg_downloads', 'id'))
 {
