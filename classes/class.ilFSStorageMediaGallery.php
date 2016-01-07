@@ -46,17 +46,36 @@ class ilFSStorageMediaGallery extends ilFileSystemStorage
 	}
 
 	/**
-	 * Constructor
-	 *
-	 * @access public
-	 *
+	 * deletes folder ./data/[client]/sec/ilXmg recursively
 	 */
-	public function __construct($a_container_id = 0)
+	public static function _deletePluginData()
+	{
+		$fs = new self();
+
+		$path = ilUtil::getWebspaceDir();
+		$path = ilUtil::removeTrailingPathSeparators($path);
+		$path .= '/'.parent::SECURED_DIRECTORY;
+
+		$path = ilUtil::removeTrailingPathSeparators($path);
+		$path .= '/';
+
+		// Append path prefix
+		$path .= ($fs->getPathPrefix().'/');
+
+		$fs->deleteDirectory($path);
+	}
+
+	/**
+	 * ilFSStorageMediaGallery constructor.
+	 * @param int $a_container_id
+	 * @param bool $a_path_conversion
+	 */
+	public function __construct($a_container_id = 0, $a_path_conversion = false)
 	{
 		global $log;
 
 		$this->log = $log;
-		parent::__construct(ilFileSystemStorage::STORAGE_SECURED,false,$a_container_id);
+		parent::__construct(ilFileSystemStorage::STORAGE_SECURED,$a_path_conversion,$a_container_id);
 	}
 
 	function getPathPrefix()
@@ -231,7 +250,7 @@ class ilFSStorageMediaGallery extends ilFileSystemStorage
 		if(!isset($this->mime_cache[$a_file_id][$a_location]))
 		{
 			include_once "./Services/Utilities/classes/class.ilMimeTypeUtil.php";
-			$this->mime_cache[$a_file_id][$a_location] = ilMimeTypeUtil::getMimeType($this->getFilePath($a_location, $a_file_id));
+			$this->mime_cache[$a_file_id][$a_location] = ilMimeTypeUtil::lookupMimeType($this->getFilePath($a_location, $a_file_id));
 		}
 
 		return 	$this->mime_cache[$a_file_id][$a_location];

@@ -1,5 +1,5 @@
 ******************************************************************************
-# INSTALLATION INSTRUCTIONS   (You need at least ILIAS 5.0.0)
+# INSTALLATION INSTRUCTIONS   (You need at least ILIAS 5.1.0)
 ******************************************************************************
 
 1. Copy the content of this folder in <ILIAS_directory>/Customizing/global/plugins/Services/Repository/RepositoryObject/MediaGallery
