@@ -77,8 +77,6 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 			case "addPreview":
 			case "deletePreview":
 			case "uploadPreview":
-			case "downloadOriginal":
-			case "downloadOther":
 			case "resetFilterMedia":
 			case "createMissingPreviews":
 			case "archives":
@@ -91,6 +89,8 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 				$this->$cmd();
 				break;
 			case "download":
+			case "downloadOriginal":
+			case "downloadOther":
 			case "gallery":	
 			case "export":// list all commands that need read permission here
 				$this->checkPermission("read");
@@ -713,8 +713,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 
 	public function renameArchiveFilename()
 	{
-		if (file_exists($this->plugin->getFileSystem()->getFilePath($_POST['filename'].".zip",
-			ilObjMediaGallery::LOCATION_DOWNLOADS)))
+		if (!file_exists($this->plugin->getFileSystem()->getPath(ilObjMediaGallery::LOCATION_DOWNLOADS, $_POST['filename'].".zip")))
 		{
 			ilUtil::sendFailure($this->plugin->txt('please_select_unique_archive_name'), true);
 			$this->ctrl->redirect($this, 'setArchiveFilename');
