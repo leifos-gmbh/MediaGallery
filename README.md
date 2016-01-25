@@ -1,7 +1,20 @@
-******************************************************************************
-# INSTALLATION INSTRUCTIONS   (You need at least ILIAS 5.1.0)
-******************************************************************************
+# MediaGallery
 
+MediaGallery is a repository plugin to store media items like pictures, videos and audios to view and share it in ILIAS as a gallery.
+
+**Minimum ILIAS Version:**
+5.1.0
+
+**Maximum ILIAS Version:**
+5.1.999
+
+**Responsible Developer:**
+Fabian Wolf - wolf AT leifos.com
+
+**Supported Languages:**
+German, English
+
+### Quick Installation Guide
 1. Copy the content of this folder in <ILIAS_directory>/Customizing/global/plugins/Services/Repository/RepositoryObject/MediaGallery
 
 2. Access to ILIAS and go to the administration page.
