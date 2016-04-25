@@ -164,11 +164,12 @@ class ilObjMediaGallery extends ilObjectPlugin
 			array($this->getId())
 		);
 	}
-	
+
 	/**
-	* Do Cloning
-	* This method is called, when a repository object is copied.
-	*/
+	 * @param self $new_obj
+	 * @param int $a_target_id
+	 * @param int $a_copy_id
+	 */
 	function doCloneObject($new_obj, $a_target_id,$a_copy_id)
 	{
 		/*ilUtil::rCopy($this->fs->getPath(self::LOCATION_PREVIEWS), $new_obj->fs->getPath(self::LOCATION_PREVIEWS));
@@ -184,8 +185,10 @@ class ilObjMediaGallery extends ilObjectPlugin
 		$new_obj->doUpdate();
 		$fss = ilFSStorageMediaGallery::_getInstanceByXmgId($a_copy_id);
 		$fss->create();
-		ilMediaGalleryFile::_clone($a_target_id, $a_copy_id);
-		ilMediaGalleryArchives::_clone($a_target_id, $a_copy_id);
+		$this->plugin->includeClass("class.ilMediaGalleryFile.php");
+		ilMediaGalleryFile::_clone($this->getId(), $new_obj->getId());
+		$this->plugin->includeClass("class.ilMediaGalleryArchives.php");
+		ilMediaGalleryArchives::_clone($this->getId(), $new_obj->getId());
 		//$new_obj->createMissingPreviews();
 		//$new_obj->restoreCustomPreviews();
 	}

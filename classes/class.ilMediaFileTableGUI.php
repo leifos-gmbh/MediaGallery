@@ -40,7 +40,7 @@ class ilMediaFileTableGUI extends ilTable2GUI
 	/**
 	 * @var ilObjMediaGalleryGUI
 	 */
-	protected $parent_object;
+	protected $parent_obj;
 	
 	/**
 	 * Constructor
@@ -169,6 +169,8 @@ class ilMediaFileTableGUI extends ilTable2GUI
 			{
 				$this->addRotateFields($data['id']);
 			}
+			
+			
 			$this->tpl->setVariable("PREVIEW", ilWACSignedPath::signFile($this->parent_obj->object->getFS()->getFilePath(LOCATION_PREVIEWS,$data['pfilename'])));
 			$this->addRotateFields($data['id'], true);
 			$this->tpl->setVariable("PREVIEW_CLASS_BORDER", 'xmg_border');
@@ -193,7 +195,6 @@ class ilMediaFileTableGUI extends ilTable2GUI
 		{
 			$this->tpl->setVariable("PREVIEW", $this->parent_obj->object->getMimeIconPath($data['id']));
 		}
-		$this->tpl->setVariable("TIMESTAMP", time());
 		$this->tpl->setVariable("TEXT_PREVIEW", strlen($data['title']) ? ilUtil::prepareFormOutput($data['title']) : ilUtil::prepareFormOutput($data['filename']));
 		$this->tpl->setVariable("ID", $data['entry']);
 		if ($data['custom'] == 0) 
