@@ -566,6 +566,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 			$this->initArchiveFilenameForm("create");
 			$this->form->getItemByPostVar("filename")->setValue($_POST["filename"]);
 			$tpl->setContent($this->form->getHTML());
+			return;
 		}
 
 		$archive->createArchive($_SESSION['archive_files'], $_POST["filename"] . ".zip");
@@ -791,7 +792,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 			$file->setTopic( $_POST['topic'][$fid]);
 			$file->setTitle($_POST['title'][$fid]);
 			$file->setDescription($_POST['description'][$fid]);
-			$file->setSorting(is_numeric($_POST['custom'][$fid])?$_POST['custom'][$fid]:0);
+			$file->setSorting(is_numeric($_POST['custom'][$fid])?($_POST['custom'][$fid]*10):0);
 			$file->update();
 		}
 		ilUtil::sendSuccess($this->plugin->txt('file_data_saved'), true);
@@ -800,6 +801,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 	
 	protected function normalizeUtf8String( $s)
 	{
+		$org = $s;
 		// maps German (umlauts) and other European characters onto two characters before just removing diacritics
 		$s    = preg_replace( '@\x{00c4}@u'    , "AE",    $s );    // umlaut Ä => AE
 		$s    = preg_replace( '@\x{00d6}@u'    , "OE",    $s );    // umlaut Ö => OE
@@ -854,9 +856,9 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 
 		// possible errors in UTF8-regular-expressions
 		if (empty($s))
-			return $original_string;
+			return $org;
 		else
-			return $s; 
+			return $s;
 	}
 
 	public function uploadFile()
