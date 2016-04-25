@@ -527,7 +527,6 @@ class ilMediaGalleryFile
 	public function getContentType($a_location  = ilObjMediaGallery::LOCATION_ORIGINALS)
 	{
 		include_once "./Services/Utilities/classes/class.ilMimeTypeUtil.php";
-
 		return self::_contentType($this->getMimeType($a_location), $this->getFileInfo("extension", $a_location));
 	}
 
@@ -824,28 +823,33 @@ class ilMediaGalleryFile
 		$fsd = ilFSStorageMediaGallery::_getInstanceByXmgId($a_dest_xmg_id);
 
 		@copy($fss->getPath(ilObjMediaGallery::LOCATION_PREVIEWS), $fsd->getPath(ilObjMediaGallery::LOCATION_PREVIEWS));
-		/**
-		 * @var $file self
-		 */
-		foreach($files as $file)
-		{
-			$fsource_id = $file->getId();
-			$file->setMediaId($a_dest_xmg_id);
-			$file->setId(0);
-			$file->create();
-			@copy($fss->getFilePath(ilObjMediaGallery::LOCATION_ORIGINALS, $fsource_id),
-				$file->getPath(ilObjMediaGallery::LOCATION_ORIGINALS));
 
-			if($file->getContentType() == ilObjMediaGallery::CONTENT_TYPE_IMAGE)
+		/**
+		 * @var $sfile self
+		 */
+		foreach($files as $sfile)
+		{
+			$dfile = new ilMediaGalleryFile();
+			$dfile->setValuesByArray($sfile->getValueArray());
+			$dfile->setGalleryId($a_dest_xmg_id);
+			$dfile->create();
+			$ext = pathinfo($sfile->getPath(ilObjMediaGallery::LOCATION_ORIGINALS), PATHINFO_EXTENSION);
+
+			@copy($sfile->getPath(ilObjMediaGallery::LOCATION_ORIGINALS),
+				$dfile->getPath(ilObjMediaGallery::LOCATION_ORIGINALS).$dfile->getId().'.'.$ext);
+
+			if($sfile->getContentType() == ilObjMediaGallery::CONTENT_TYPE_IMAGE)
 			{
-				@copy($fss->getFilePath(ilObjMediaGallery::LOCATION_SIZE_LARGE, $fsource_id),
-					$file->getPath(ilObjMediaGallery::LOCATION_SIZE_LARGE));
-				@copy($fss->getFilePath(ilObjMediaGallery::LOCATION_SIZE_MEDIUM, $fsource_id),
-					$file->getPath(ilObjMediaGallery::LOCATION_SIZE_MEDIUM));
-				@copy($fss->getFilePath(ilObjMediaGallery::LOCATION_SIZE_SMALL, $fsource_id),
-					$file->getPath(ilObjMediaGallery::LOCATION_SIZE_SMALL));
-				@copy($fss->getFilePath(ilObjMediaGallery::LOCATION_THUMBS, $fsource_id),
-					$file->getPath(ilObjMediaGallery::LOCATION_THUMBS));
+				$ext = pathinfo($sfile->getPath(ilObjMediaGallery::LOCATION_SIZE_LARGE), PATHINFO_EXTENSION);
+
+				copy($sfile->getPath(ilObjMediaGallery::LOCATION_SIZE_LARGE),
+					  $dfile->getPath(ilObjMediaGallery::LOCATION_SIZE_LARGE).$dfile->getId().'.'.$ext);
+				copy($sfile->getPath(ilObjMediaGallery::LOCATION_SIZE_MEDIUM),
+					  $dfile->getPath(ilObjMediaGallery::LOCATION_SIZE_MEDIUM).$dfile->getId().'.'.$ext);
+				copy($sfile->getPath(ilObjMediaGallery::LOCATION_SIZE_SMALL),
+					  $dfile->getPath(ilObjMediaGallery::LOCATION_SIZE_SMALL).$dfile->getId().'.'.$ext);
+				copy($sfile->getPath(ilObjMediaGallery::LOCATION_THUMBS),
+					  $dfile->getPath(ilObjMediaGallery::LOCATION_THUMBS).$dfile->getId().'.'.$ext);
 			}
 		}
 	}
