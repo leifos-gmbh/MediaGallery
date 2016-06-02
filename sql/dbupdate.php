@@ -549,3 +549,10 @@ $ilDB->insert('il_wac_secure_path', array(
 	"in_sec_folder" => array('integer', 1)
 ));
 ?>
+<#20>
+<?php
+if ($ilDB->tableExists('rep_robj_xmg_filedata'))
+{
+	$res = $ilDB->manipulate("UPDATE rep_robj_xmg_filedata SET media_id = '' WHERE media_id = '0'");
+}
+?>

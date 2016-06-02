@@ -322,7 +322,7 @@ class ilMediaGalleryFile
 			return array(
 				"id" => array("integer", $this->getId()),
 				"xmg_id" => array("integer", $this->getGalleryId()),
-				"media_id" => array("integer",$this->getMediaId()),
+				"media_id" => array("text",$this->getMediaId()),
 				"topic" => array("text", $this->getTopic()),
 				"title" => array("text", $this->getTitle()),
 				"description" => array("text", $this->getDescription()),
