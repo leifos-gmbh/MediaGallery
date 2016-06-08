@@ -64,7 +64,7 @@ class ilMediaFileTableGUI extends ilTable2GUI
 		$this->setFormName('mediaobjectlist');
 		$this->setStyle('table', 'fullwidth');
 		$this->addColumn('','f','1%');
-		$this->addColumn($this->lng->txt("filename"),'entry', '', '', 'xmg_fn');
+		$this->addColumn($this->lng->txt("filename"),'filename', '', '', 'xmg_fn');
 		$this->addColumn('','', '', '', 'xmg_preview');
 		$this->addColumn('','', '', '', 'xmg_action');
 		$this->addColumn($this->plugin->txt("sort"),'custom', '', '', 'xmg_custom');
@@ -75,7 +75,7 @@ class ilMediaFileTableGUI extends ilTable2GUI
 	
 		$this->setRowTemplate("tpl.mediafiles_row.html", 'Customizing/global/plugins/Services/Repository/RepositoryObject/MediaGallery');
 
-		$this->setDefaultOrderField("entry");
+		$this->setDefaultOrderField("filename");
 		$this->setDefaultOrderDirection("asc");
 		$this->setFilterCommand('filterMedia');
 		$this->setResetCommand('resetFilterMedia');
@@ -194,7 +194,7 @@ class ilMediaFileTableGUI extends ilTable2GUI
 		}
 		$this->tpl->setVariable("TIMESTAMP", time());
 		$this->tpl->setVariable("TEXT_PREVIEW", strlen($data['title']) ? ilUtil::prepareFormOutput($data['title']) : ilUtil::prepareFormOutput($data['filename']));
-		$this->tpl->setVariable("ID", $data['entry']);
+		$this->tpl->setVariable("ID", $data['filename']);
 		if ($data['custom'] == 0) 
 		{
 			$data['custom'] = $this->customsort;

@@ -485,7 +485,7 @@ class ilMediaGalleryGUI
 		$this->ctpl = $this->plugin->getTemplate("tpl.gallery.html");
 		$counter = 0;
 		$this->sortkey = $this->object->getSortOrder();
-		if (!strlen($this->sortkey)) $this->sortkey = 'entry';
+		if (!strlen($this->sortkey)) $this->sortkey = 'filename';
 		uasort($mediafiles, array($this, 'gallerysort'));
 
 		/**
