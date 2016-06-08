@@ -556,3 +556,10 @@ if ($ilDB->tableExists('rep_robj_xmg_filedata'))
 	$res = $ilDB->manipulate("UPDATE rep_robj_xmg_filedata SET media_id = '' WHERE media_id = '0'");
 }
 ?>
+<#21>
+<?php
+if ($ilDB->tableExists('rep_robj_xmg_object'))
+{
+	$res = $ilDB->manipulate("UPDATE rep_robj_xmg_object SET sortorder = 'filename' WHERE sortorder = 'entry'");
+}
+?>

@@ -268,7 +268,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		$so = new ilSelectInputGUI($this->plugin->txt("sort_order"), "sort");
 		$so->setOptions(
 			array(
-				'entry' => $this->txt('filename'),
+				'filename' => $this->txt('filename'),
 				'media_id' => $this->txt('id'),
 				'topic' => $this->txt('topic'),
 				'title' => $this->txt('title'),
