@@ -758,13 +758,14 @@ class ilMediaGalleryFile
 	 * @param string $a_configuration_value
 	 * @return array
 	 */
-	protected static function _extConfigToArray($a_configuration_value)
+	protected static function _extConfigToArray($a_key)
 	{
-		if(strpos($a_configuration_value, 'ext_'))
+		if(strpos($a_key, 'ext_') === false)
 		{
-			$a_configuration_value = ilObjMediaGallery::_getConfigurationValue($a_configuration_value);
+			return array();
 		}
-		$array = explode(',', $a_configuration_value);
+
+		$array = explode(',', ilObjMediaGallery::_getConfigurationValue($a_key));
 		$array = array_map('strtolower', $array);
 		$array = array_map('trim', $array);
 		return $array;
