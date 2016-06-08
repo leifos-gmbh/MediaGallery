@@ -640,7 +640,9 @@ class ilMediaGalleryFile
 
 		$ret = array();
 
-		$res = $ilDB->query("SELECT * FROM rep_robj_xmg_filedata WHERE xmg_id = ". $ilDB->quote($a_xmg_id, "integer"));
+		$a_filter['xmg_id'] = $a_xmg_id;
+
+		$res = $ilDB->query("SELECT * FROM rep_robj_xmg_filedata ". self::_buildWhereStatement($a_filter));
 
 		while($row = $ilDB->fetchAssoc($res))
 		{
@@ -669,21 +671,22 @@ class ilMediaGalleryFile
 				$obj = self::$objects[$row["id"]];
 			}
 
-			if(count($a_filter) == 0 || in_array($obj->getContentType(), $a_filter))
+			if(isset($a_filter['type']) && $a_filter['type'] && $a_filter['type'] != $obj->getContentType())
 			{
-				if($a_return_objects)
-				{
-					$ret[$row["id"]] = self::$objects[$row["id"]];
-				}
-				else
-				{
-					$ret[$row["id"]] = $arr;
-					$ret[$row["id"]]['has_preview'] = $obj->hasPreviewImage();
-					$ret[$row["id"]]['content_type'] =  $obj->getContentType();
-					$ret[$row["id"]]['size'] =  $obj->getSize();
-				}
+				continue;
 			}
 
+			if($a_return_objects)
+			{
+				$ret[$row["id"]] = self::$objects[$row["id"]];
+			}
+			else
+			{
+				$ret[$row["id"]] = $arr;
+				$ret[$row["id"]]['has_preview'] = $obj->hasPreviewImage();
+				$ret[$row["id"]]['content_type'] =  $obj->getContentType();
+				$ret[$row["id"]]['size'] =  $obj->getSize();
+			}
 		}
 
 		return $ret;
@@ -894,5 +897,44 @@ class ilMediaGalleryFile
 		}
 
 		return $filename;
+	}
+
+	/**
+	 * @param array $a_filter
+	 * @return string
+	 */
+	protected static function _buildWhereStatement($a_filter)
+	{
+		global $ilDB;
+
+		$like_filters = array("media_id", "topic", "title", "description", "filename", "pfilename");
+
+		$where = array();
+
+		foreach($like_filters as $filter)
+		{
+			if(isset($a_filter[$filter]))
+			{
+				$where[] = $ilDB->like($filter, 'text', '%'.$a_filter[$filter].'%', false);
+			}
+		}
+
+		if(isset($a_filter['id']))
+		{
+			$where[] = 'id = ' . $ilDB->quote($a_filter['id'], 'integer');
+		}
+
+		if(isset($a_filter['xmg_id']))
+		{
+			$where[] = 'xmg_id = ' . $ilDB->quote($a_filter['xmg_id'], 'integer');
+		}
+
+		if(count($where))
+		{
+			return 'WHERE ' . implode(' AND ' , $where);
+		}
+		else{
+			return "";
+		}
 	}
 } 

@@ -42,11 +42,12 @@ class ilObjMediaGallery extends ilObjectPlugin
 	const LOCATION_DOWNLOADS = 6;
 	const LOCATION_PREVIEWS = 7;
 
-	const CONTENT_TYPE_UNKNOWN = 0;
+
 	const CONTENT_TYPE_VIDEO = 1;
 	const CONTENT_TYPE_IMAGE = 2;
 	const CONTENT_TYPE_AUDIO = 3;
-
+	const CONTENT_TYPE_UNKNOWN = 4;
+	
 	const IMAGE_SIZE_THUMBS = 150;
 	const IMAGE_SIZE_SMALL = 800;
 	const IMAGE_SIZE_MEDIUM = 1280;

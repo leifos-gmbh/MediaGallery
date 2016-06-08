@@ -267,12 +267,12 @@ class ilMediaFileTableGUI extends ilTable2GUI
 		$this->filter["f_type"] = $si->getValue();
 
 		// filename
-		$entry = new ilTextInputGUI($this->plugin->txt("filename"), "f_entry");
+		$entry = new ilTextInputGUI($this->plugin->txt("filename"), "f_filename");
 		$entry->setMaxLength(64);
 		$entry->setSize(20);
 		$this->addFilterItem($entry);
 		$entry->readFromSession();
-		$this->filter["f_entry"] = $entry->getValue();
+		$this->filter["f_filename"] = $entry->getValue();
 
 		// id
 		$mid = new ilTextInputGUI($this->plugin->txt("id"), "f_media_id");
