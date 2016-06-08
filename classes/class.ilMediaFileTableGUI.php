@@ -97,13 +97,21 @@ class ilMediaFileTableGUI extends ilTable2GUI
 	
 	public function gallerysort($x, $y) 
 	{
+		$order_field = $this->getOrderField();
+
+		if(!$x[$order_field] && !$y[$order_field])
+		{
+			//fallback if one falue is empty
+			$order_field = 'custom';
+		}
+
 		switch ($this->getOrderDirection())
 		{
 			case 'asc':
-				return strnatcasecmp($x[$this->getOrderField()], $y[$this->getOrderField()]);
+				return strnatcasecmp($x[$order_field], $y[$order_field]);
 				break;
 			case 'desc':
-				return strnatcasecmp($y[$this->getOrderField()], $x[$this->getOrderField()]);
+				return strnatcasecmp($y[$order_field], $x[$order_field]);
 				break;
 		}
 		return 0;

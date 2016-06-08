@@ -270,22 +270,16 @@ class ilMediaGalleryGUI
 				}
 				$tpl_element->setVariable('INLINE_SECTION', "aud".$this->counter);
 				$tpl_element->setVariable('URL_VIDEO', $a_set->getPath(ilObjMediaGallery::LOCATION_ORIGINALS));
-				switch (strtolower($file_parts['extension']))
+
+				if(strtolower($file_parts['extension']) == 'mov')
 				{
-					case 'webm':
-						$tpl_element->setVariable('TYPE_VIDEO', "video/webm");
-						break;
-					case 'ogv':
-						$tpl_element->setVariable('TYPE_VIDEO', "video/ogg");
-						break;
-					case 'mov':
-						$tpl_element->setVariable('TYPE_VIDEO', "video/mp4; codecs=avc1.42E01E, mp4a.40.2");
-						break;
-					case 'mp4':
-					default:
-						$tpl_element->setVariable('TYPE_VIDEO', "video/mp4");
-						break;
+					$tpl_element->setVariable('TYPE_VIDEO', "video/mp4; codecs=avc1.42E01E, mp4a.40.2");
 				}
+				else
+				{
+					$tpl_element->setVariable('TYPE_VIDEO', $a_set->getMimeType());
+				}
+
 				$tpl_element->setVariable('CAPTION', ilUtil::prepareFormOutput($a_set->getDescription()));
 				if ($this->preview_flag)
 				{
@@ -532,6 +526,12 @@ class ilMediaGalleryGUI
 	 */
 	protected function gallerysort($x, $y)
 	{
+		if(!$x[$this->sortkey] && !$y[$this->sortkey])
+		{
+			//fallback if one falue is empty
+			return strnatcasecmp($x['custom'], $y['custom']);
+		}
+
 		return strnatcasecmp($x[$this->sortkey], $y[$this->sortkey]);
 	}
 } 
