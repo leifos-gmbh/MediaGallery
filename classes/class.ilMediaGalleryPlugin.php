@@ -49,6 +49,10 @@ class ilMediaGalleryPlugin extends ilRepositoryObjectPlugin
 			"WHERE path = ".$ilDB->quote('ilXmg','text');
 
 		$res = $ilDB->manipulate($query);
+
+		include_once './Services/Administration/classes/class.ilSetting.php';
+		$setting = new ilSetting("xmg");
+		$setting->deleteAll();
 	}
 }
 ?>

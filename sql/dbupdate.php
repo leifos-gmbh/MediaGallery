@@ -563,3 +563,9 @@ if ($ilDB->tableExists('rep_robj_xmg_object'))
 	$res = $ilDB->manipulate("UPDATE rep_robj_xmg_object SET sortorder = 'filename' WHERE sortorder = 'entry'");
 }
 ?>
+<#22>
+<?php
+include_once './Services/Administration/classes/class.ilSetting.php';
+$setting = new ilSetting("xmg");
+$setting->delete('sort');
+?>
