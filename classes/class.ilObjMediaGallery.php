@@ -28,7 +28,7 @@ class ilObjMediaGallery extends ilObjectPlugin
 	protected $size_small = 800;
 	protected $size_medium = 1280;
 	protected $size_large = 2048;
-	protected $sortorder = 'entry';
+	protected $sortorder = 'filename';
 	protected $showTitle = 0;
 	protected $download = 0;
 	protected $theme = '';
@@ -119,7 +119,7 @@ class ilObjMediaGallery extends ilObjectPlugin
 			$this->setShowTitle(0);
 			$this->setDownload(0);
 			$this->setTheme(ilObjMediaGallery::_getConfigurationValue('theme'));
-			$this->setSortOrder('entry');
+			$this->setSortOrder('filename');
 		}
 	}
 	
