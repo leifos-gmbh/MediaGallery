@@ -16,14 +16,6 @@ class ilMediaGalleryPlugin extends ilRepositoryObjectPlugin
 		return "MediaGallery";
 	}
 
-	/**
-	 * @return \ilFSStorageMediaGallery
-	 */
-	public function getFileSystem()
-	{
-		return ilFSStorageMediaGallery::_getInstanceByXmgId($this->getId());
-	}
-
 	public function uninstallCustom()
 	{
 		global $ilDB;

@@ -24,6 +24,9 @@ include_once("./Services/Repository/classes/class.ilObjectPluginGUI.php");
 */
 class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 {
+	/**
+	 * @var ilMediaGalleryPlugin
+	 */
 	protected $plugin;
 	protected $sortkey;
 	/**
@@ -397,6 +400,11 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 	{
 		$archives = ilMediaGalleryArchives::_getInstanceByXmgId($this->object_id);
 		$filename = $archives->getArchiveFilename($_POST['archive']);
+		if(!file_exists($archives->getPath($filename)))
+		{
+			ilUtil::sendFailure($this->plugin->txt('file_not_found'));
+			$this->ctrl->redirect($this, 'gallery');
+		}
 		ilUtil::deliverFile($archives->getPath($filename), $filename, 'application/zip');
 		$this->ctrl->redirect($this, 'gallery');
 	}
@@ -422,6 +430,12 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 	{
 		$file = ilMediaGalleryFile::_getInstanceById($_GET['id']);
 
+		if(!file_exists($file->getPath(ilObjMediaGallery::LOCATION_ORIGINALS)))
+		{
+			ilUtil::sendFailure($this->plugin->txt('file_not_found'));
+			$this->ctrl->redirect($this, 'gallery');
+		}
+
 		if ($this->object->getDownload())
 		{
 			ilUtil::deliverFile($file->getPath(ilObjMediaGallery::LOCATION_ORIGINALS) , $file->getFilename(), $file->getMimeType());
@@ -435,6 +449,12 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 	function downloadOther()
 	{
 		$file = ilMediaGalleryFile::_getInstanceById($_GET['id']);
+
+		if(!file_exists($file->getPath(ilObjMediaGallery::LOCATION_ORIGINALS)))
+		{
+			ilUtil::sendFailure($this->plugin->txt('file_not_found'));
+			$this->ctrl->redirect($this, 'gallery');
+		}
 
 		ilUtil::deliverFile($file->getPath(ilObjMediaGallery::LOCATION_ORIGINALS) , $file->getFilename(), $file->getMimeType());
 	}
@@ -714,7 +734,14 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 
 	public function renameArchiveFilename()
 	{
-		if (!file_exists($this->plugin->getFileSystem()->getPath(ilObjMediaGallery::LOCATION_DOWNLOADS, $_POST['filename'].".zip")))
+		if($_SESSION['archiveFilename'] == $_POST['filename'])
+		{
+			ilUtil::sendSuccess($this->plugin->txt('rename_successful'), true);
+			unset($_SESSION['archiveFilename']);
+			$this->ctrl->redirect($this, 'archives');
+		}
+		elseif (file_exists(ilFSStorageMediaGallery::_getInstanceByXmgId($this->object_id)
+								->getFilePath(ilObjMediaGallery::LOCATION_DOWNLOADS, $_POST['filename'].".zip")))
 		{
 			ilUtil::sendFailure($this->plugin->txt('please_select_unique_archive_name'), true);
 			$this->ctrl->redirect($this, 'setArchiveFilename');
@@ -725,8 +752,9 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 			{
 				$archives = ilMediaGalleryArchives::_getInstanceByXmgId($this->object_id);
 				$archives->renameArchive($_SESSION['archiveFilename'] . '.zip', $_POST['filename'] . '.zip');
-
 				unset($_SESSION['archiveFilename']);
+
+				ilUtil::sendSuccess($this->plugin->txt('rename_successful'), true);
 				$this->ctrl->redirect($this, 'archives');
 			}
 			else

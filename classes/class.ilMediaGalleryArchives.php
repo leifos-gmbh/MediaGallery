@@ -116,8 +116,8 @@ class ilMediaGalleryArchives
 				"xmg_id" => $row["xmg_id"],
 				"download_flag" => $row["download_flag"],
 				"filename" => $row["filename"],
-				"created" => filectime($this->getPath($row["filename"])),
-				"size" => filesize($this->getPath($row["filename"]))
+				"created" => @filectime($this->getPath($row["filename"])),
+				"size" => @filesize($this->getPath($row["filename"]))
 			);
 		}
 

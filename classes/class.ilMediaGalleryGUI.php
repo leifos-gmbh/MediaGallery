@@ -39,6 +39,9 @@ class ilMediaGalleryGUI
 
 	protected $preview_flag = false;
 
+	/**
+	 * @var ilMediaGalleryPlugin
+	 */
 	protected $plugin;
 
 	/**

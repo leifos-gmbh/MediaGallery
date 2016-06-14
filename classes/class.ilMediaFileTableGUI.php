@@ -35,6 +35,9 @@ include_once('./Services/WebAccessChecker/classes/class.ilWACSignedPath.php');
 class ilMediaFileTableGUI extends ilTable2GUI
 {
 	protected $counter;
+	/**
+	 * @var ilMediaGalleryPlugin
+	 */
 	protected $plugin;
 	protected $customsort;
 	/**
