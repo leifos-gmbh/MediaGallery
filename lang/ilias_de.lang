@@ -134,3 +134,5 @@ rotate_left_preview#:#Vorschaubild um 90° nach links drehen
 rotate_image#:#Bild drehen
 rotate_image_preview#:#Vorschaubild drehen
 image_rotated#:#Das Bild wurde erfolgreich gedreht.
+rename_successful#:#Archivname wurde erfolgreich umbenannt.
+file_not_found#:#Datei wurde nicht gefunden.

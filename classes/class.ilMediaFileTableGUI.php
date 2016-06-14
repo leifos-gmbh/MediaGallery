@@ -34,6 +34,9 @@ include_once('./Services/Table/classes/class.ilTable2GUI.php');
 class ilMediaFileTableGUI extends ilTable2GUI
 {
 	protected $counter;
+	/**
+	 * @var ilMediaGalleryPlugin
+	 */
 	protected $plugin;
 	protected $customsort;
 	/**

@@ -33,6 +33,9 @@ include_once('./Services/Table/classes/class.ilTable2GUI.php');
 
 class ilMediaFileDownloadArchivesTableGUI extends ilTable2GUI
 {
+	/**
+	 * @var ilMediaGalleryPlugin
+	 */
 	protected $plugin;
 	
 	/**
