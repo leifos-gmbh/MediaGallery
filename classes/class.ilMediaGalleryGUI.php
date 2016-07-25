@@ -149,35 +149,28 @@ class ilMediaGalleryGUI
 				break;
 		}
 
-		$elementtitle = '';
-		if ($this->object->getDownload())
+		if($this->object->getDownload())
 		{
 			$tpl_title = $this->plugin->getTemplate("tpl.gallery.download.html");
-			if ($this->object->getShowTitle() && strlen($a_set->getTitle()))
-			{
-				$tpl_title->setVariable('MEDIA_TITLE', ilUtil::prepareFormOutput($a_set->getTitle()));
-			}
-			else
-			{
-				$tpl_title->setVariable('MEDIA_TITLE', ilUtil::prepareFormOutput($a_set->getFilename()));
-			}
 			$this->ctrl->setParameter($this->parent, 'id', $a_set->getId());
 			$tpl_title->setVariable('URL_DOWNLOAD', $this->ctrl->getLinkTarget($this->parent, "downloadOriginal"));
-			$elementtitle = $tpl_title->get();
 		}
-		else if ($this->object->getShowTitle())
+		else
 		{
 			$tpl_title = $this->plugin->getTemplate("tpl.gallery.title.html");
-			if (strlen($a_set->getTitle()))
-			{
-				$tpl_title->setVariable('MEDIA_TITLE', ilUtil::prepareFormOutput($a_set->getTitle()));
-			}
-			else
-			{
-				$tpl_title->setVariable('MEDIA_TITLE', '&nbsp;');
-			}
-			$elementtitle = $tpl_title->get();
 		}
+
+
+		if ($this->object->getShowTitle() && strlen($a_set->getTitle()))
+		{
+			$tpl_title->setVariable('MEDIA_TITLE', ilUtil::prepareFormOutput($a_set->getTitle()));
+		}
+		else
+		{
+			$tpl_title->setVariable('MEDIA_TITLE', ilUtil::prepareFormOutput($a_set->getFilename()));
+		}
+
+		$elementtitle = $tpl_title->get();
 
 		$this->ctpl->setVariable("TXT_EXPAND_IMAGE_TITLE", $this->plugin->txt("expand_image_title"));
 		$this->ctpl->setVariable("TXT_EXPAND_IMAGE", $this->plugin->txt("expand_image"));
