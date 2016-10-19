@@ -569,3 +569,17 @@ include_once './Services/Administration/classes/class.ilSetting.php';
 $setting = new ilSetting("xmg");
 $setting->delete('sort');
 ?>
+<#23>
+<?php
+$query = "DELETE FROM il_wac_secure_path ".
+	"WHERE path = ".$ilDB->quote('ilXmg','text');
+
+$res = $ilDB->manipulate($query);
+
+$ilDB->insert('il_wac_secure_path', array(
+	"path" 	=> array('text', 'ilXmg'),
+	"component_directory" => array('text', realpath('./Customizing/global/plugins/Services/Repository/RepositoryObject/MediaGallery/')),
+	"checking_class"	=> array('text', 'ilObjMediaGalleryAccess'),
+	"in_sec_folder" => array('integer', 1)
+));
+?>
