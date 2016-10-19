@@ -58,14 +58,23 @@ class ilObjMediaGalleryAccess extends ilObjectPluginAccess  implements ilWACChec
 	 * @return bool
 	 */
 	public function canBeDelivered(ilWACPath $ilWACPath) {
+		
 		global $ilAccess;
+		
+		ilLoggerFactory::getLogger('xmg')->debug('Check access for path: ' . $ilWACPath->getPath());
+		
 		preg_match("/\\/xmg_([\\d]*)\\//uism", $ilWACPath->getPath(), $results);
+
+		ilLoggerFactory::getLogger('xmg')->dump($results);
 
 		foreach (ilObject2::_getAllReferences($results[1]) as $ref_id) {
 			if ($ilAccess->checkAccess('read', '', $ref_id)) {
+				ilLoggerFactory::getLogger('xmg')->debug('Check access: granted');
 				return true;
 			}
 		}
+
+		ilLoggerFactory::getLogger('xmg')->debug('Check access: failed');
 
 		return false;
 	}
