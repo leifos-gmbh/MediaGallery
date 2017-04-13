@@ -1142,8 +1142,10 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 
     /**
      * Import
+	 * @param string $parent_id
+	 * @param bool $a_catch_errors
      */
-    protected function importFileObject($parent_id = null)
+    protected function importFileObject($parent_id = null, $a_catch_errors = true)
     {
         global $objDefinition, $tpl, $ilErr;
 

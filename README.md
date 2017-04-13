@@ -6,7 +6,7 @@ MediaGallery is a repository plugin to store media items like pictures, videos a
 5.1.0
 
 **Maximum ILIAS Version:**
-5.1.999
+5.2.999
 
 **Responsible Developer:**
 Fabian Wolf - wolf AT leifos.com
