@@ -688,8 +688,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 	public function changeArchiveFilename()
 	{
 		global $tpl, $ilTabs;
-		var_dump ($_POST);
-		
+
 		if (!is_array($_POST['file']))
 		{
 			ilUtil::sendInfo($this->plugin->txt('please_select_archive_to_rename'), true);
