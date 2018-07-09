@@ -1140,10 +1140,10 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
         return $forms;
     }
 
-    /**
-     * Import
-     */
-    protected function importFileObject($parent_id = null)
+	/**
+	 * @inheritdoc
+	 */
+	protected function importFileObject($parent_id = null, $a_catch_errors = true)
     {
         global $objDefinition, $tpl, $ilErr;
 
