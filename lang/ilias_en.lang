@@ -16,17 +16,17 @@ xmg_delete#:#Delete Media Gallery
 xmg_visible#:#Media Gallery is visible
 xmg_edit_permission#:#Change permission settings
 saveArchiveFilename#:#Set filename of download archive
-mediafiles#:#Media files
+mediafiles#:#Media Files
 mediagallery_plugin_configuration#:#MediaGallery Plugin Configuration
-ext_img#:#Valid image extensions
-ext_vid#:#Valid video extensions
-ext_aud#:#Valid audio extensions
-ext_oth#:#Valid other extensions
-preview#:#Preview image
-image_files#:#Image files
-video_files#:#Video files
-audio_files#:#Audio files
-other_files#:#Other files
+ext_img#:#Valid Image Extensions
+ext_vid#:#Valid Video Extensions
+ext_aud#:#Valid Audio Extensions
+ext_oth#:#Valid Other Extensions
+preview#:#Preview Image
+image_files#:#Image Files
+video_files#:#Video Files
+audio_files#:#Audio Files
+other_files#:#Other Files
 configuration_saved#:#Configuration saved.
 audio#:#Audio
 video#:#Video
@@ -60,7 +60,7 @@ file_deleted#:#%s media file deleted.
 files_deleted#:#%s media files deleted.
 archive_deleted#:#%s download archive deleted.
 archives_deleted#:#%s download archives deleted.
-sort_order#:#Media gallery sort order
+sort_order#:#Media Gallery Sort Order
 individual#:#Custom sort order
 topic#:#Topic
 file_data_saved#:#The file data has been saved successfully.
@@ -93,7 +93,7 @@ vom#:#from
 neues_foto#:#Send new picture
 album_loeschen#:#Delete media gallery
 markierte_loeschen#:#Delete marked pictures
-change_info#:#Change media galleryinfos
+change_info#:#Change media gallery infos
 datum#:#Date
 sichtbarkeit#:#Visibility
 oeffentlich#:#public
@@ -113,7 +113,7 @@ Bild#:#Picture
 Bilder#:#Pictures
 rotate_left#:#Rotate 90 degrees left
 rotate_right#:#Rotate 90 degrees right
-add_to_archive#:#Add to Archive
+add_to_archive#:#Add to archive
 please_select_file_to_create_archive#:#Please check at least one media file to add it to a download archive.
 please_select_unique_archive_name#:#The download archive already exists.
 please_select_file_to_add_preview#:#Please check at least one media file to add a preview image.
@@ -136,7 +136,7 @@ new_file_added#:#All files have been uploaded successfully.
 rotate_right_preview#:#Rotate preview image 90 degrees left
 rotate_left_preview#:#Rotate preview image 90 degrees right
 rotate_image#:#Rotate Image
-rotate_image_preview#:#Rotate Preview Image
+rotate_image_preview#:#Rotate preview image
 image_rotated#:#Image has been rotated successfully.
 rename_successful#:#Archive name successfully changed.
 file_not_found#:#File not found.
