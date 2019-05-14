@@ -9,13 +9,13 @@ obj_xmg_duplicate#:#Copy
 objs_xmg_duplicate#:#Copy Media Gallery
 obj_xmg_select#:#Select Media Gallery
 xmg_add#:#Add Media Gallery
-xmg_new#:#Add New Media Gallery
-xmg_read#:#Read access to Media Gallery
+xmg_new#:#Add new Media Gallery
+xmg_read#:#Read Access to Media Gallery
 xmg_write#:#Edit Media Gallery
 xmg_delete#:#Delete Media Gallery
-xmg_visible#:#Media Gallery is visible
-xmg_edit_permission#:#Change permission settings
-saveArchiveFilename#:#Set filename of download archive
+xmg_visible#:#Media Gallery is Visible
+xmg_edit_permission#:#Change Permission Settings
+saveArchiveFilename#:#Set Filename of Download Archive
 mediafiles#:#Media Files
 mediagallery_plugin_configuration#:#MediaGallery Plugin Configuration
 ext_img#:#Valid Image Extensions
@@ -33,27 +33,27 @@ video#:#Video
 image#:#Image
 gallery_theme#:#Gallery Theme
 gallery#:#Media Gallery
-new_archive#:#Create new download archive
+new_archive#:#Create new Download Archive
 upload_file_alert#:#You must queue at least one file.
 unknown#:#Unknown
-save_all#:#Save All
+save_all#:#Save all
 filename#:#Filename
-show_title#:#Show title
+show_title#:#Show Title
 show_title_description#:#Show the title of a media object instead of its filename in the thumbnail view.
-show_download#:#Download media files
+show_download#:#Download Media Files
 show_download_description#:#Adds a download link for each media file.
-sort#:#Sort order
+sort#:#Sort Order
 id#:#ID
 size#:#Size
 created#:#Created
-download_archive#:#Offer as download
-all_media_types#:#All media types
-media_type#:#Media type
-offer_download#:#Download files
-offer_download_description#:#Offers all media files as a ZIP-Download
-download_media#:#Download as ZIP archive
-archives#:#Download archives
-archive#:#Download archive
+download_archive#:#Offer as Download
+all_media_types#:#All Media Types
+media_type#:#Media Type
+offer_download#:#Download Files
+offer_download_description#:#Offers all media files as a ZIP-Download.
+download_media#:#Download as ZIP Archive
+archives#:#Download Archives
+archive#:#Download Archive
 please_select_file_to_delete#:#Please check at least one media file.
 please_select_archive_to_delete#:#Please check at least one download archive.
 file_deleted#:#%s media file deleted.
@@ -61,7 +61,7 @@ files_deleted#:#%s media files deleted.
 archive_deleted#:#%s download archive deleted.
 archives_deleted#:#%s download archives deleted.
 sort_order#:#Media Gallery Sort Order
-individual#:#Custom sort order
+individual#:#Custom Sort Order
 topic#:#Topic
 file_data_saved#:#The file data has been saved successfully.
 archive_data_saved#:#The download archive data has been saved successfully.
@@ -86,24 +86,24 @@ media gallery_plugin_configuration#:#Media Gallery Plugin Configuration
 setting_1#:#Setting 1
 setting_2#:#Setting 2
 saving_invoked#:#Save procedure has been executed. Please note that this media gallery does not save anything to DB.
-neues_album_anlegen#:#Create new media gallery
+neues_album_anlegen#:#Create new Media Gallery
 titel#:#Title
-album_anlegen#:#Create media gallery
+album_anlegen#:#Create Media Gallery
 vom#:#from
-neues_foto#:#Send new picture
-album_loeschen#:#Delete media gallery
-markierte_loeschen#:#Delete marked pictures
-change_info#:#Change media gallery infos
+neues_foto#:#Send new Picture
+album_loeschen#:#Delete Media Gallery
+markierte_loeschen#:#Delete Marked Pictures
+change_info#:#Change Media Gallery Infos
 datum#:#Date
 sichtbarkeit#:#Visibility
 oeffentlich#:#public
 privat#:#private
-sichern#:#Save changes
+sichern#:#Save Changes
 markbilder#:#Check to delete the selected pictures!
 markalbum#:#Check to delete the media gallery with containing pictures!
 bild#:#Picture
 oder#:#or
-mehrere_bilder_senden#:#Send multiple images at once
+mehrere_bilder_senden#:#Send Multiple Images at Once
 infomulti#:#Click here to open filerequester.<br/>Hold STRG or shift to select multiple files.
 uploadliste#:#Upload-List
 meine_alben#:#my galleries
@@ -111,19 +111,19 @@ freie_alben#:#public galleries
 plugininfo#:#Plugin-Information
 Bild#:#Picture
 Bilder#:#Pictures
-rotate_left#:#Rotate 90 degrees left
-rotate_right#:#Rotate 90 degrees right
-add_to_archive#:#Add to archive
+rotate_left#:#Rotate 90 Degrees Left
+rotate_right#:#Rotate 90 Degrees Right
+add_to_archive#:#Add to Archive
 please_select_file_to_create_archive#:#Please check at least one media file to add it to a download archive.
 please_select_unique_archive_name#:#The download archive already exists.
 please_select_file_to_add_preview#:#Please check at least one media file to add a preview image.
 please_select_file_to_delete_preview#:#Please check at least one media file to delete a preview image.
 please_select_archive_to_rename#:#Please check exactly one download archive to rename it.
-add_preview#:#Add preview image
-delete_preview#:#Delete preview image
+add_preview#:#Add Preview Image
+delete_preview#:#Delete Preview Image
 upload#:#Upload
-previews_deleted#:#Preview(s) deleted
-expand_image_title#:#Expand the image
+previews_deleted#:#Preview(s) Deleted
+expand_image_title#:#Expand the Image
 expand_image#:#Expand
 previous#:#Previous
 next#:#Next
@@ -131,12 +131,12 @@ close#:#Close
 play#:#Play
 pause#:#Pause
 playpause#:#Play/Pause
-max_upload_size#:#Maximum file size
+max_upload_size#:#Maximum File Size
 new_file_added#:#All files have been uploaded successfully.
-rotate_right_preview#:#Rotate preview image 90 degrees left
-rotate_left_preview#:#Rotate preview image 90 degrees right
+rotate_right_preview#:#Rotate Preview Image 90 Degrees Left
+rotate_left_preview#:#Rotate Preview Image 90 Degrees Right
 rotate_image#:#Rotate Image
-rotate_image_preview#:#Rotate preview image
+rotate_image_preview#:#Rotate Preview Image
 image_rotated#:#Image has been rotated successfully.
 rename_successful#:#Archive name successfully changed.
 file_not_found#:#File not found.

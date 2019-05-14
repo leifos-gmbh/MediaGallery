@@ -54,7 +54,7 @@ offer_download#:#Als Download anbieten
 offer_download_description#:#Bietet alle Mediendateien als ZIP-komprimierte Datei zum Download an.
 download_media#:#Als ZIP-Archiv herunterladen
 please_select_file_to_delete#:#Bitte wählen Sie mindestens eine Mediendatei zum Löschen aus.
-please_select_archive_to_delete#:#Bitte wählen Sie mindestens eine Download-Archiv zum Löschen aus.
+please_select_archive_to_delete#:#Bitte wählen Sie mindestens ein Download-Archiv zum Löschen aus.
 file_deleted#:#%s Mediendatei wurde gelöscht.
 files_deleted#:#%s Mediendateien wurden gelöscht.
 archive_deleted#:#%s Download-Archiv wurde gelöscht.
@@ -81,7 +81,7 @@ edit#:#Bearbeiten
 status#:#Status
 offline#:#Offline
 gallery_plugin_configuration#:#Mediengalerie Plugin Konfiguration
-saving_invoked#:#Save procedure has been executed. Please note that this gallery does not save anything to DB.
+saving_invoked#:#Speichervorgang wurde ausgeführt. Bitte beachten Sie, dass diese Mediengalerie nichts in der DB speichert.
 neues_album_anlegen#:#Neues Album anlegen
 titel#:#Titel
 album_anlegen#:#Album anlegen
