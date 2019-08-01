@@ -295,6 +295,10 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		$theme->setOptions($theme_options);
 		$this->form->addItem($theme);
 
+		// tile image
+		$obj_service =  $this->getObjectService();
+		$this->form = $obj_service->commonSettings()->legacyForm($this->form, $this->object)->addTileImage();
+
 		$this->form->addCommandButton("updateProperties", $this->txt("save"));
 
 		$this->form->setTitle($this->txt("edit_properties"));
@@ -331,6 +335,11 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 			$this->object->setShowTitle($this->form->getInput("show_title"));
 			$this->object->setDownload($this->form->getInput("show_download"));
 			$this->object->setTheme($this->form->getInput("theme"));
+
+			// tile image
+			$obj_service =  $this->getObjectService();
+			$obj_service->commonSettings()->legacyForm($this->form, $this->object)->saveTileImage();
+
 			$this->object->update();
 			ilUtil::sendSuccess($lng->txt("msg_obj_modified"), true);
 			$ilCtrl->redirect($this, "editProperties");
