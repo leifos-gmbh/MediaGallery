@@ -4,7 +4,9 @@
 $id = "xmg";
  
 // code version; must be changed for all code changes
+
 define('xmg_version', '6.5.1');
+
 $version = xmg_version;
  
 $ilias_min_version = "6.5";
