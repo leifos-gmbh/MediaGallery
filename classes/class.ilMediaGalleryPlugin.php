@@ -46,5 +46,15 @@ class ilMediaGalleryPlugin extends ilRepositoryObjectPlugin
 		$setting = new ilSetting("xmg");
 		$setting->deleteAll();
 	}
+
+    /**
+     * decides if this repository plugin can be copied
+     *
+     * @return bool
+     */
+    public function allowCopy()
+    {
+        return true;
+    }
 }
 ?>
