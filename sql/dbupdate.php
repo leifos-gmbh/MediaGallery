@@ -610,3 +610,33 @@ if (!$ilDB->fetchAssoc($set)) {
         ")");
 }
 ?>
+
+<#25>
+<?php
+//Upwards compatible version of dbupdate step 24
+include_once('./Services/Migration/DBUpdate_3560/classes/class.ilDBUpdateNewObjectType.php');
+
+$copy_operation_id = ilDBUpdateNewObjectType::getCustomRBACOperationId("copy");
+$write_operation_id = ilDBUpdateNewObjectType::getCustomRBACOperationId('write');
+
+if($copy_operation_id)
+{
+    $obj_types = array("xmg");
+
+    foreach($obj_types as $obj_type)
+    {
+        $obj_type_id = ilDBUpdateNewObjectType::getObjectTypeId($obj_type);
+
+        //Check if exists and delete first because of dbupdate step 24
+        if(ilDBUpdateNewObjectType::isRBACOperation($obj_type_id, $copy_operation_id)) {
+            ilDBUpdateNewObjectType::deleteRBACOperation($obj_type_id, $copy_operation_id);
+		}
+
+        if($obj_type_id)
+        {
+            ilDBUpdateNewObjectType::addRBACOperation($obj_type_id, $copy_operation_id);
+            ilDBUpdateNewObjectType::cloneOperation($obj_type, $write_operation_id, $copy_operation_id);
+        }
+    }
+}
+?>
