@@ -44,6 +44,11 @@ class ilMediaFileTableGUI extends ilTable2GUI
 	 * @var ilObjMediaGalleryGUI
 	 */
 	protected $parent_obj;
+
+    /**
+     * @var int
+     */
+    protected $lp_active;
 	
 	/**
 	 * Constructor
@@ -63,7 +68,9 @@ class ilMediaFileTableGUI extends ilTable2GUI
 		$this->ctrl = $ilCtrl;
 		include_once "./Services/Component/classes/class.ilPlugin.php";
 		$this->plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, "Repository", "robj", "MediaGallery");
-	
+
+		$this->lp_active = $this->parent_obj->object->getLearningProgress();
+
 		$this->customsort = 1.0;
 		$this->setFormName('mediaobjectlist');
 		$this->setStyle('table', 'fullwidth');
@@ -73,6 +80,9 @@ class ilMediaFileTableGUI extends ilTable2GUI
 		$this->addColumn('','', '', '', 'xmg_action');
 		$this->addColumn($this->plugin->txt("sort"),'custom', '', '', 'xmg_custom');
 		$this->addColumn($this->lng->txt("id"),'media_id', '', '', 'xmg_id');
+		if ($this->lp_active == 1) {
+            $this->addColumn($this->lng->txt("learning_progress"), 'lp_relevant', '', '', 'xmg_lp');
+        }
 		$this->addColumn($this->plugin->txt("topic"),'topic', '', '', 'xmg_topic');
 		$this->addColumn($this->lng->txt("title"),'title', '', '', 'xmg_title');
 		$this->addColumn($this->lng->txt("description"),'description', '', '', 'xmg_desc');
@@ -218,6 +228,14 @@ class ilMediaFileTableGUI extends ilTable2GUI
 		$this->tpl->setVariable("ELEMENT_ID", $this->getTextFieldValue($data['media_id']));
 		$this->tpl->setVariable("TOPIC", $this->getTextFieldValue($data['topic']));
 		$this->tpl->setVariable("TITLE", $this->getTextFieldValue($data['title']));
+		if ($this->lp_active == 1) {
+		    $this->tpl->setCurrentBlock("learning_progress");
+            $this->tpl->setVariable("LP_CB_ID", $data["id"]);
+		    if ($data['lp_relevant'] == 1) {
+                $this->tpl->setVariable("LP_CHECKED", "checked");
+            }
+		    $this->tpl->parseCurrentBlock("learning_progress");
+        }
 		if ($data['pwidth'] > 0)
 		{
 			$this->tpl->setVariable("WIDTH", $this->getTextFieldValue($data['pwidth']));

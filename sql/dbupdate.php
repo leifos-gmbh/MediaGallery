@@ -617,7 +617,7 @@ if (!$ilDB->fetchAssoc($set)) {
 include_once('./Services/Migration/DBUpdate_3560/classes/class.ilDBUpdateNewObjectType.php');
 
 $copy_operation_id = ilDBUpdateNewObjectType::getCustomRBACOperationId("copy");
-$write_operation_id = ilDBUpdateNewObjectType::getCustomRBACOperationId('write');
+$write_operation_id = ilDBUpdateNewObjectType::getCustomRBACOperationId("write");
 
 if($copy_operation_id)
 {
@@ -639,4 +639,100 @@ if($copy_operation_id)
         }
     }
 }
+?>
+
+<#26>
+<?php
+include_once('./Services/Migration/DBUpdate_3560/classes/class.ilDBUpdateNewObjectType.php');
+
+$write_operation_id = ilDBUpdateNewObjectType::getCustomRBACOperationId('write');
+$read_operation_id = ilDBUpdateNewObjectType::getCustomRBACOperationId('read');
+$lp_read_operation_id = ilDBUpdateNewObjectType::getCustomRBACOperationId("read_learning_progress");
+$lp_edit_operation_id = ilDBUpdateNewObjectType::getCustomRBACOperationId("edit_learning_progress");
+
+
+if($lp_read_operation_id && $lp_edit_operation_id)
+{
+    $obj_types = array("xmg");
+
+    foreach($obj_types as $obj_type)
+    {
+        $obj_type_id = ilDBUpdateNewObjectType::getObjectTypeId($obj_type);
+
+        if($obj_type_id)
+        {
+            ilDBUpdateNewObjectType::addRBACOperation($obj_type_id, $lp_read_operation_id);
+            ilDBUpdateNewObjectType::cloneOperation($obj_type, $read_operation_id, $lp_read_operation_id);
+
+            ilDBUpdateNewObjectType::addRBACOperation($obj_type_id, $lp_edit_operation_id);
+            ilDBUpdateNewObjectType::cloneOperation($obj_type, $write_operation_id, $lp_edit_operation_id);
+        }
+    }
+}
+?>
+<#27>
+<?php
+
+if (!$ilDB->tableColumnExists("rep_robj_xmg_object", "learning_progress")) {
+    $ilDB->addTableColumn(
+        "rep_robj_xmg_object",
+        "learning_progress",
+        array(
+            'type' => 'integer',
+            'length' => 1,
+            'notnull' => true,
+            'default' => 0
+        )
+    );
+}
+
+?>
+
+<#28>
+<?php
+
+if (!$ilDB->tableColumnExists("rep_robj_xmg_filedata", "lp_relevant")) {
+    $ilDB->addTableColumn(
+        "rep_robj_xmg_filedata",
+        "lp_relevant",
+        array(
+            'type' => 'integer',
+            'length' => 1,
+            'notnull' => true,
+            'default' => 0
+        )
+    );
+}
+
+?>
+
+<#29>
+<?php
+
+if (!$ilDB->tableExists('rep_robj_xmg_faccess')) {
+    $fields = array (
+        'access_id'    => array(
+            'type' => 'integer',
+            'length'  => 4,
+            'notnull' => true),
+        'gallery_obj_id'   => array(
+            'type' => 'integer',
+            'notnull' => true,
+            'length' => 4),
+        'file_id'    => array(
+            'type' => 'integer',
+            'length'  => 4,
+            'notnull' => true),
+        'user_id'    => array(
+            'type' => 'integer',
+            'length'  => 4,
+            'notnull' => true),
+    );
+
+}
+
+$ilDB->createTable('rep_robj_xmg_faccess', $fields);
+$ilDB->addPrimaryKey('rep_robj_xmg_faccess', array('access_id'));
+$ilDB->createSequence('rep_robj_xmg_faccess');
+
 ?>

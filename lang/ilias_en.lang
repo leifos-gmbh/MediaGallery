@@ -140,3 +140,9 @@ rotate_image_preview#:#Rotate Preview Image
 image_rotated#:#Image has been rotated successfully.
 rename_successful#:#Archive name successfully changed.
 file_not_found#:#File not found.
+learning_progress#:#Learning progress
+learning_progress_mode#:#Learning progress mode
+lp_deactivated#:#Learning progress is deactivated
+lp_deactivated_info#:#The learning progress status is not displayed and does not influence parent objects.
+lp_by_objects#:#Collection of Media Objects
+lp_by_objects_info#:#The learning progress status will be determined by the viewing status of selected media objects, which are specified under Media Files->List.

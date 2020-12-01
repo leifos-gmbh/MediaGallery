@@ -51,6 +51,11 @@ class ilMediaGalleryFile
 	 */
 	protected $pfilename = "";
 
+    /**
+     * @var int
+     */
+    protected $lp_relevant = 0;
+
 	/**
 	 * @var ilMediaGalleryPlugin
 	 */
@@ -222,6 +227,22 @@ class ilMediaGalleryFile
 		return $this->pfilename;
 	}
 
+    /**
+     * @return int
+     */
+    public function getLpRelevant()
+    {
+        return $this->lp_relevant;
+    }
+
+    /**
+     * @param int $lp_relevant
+     */
+    public function setLpRelevant($lp_relevant)
+    {
+        $this->lp_relevant = $lp_relevant;
+    }
+
 	/**
 	 * @return \ilFSStorageMediaGallery
 	 */
@@ -284,6 +305,7 @@ class ilMediaGalleryFile
 		$this->setFilename($a_array["filename"]);
 		$this->setSorting($a_array["custom"]);
 		$this->pfilename = $a_array["pfilename"];
+        $this->setLpRelevant($a_array["lp_relevant"]);
 	}
 
 	/**
@@ -328,7 +350,8 @@ class ilMediaGalleryFile
 				"description" => array("text", $this->getDescription()),
 				"filename" => array("text", $this->getFilename()),
 				"custom" => array("integer",$this->getSorting()),
-				"pfilename" => array('text', $this->getPfilename())
+				"pfilename" => array('text', $this->getPfilename()),
+                "lp_relevant" => array("integer", $this->getLpRelevant())
 			);
 		}
 		else
@@ -342,7 +365,8 @@ class ilMediaGalleryFile
 				"description" => $this->getDescription(),
 				"filename" => $this->getFilename(),
 				"custom" => $this->getSorting(),
-				"pfilename" => $this->getPfilename()
+				"pfilename" => $this->getPfilename(),
+                "lp_relevant" => $this->getLpRelevant()
 			);
 		}
 	}
@@ -655,7 +679,8 @@ class ilMediaGalleryFile
 				"description" => $row["description"],
 				"filename" => $row["filename"],
 				"custom" => $row["custom"],
-				"pfilename" => $row['pfilename']
+				"pfilename" => $row['pfilename'],
+                "lp_relevant" => $row["lp_relevant"]
 			);
 
 			if(!self::$objects[$row["id"]])

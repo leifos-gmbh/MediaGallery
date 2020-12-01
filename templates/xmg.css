@@ -78,6 +78,10 @@ td.xmg_desc input {
 	font-size: 90%;
 }
 
+td.xmg_lp {
+	text-align: center;
+}
+
 .xmg_border {
 	border: 1px #666 solid;
 	background-color: #fff;
