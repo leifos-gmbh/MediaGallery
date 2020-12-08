@@ -94,7 +94,8 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 			case "download":
 			case "downloadOriginal":
 			case "downloadOther":
-			case "gallery":	
+			case "gallery":
+            case "recordFileAccess":
 			case "export":// list all commands that need read permission here
 				$this->checkPermission("read");
 				$this->$cmd();
@@ -452,7 +453,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 	{
 		global $ilTabs, $DIC;
 
-        ilChangeEvent::_lookupReadEvents($this->object_id, $DIC->user()->getId());
+        ilChangeEvent::_recordReadEvent('xmg', $this->object->getRefId(), $this->object->getId(), $DIC->user()->getId());
 
 		$ilTabs->activateTab("gallery");
 		$this->plugin->includeClass("class.ilMediaGalleryGUI.php");
@@ -1235,6 +1236,20 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
         // display form to correct errors
         $form->setValuesByPost();
         $tpl->setContent($form->getHtml());
+    }
+
+    /**
+     * Records access of file. Is called through Ajax
+     *
+     */
+    public function recordFileAccess()
+    {
+        global $DIC;
+
+        $params = $DIC->http()->request()->getQueryParams();
+
+        $access = ilMediaGalleryFileAccess::getInstance($this->object->getId(), $DIC->user()->getId());
+        $access->create($params['file_id']);
     }
 }
 

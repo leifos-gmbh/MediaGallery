@@ -29,7 +29,7 @@ class ilMediaGalleryPlugin extends ilRepositoryObjectPlugin
 		{
 			$ilDB->dropTable('rep_robj_xmg_downloads');
 		}
-
+        include_once('class.ilMediaGalleryFileAccess.php');
 		if ($ilDB->tableExists('rep_robj_xmg_object'))
 		{
 			$ilDB->dropTable('rep_robj_xmg_object');
@@ -46,6 +46,36 @@ class ilMediaGalleryPlugin extends ilRepositoryObjectPlugin
 		$setting = new ilSetting("xmg");
 		$setting->deleteAll();
 	}
+
+    /**
+     * Init MediaGallery
+     */
+    protected function init()
+    {
+        $this->initAutoLoad();
+    }
+
+    /**
+     * Init auto loader
+     * @return void
+     */
+    protected function initAutoLoad()
+    {
+        spl_autoload_register(
+            array($this,'autoLoad')
+        );
+    }
+
+    /**
+     * Auto load implementation
+     *
+     * @param string class name
+     */
+    private final function autoLoad($a_classname)
+    {
+        $class_file = $this->getClassesDirectory().'/class.'.$a_classname.'.php';
+        @include_once($class_file);
+    }
 
     /**
      * decides if this repository plugin can be copied

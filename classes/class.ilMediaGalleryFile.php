@@ -954,6 +954,11 @@ class ilMediaGalleryFile
 			$where[] = 'xmg_id = ' . $ilDB->quote($a_filter['xmg_id'], 'integer');
 		}
 
+		if(isset($a_filter['lp_relevant']))
+        {
+            $where[] = 'lp_relevant = ' . $ilDB->quote($a_filter['lp_relevant'], 'integer');
+        }
+
 		if(count($where))
 		{
 			return 'WHERE ' . implode(' AND ' , $where);

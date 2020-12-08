@@ -572,11 +572,16 @@ class ilObjMediaGallery extends ilObjectPlugin implements ilLPStatusPluginInterf
      *
      * @return array
      */
-    public function getLPCompleted()
+    public function getLPCompleted() : array
     {
-        global $DIC;
-        $DIC->logger()->usr()->info("getLPCompleted");
-        return array(281);
+
+        if($this->getLearningProgress() == 0) {
+            return array();
+        }
+
+        $file_access = ilMediaGalleryFileAccess::getInstance($this->getId());
+
+        return $file_access->getLpCompleted();
     }
 
     /**
@@ -584,7 +589,7 @@ class ilObjMediaGallery extends ilObjectPlugin implements ilLPStatusPluginInterf
      *
      * @return array
      */
-    public function getLPNotAttempted()
+    public function getLPNotAttempted() : array
     {
         return array();
     }
@@ -594,7 +599,7 @@ class ilObjMediaGallery extends ilObjectPlugin implements ilLPStatusPluginInterf
      *
      * @return array
      */
-    public function getLPFailed()
+    public function getLPFailed() : array
     {
         return array();
     }
@@ -604,19 +609,14 @@ class ilObjMediaGallery extends ilObjectPlugin implements ilLPStatusPluginInterf
      *
      * @return array
      */
-    public function getLPInProgress()
+    public function getLPInProgress() : array
     {
-        global $DIC;
-        $events = ilChangeEvent::_lookupReadEvents($this->getId());
 
-        $users = array();
-
-        $DIC->logger()->usr()->dump($events);
-        foreach ($events as $event) {
-            $users[] = $event['usr_id'];
+        if($this->getLearningProgress() == 0) {
+            return array();
         }
-        $DIC->logger()->usr()->dump($users);
-        return $users;
+
+        return $this->getUsersAttempted();
     }
 
     /**
@@ -625,9 +625,37 @@ class ilObjMediaGallery extends ilObjectPlugin implements ilLPStatusPluginInterf
      * @param int $a_user_id
      * @return int
      */
-    public function getLPStatusForUser($a_user_id)
+    public function getLPStatusForUser($a_user_id) : int
     {
-        return ilLPStatus::LP_STATUS_IN_PROGRESS_NUM;
+
+        if(in_array($a_user_id, $this->getUsersAttempted())) {
+
+            if(ilLPStatus::_hasUserCompleted($this->getId(), $a_user_id))
+            {
+                return ilLPStatus::LP_STATUS_COMPLETED_NUM;
+            }
+
+            return ilLPStatus::LP_STATUS_IN_PROGRESS_NUM;
+        }
+
+        return ilLPStatus::LP_STATUS_NOT_ATTEMPTED_NUM;
+    }
+
+    /**
+     * @return array
+     */
+    protected function getUsersAttempted() : array
+    {
+        $events = ilChangeEvent::_lookupReadEvents($this->getId());
+
+        $users = array();
+        foreach ($events as $event) {
+            $users[] = $event['usr_id'];
+        }
+
+        return $users;
     }
 }
+
+
 ?>
