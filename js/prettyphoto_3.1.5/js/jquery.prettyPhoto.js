@@ -236,7 +236,7 @@
 					success: function (response) {
 					},
 					error: function (response) {
-						handleError(response);
+						console.log(response);
 					}
 				}
 			);

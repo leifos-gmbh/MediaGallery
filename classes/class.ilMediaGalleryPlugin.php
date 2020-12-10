@@ -29,7 +29,7 @@ class ilMediaGalleryPlugin extends ilRepositoryObjectPlugin
 		{
 			$ilDB->dropTable('rep_robj_xmg_downloads');
 		}
-        include_once('class.ilMediaGalleryFileAccess.php');
+
 		if ($ilDB->tableExists('rep_robj_xmg_object'))
 		{
 			$ilDB->dropTable('rep_robj_xmg_object');

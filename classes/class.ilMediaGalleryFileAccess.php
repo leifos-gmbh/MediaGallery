@@ -25,38 +25,36 @@ final class ilMediaGalleryFileAccess
     private $gallery_id;
 
     /**
-     * @var int
-     */
-    private $user_id;
-
-    /**
      * @var array
      */
     private $accessed_files = array();
 
     /**
      * gets the instance via lazy initialization (created on first usage)
+     *
+     * @param int $gallery_id
      */
-    public static function getInstance($gallery_id, $user_id = 0)
+    public static function getInstanceByGalleryId(int $gallery_id) : ilMediaGalleryFileAccess
     {
-        if (static::$instances[$gallery_id] === null) {
-            static::$instances[$gallery_id] = new static($gallery_id, $user_id);
+        if (!isset(self::$instances[$gallery_id])) {
+            self::$instances[$gallery_id] = new self($gallery_id);
         }
 
-        return static::$instances[$gallery_id];
+        return self::$instances[$gallery_id];
     }
 
     /**
      * is not allowed to call from outside to prevent from creating multiple instances,
      * to use the singleton, you have to obtain the instance from Singleton::getInstance() instead
+     *
+     * @param int $gallery_id
      */
-    private function __construct($gallery_id, $user_id)
+    private function __construct(int $gallery_id)
     {
         global $DIC;
 
         $this->ilDB = $DIC->database();
         $this->setGalleryId($gallery_id);
-        $this->setUserId($user_id);
         $this->read();
 
     }
@@ -64,12 +62,7 @@ final class ilMediaGalleryFileAccess
     private function read()
     {
 
-        $user_query = '';
-        if($this->getUserId() != 0) {
-            $user_query = ' AND user_id = ' . $this->ilDB->quote($this->getUserId(), 'integer');
-        }
-
-        $res = $this->ilDB->query('SELECT * FROM rep_robj_xmg_faccess WHERE gallery_obj_id = ' . $this->ilDB->quote($this->getGalleryId(), 'integer') . $user_query );
+        $res = $this->ilDB->query('SELECT * FROM rep_robj_xmg_faccess WHERE gallery_obj_id = ' . $this->ilDB->quote($this->getGalleryId(), 'integer'));
 
         $accessed_files = array();
         if ($res->numRows() > 0) {
@@ -82,38 +75,67 @@ final class ilMediaGalleryFileAccess
         $this->setAccessed($accessed_files);
     }
 
-    public function create($file_id)
+    public function create($file_id, $user_id) : bool
     {
         global $DIC;
 
-        if($this->getUserId() == 0 || (!empty($this->getAccessed()) && in_array($file_id, $this->getAccessed()[$this->getUserId()]))) {
+        if(!empty($this->getAccessed()[$user_id]) && in_array($file_id, $this->getAccessed()[$user_id])) {
             return false;
         }
 
         $next_id = $this->ilDB->nextId('rep_robj_xmg_faccess');
         $query = 'INSERT INTO rep_robj_xmg_faccess (access_id, gallery_obj_id, file_id, user_id)
-                    VALUES (' . $this->ilDB->quote($next_id, 'integer') . ',' . $this->ilDB->quote($this->getGalleryId(), 'integer') . ',' . $this->ilDB->quote($file_id, 'integer') . ',' . $this->ilDB->quote($this->getUserId(), 'integer') . ')';
+                    VALUES (' . $this->ilDB->quote($next_id, 'integer') . ',' . $this->ilDB->quote($this->getGalleryId(), 'integer') . ',' . $this->ilDB->quote($file_id, 'integer') . ',' . $this->ilDB->quote($user_id, 'integer') . ')';
 
         $this->ilDB->manipulate($query);
+
+        $accessed = $this->getAccessed();
+        $accessed[$user_id][] = $file_id;
+        $this->setAccessed($accessed);
 
         return true;
     }
 
-    public function delete($file_id = null)
+    public function deleteAccessRecordsForGallery() : bool
     {
-        if($this->getUserId() == 0) {
-            return false;
-        }
-
-        $file_query = '';
-        if(!empty($file_id)) {
-            $file_query = ' AND ' . $this->ilDB->quote($file_id, 'integer');
-        }
-
-        $query = 'DELETE FROM rep_robj_xmg_faccess WHERE gallery_obj_id = ' . $this->ilDB->quote($this->getGalleryId(), 'integer') .
-            ' AND user_id = ' . $this->ilDB->quote($this->getUserId(), 'integer') . $file_query;
+        $query = 'DELETE FROM rep_robj_xmg_faccess WHERE gallery_obj_id = ' . $this->ilDB->quote($this->getGalleryId(), 'integer');
 
         $this->ilDB->manipulate($query);
+
+        $this->setAccessed(array());
+
+        return true;
+    }
+
+    public function deleteAccessRecordsForFile($file_id) : bool
+    {
+
+        $query = 'DELETE FROM rep_robj_xmg_faccess WHERE gallery_obj_id = ' . $this->ilDB->quote($this->getGalleryId(), 'integer') . ' AND file_id = ' . $this->ilDB->quote($file_id, 'integer');
+
+        $this->ilDB->manipulate($query);
+
+        $accessed = $this->getAccessed();
+
+        foreach ($accessed as $user_id => $files) {
+            foreach ($files as $file) {
+                if($file_id == $file) {
+                    unset($accessed[$user_id][$file]);
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public static function deleteAllAccessRecordsByUserId(int $user_id) : bool
+    {
+        global $DIC;
+
+        $ilDB = $DIC->database();
+
+        $query = 'DELETE FROM rep_robj_xmg_faccess WHERE user_id = ' . $ilDB->quote($user_id, 'integer');
+
+        $ilDB->manipulate($query);
 
         return true;
     }
@@ -123,7 +145,7 @@ final class ilMediaGalleryFileAccess
      *
      * @return array
      */
-    public function getLpCompleted()
+    public function getLpCompleted() : array
     {
         global $DIC;
 
@@ -149,7 +171,7 @@ final class ilMediaGalleryFileAccess
     /**
      * @return int
      */
-    public function getGalleryId()
+    public function getGalleryId() : int
     {
         return $this->gallery_id;
     }
@@ -157,31 +179,15 @@ final class ilMediaGalleryFileAccess
     /**
      * @param int $gallery_id
      */
-    public function setGalleryId($gallery_id)
+    private function setGalleryId(int $gallery_id)
     {
         $this->gallery_id = $gallery_id;
     }
 
     /**
-     * @return int
-     */
-    public function getUserId()
-    {
-        return $this->user_id;
-    }
-
-    /**
-     * @param int $user_id
-     */
-    public function setUserId($user_id)
-    {
-        $this->user_id = $user_id;
-    }
-
-    /**
      * @return array
      */
-    public function getAccessed()
+    public function getAccessed() : array
     {
         return $this->accessed_files;
     }
@@ -189,7 +195,7 @@ final class ilMediaGalleryFileAccess
     /**
      * @param array $accessed_files
      */
-    public function setAccessed($accessed_files)
+    private function setAccessed(array $accessed_files)
     {
         $this->accessed_files = $accessed_files;
     }

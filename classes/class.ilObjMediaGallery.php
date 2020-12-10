@@ -116,7 +116,7 @@ class ilObjMediaGallery extends ilObjectPlugin implements ilLPStatusPluginInterf
 			$this->setDownload($row['download']);
 			$this->setTheme($row['theme']);
 			$this->setSortOrder($row['sortorder']);
-			$this->setLearningProgress($row['learning_progress']);
+			$this->setLearningProgressEnabled($row['learning_progress']);
 		}
 		else
 		{
@@ -124,7 +124,7 @@ class ilObjMediaGallery extends ilObjectPlugin implements ilLPStatusPluginInterf
 			$this->setDownload(0);
 			$this->setTheme(ilObjMediaGallery::_getConfigurationValue('theme'));
 			$this->setSortOrder('filename');
-			$this->setLearningProgress(0);
+			$this->setLearningProgressEnabled(0);
 		}
 	}
 	
@@ -142,7 +142,7 @@ class ilObjMediaGallery extends ilObjectPlugin implements ilLPStatusPluginInterf
 		);
 		$result = $ilDB->manipulateF("INSERT INTO rep_robj_xmg_object (obj_fi, sortorder, show_title, download, theme, learning_progress) VALUES (%s, %s, %s, %s, %s, %s)",
 			array('integer','text','integer', 'integer', 'text', 'integer'),
-			array($this->getId(), $this->getSortOrder(), $this->getShowTitle(), $this->getDownload(), $this->getTheme(), $this->getLearningProgress())
+			array($this->getId(), $this->getSortOrder(), $this->getShowTitle(), $this->getDownload(), $this->getTheme(), $this->getLearningProgressEnabled())
 		);
 	}
 	
@@ -154,7 +154,7 @@ class ilObjMediaGallery extends ilObjectPlugin implements ilLPStatusPluginInterf
 	function doDelete()
 	{
 		global $ilDB;
-		// $myID = $this->getId();
+
 		ilUtil::delDir($this->getFS()->getPath(self::LOCATION_ROOT));
 
 		$affectedRows = $ilDB->manipulateF("DELETE FROM rep_robj_xmg_filedata WHERE xmg_id = %s",
@@ -169,6 +169,9 @@ class ilObjMediaGallery extends ilObjectPlugin implements ilLPStatusPluginInterf
 			array('integer'),
 			array($this->getId())
 		);
+
+		$access_records = ilMediaGalleryFileAccess::getInstanceByGalleryId($this->getId());
+		$access_records->deleteAccessRecordsForGallery();
 	}
 
 	/**
@@ -311,7 +314,7 @@ class ilObjMediaGallery extends ilObjectPlugin implements ilLPStatusPluginInterf
     /**
      * @return int
      */
-    public function getLearningProgress()
+    public function getLearningProgressEnabled() : int
     {
         return $this->learning_progress;
     }
@@ -319,7 +322,7 @@ class ilObjMediaGallery extends ilObjectPlugin implements ilLPStatusPluginInterf
     /**
      * @param int $learning_progress
      */
-    public function setLearningProgress($learning_progress)
+    public function setLearningProgressEnabled(int $learning_progress)
     {
         $this->learning_progress = $learning_progress;
     }
@@ -575,7 +578,7 @@ class ilObjMediaGallery extends ilObjectPlugin implements ilLPStatusPluginInterf
     public function getLPCompleted() : array
     {
 
-        if($this->getLearningProgress() == 0) {
+        if($this->getLearningProgressEnabled() == 0) {
             return array();
         }
 
@@ -612,7 +615,7 @@ class ilObjMediaGallery extends ilObjectPlugin implements ilLPStatusPluginInterf
     public function getLPInProgress() : array
     {
 
-        if($this->getLearningProgress() == 0) {
+        if($this->getLearningProgressEnabled() == 0) {
             return array();
         }
 

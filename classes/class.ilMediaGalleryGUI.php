@@ -129,7 +129,6 @@ class ilMediaGalleryGUI
 	 */
 	protected function fillRow($a_set)
 	{
-	    global $DIC;
 		$a_set = ilMediaGalleryFile::_getInstanceById($a_set["id"]);
 
 		$this->preview_flag = $a_set->hasPreviewImage();

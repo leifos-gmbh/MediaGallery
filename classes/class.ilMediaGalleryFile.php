@@ -230,7 +230,7 @@ class ilMediaGalleryFile
     /**
      * @return int
      */
-    public function getLpRelevant()
+    public function getLpRelevant() : int
     {
         return $this->lp_relevant;
     }
@@ -238,7 +238,7 @@ class ilMediaGalleryFile
     /**
      * @param int $lp_relevant
      */
-    public function setLpRelevant($lp_relevant)
+    public function setLpRelevant(int $lp_relevant)
     {
         $this->lp_relevant = $lp_relevant;
     }
@@ -421,6 +421,9 @@ class ilMediaGalleryFile
 		$res = $ilDB->manipulate($query);
 
 		$this->getFileSystem()->deleteFile($this->getId());
+
+		$access_records = ilMediaGalleryFileAccess::getInstanceByGalleryId($this->getGalleryId());
+		$access_records->deleteAccessRecordsForFile($this->getId());
 
 		unset(self::$objects[$this->getId()]);
 

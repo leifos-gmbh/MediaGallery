@@ -69,7 +69,7 @@ class ilMediaFileTableGUI extends ilTable2GUI
 		include_once "./Services/Component/classes/class.ilPlugin.php";
 		$this->plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, "Repository", "robj", "MediaGallery");
 
-		$this->lp_active = $this->parent_obj->object->getLearningProgress();
+		$this->lp_active = $this->parent_obj->object->getLearningProgressEnabled();
 
 		$this->customsort = 1.0;
 		$this->setFormName('mediaobjectlist');

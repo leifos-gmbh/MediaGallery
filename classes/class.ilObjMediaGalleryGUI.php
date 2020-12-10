@@ -223,8 +223,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 			//$ilTabs->addTab("export", $this->txt("export"), $ilCtrl->getLinkTarget($this, "export"));
 		}
 
-        include_once './Services/Tracking/classes/class.ilLearningProgressAccess.php';
-        if(ilLearningProgressAccess::checkAccess($this->object->getRefId()) && $this->object->getLearningProgress())
+        if(ilLearningProgressAccess::checkAccess($this->object->getRefId()) && $this->object->getLearningProgressEnabled())
         {
             $ilTabs->addTab(
                 'learning_progress',
@@ -339,7 +338,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		$values["show_download"] = $this->object->getDownload();
 		$values["show_title"] = $this->object->getShowTitle();
 		$values["theme"] = $this->object->getTheme();
-		$values["learning_progress"] = $this->object->getLearningProgress();
+		$values["learning_progress"] = $this->object->getLearningProgressEnabled();
 		$this->form->setValuesByArray($values);
 	}
 
@@ -570,11 +569,10 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		$this->sortkey = 'custom';
 		uasort($mediafiles, array($this, 'gallerysort'));
 		$counter = 1.0;
-//		$lp_active = $this->object->getLearningProgress();
+
 		foreach ($mediafiles as $id => $fdata)
 		{
 			$mediafiles[$id]['custom'] = $counter;
-//			$mediafiles[$id]['lp_active'] = $lp_active;
 			$counter += 1.0;
 		}
 		$this->sortkey = $tmpsortkey;
@@ -1248,8 +1246,8 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 
         $params = $DIC->http()->request()->getQueryParams();
 
-        $access = ilMediaGalleryFileAccess::getInstance($this->object->getId(), $DIC->user()->getId());
-        $access->create($params['file_id']);
+        $access = ilMediaGalleryFileAccess::getInstanceByGalleryId($this->object->getId());
+        $access->create($params['file_id'], $DIC->user()->getId());
     }
 }
 
