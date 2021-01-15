@@ -586,29 +586,29 @@ $ilDB->insert('il_wac_secure_path', array(
 <#24>
 <?php
 
-$allow_copy = ilRbacReview::_getOperationIdByName("copy");
-$object_id_query = $ilDB->query(
-    "SELECT obj_id FROM object_data " .
-    " WHERE type = " . $ilDB->quote("typ", "text") .
-    " AND title = " . $ilDB->quote("xmg", "text")
-);
-
-while ($res = $ilDB->fetchAssoc($object_id_query)) {
-	$obj_id = $res["obj_id"];
-}
-
-$set = $ilDB->query(
-    "SELECT * FROM rbac_ta " .
-    " WHERE typ_id = " . $ilDB->quote($obj_id, "integer") .
-    " AND ops_id = " . $ilDB->quote($allow_copy, "integer")
-);
-if (!$ilDB->fetchAssoc($set)) {
-    $ilDB->manipulate("INSERT INTO rbac_ta " .
-        "(typ_id, ops_id) VALUES (" .
-        $ilDB->quote($obj_id, "integer") . "," .
-        $ilDB->quote($allow_copy, "integer") .
-        ")");
-}
+//$allow_copy = ilRbacReview::_getOperationIdByName("copy");
+//$object_id_query = $ilDB->query(
+//    "SELECT obj_id FROM object_data " .
+//    " WHERE type = " . $ilDB->quote("typ", "text") .
+//    " AND title = " . $ilDB->quote("xmg", "text")
+//);
+//
+//while ($res = $ilDB->fetchAssoc($object_id_query)) {
+//	$obj_id = $res["obj_id"];
+//}
+//
+//$set = $ilDB->query(
+//    "SELECT * FROM rbac_ta " .
+//    " WHERE typ_id = " . $ilDB->quote($obj_id, "integer") .
+//    " AND ops_id = " . $ilDB->quote($allow_copy, "integer")
+//);
+//if (!$ilDB->fetchAssoc($set)) {
+//    $ilDB->manipulate("INSERT INTO rbac_ta " .
+//        "(typ_id, ops_id) VALUES (" .
+//        $ilDB->quote($obj_id, "integer") . "," .
+//        $ilDB->quote($allow_copy, "integer") .
+//        ")");
+//}
 ?>
 
 <#25>
@@ -627,13 +627,13 @@ if($copy_operation_id)
     {
         $obj_type_id = ilDBUpdateNewObjectType::getObjectTypeId($obj_type);
 
-        //Check if exists and delete first because of dbupdate step 24
-        if(ilDBUpdateNewObjectType::isRBACOperation($obj_type_id, $copy_operation_id)) {
-            ilDBUpdateNewObjectType::deleteRBACOperation($obj_type_id, $copy_operation_id);
-		}
-
         if($obj_type_id)
         {
+        	//Check if exists and delete first because of dbupdate step 24
+			if(ilDBUpdateNewObjectType::isRBACOperation($obj_type_id, $copy_operation_id)) {
+				ilDBUpdateNewObjectType::deleteRBACOperation($obj_type_id, $copy_operation_id);
+			}
+
             ilDBUpdateNewObjectType::addRBACOperation($obj_type_id, $copy_operation_id);
             ilDBUpdateNewObjectType::cloneOperation($obj_type, $write_operation_id, $copy_operation_id);
         }
