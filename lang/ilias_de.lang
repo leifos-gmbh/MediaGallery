@@ -136,3 +136,9 @@ rotate_image_preview#:#Vorschaubild drehen
 image_rotated#:#Das Bild wurde erfolgreich gedreht.
 rename_successful#:#Archivname wurde erfolgreich umbenannt.
 file_not_found#:#Datei wurde nicht gefunden.
+learning_progress#:#Lernfortschritt
+learning_progress_mode#:#Lernfortschrittsmodus
+lp_deactivated#:#Lernfortschritt ist deaktiviert
+lp_deactivated_info#:#Der Lernfortschrittsstatus wird nicht angezeigt und beeinflusst keine übergeordneten Objekte.
+lp_by_objects#:#Auswahl an Medien-Objekten
+lp_by_objects_info#:#Der Lernfortschritt wird automatisch aus der Anzahl der betrachteten Medienobjekte, welche vorher im Bereich Mediendateien->Liste markiert wurden, ermittelt.
