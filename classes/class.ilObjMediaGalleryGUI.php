@@ -19,7 +19,7 @@ include_once("./Services/Repository/classes/class.ilObjectPluginGUI.php");
 *
 * @ilCtrl_isCalledBy ilObjMediaGalleryGUI: ilRepositoryGUI, ilAdministrationGUI, ilObjPluginDispatchGUI
 * @ilCtrl_Calls ilObjMediaGalleryGUI: ilPermissionGUI, ilInfoScreenGUI, ilObjectCopyGUI
-* @ilCtrl_Calls ilObjMediaGalleryGUI: ilCommonActionDispatcherGUI
+* @ilCtrl_Calls ilObjMediaGalleryGUI: ilCommonActionDispatcherGUI, ilLearningProgressGUI
 *
 */
 class ilObjMediaGalleryGUI extends ilObjectPluginGUI
@@ -94,7 +94,8 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 			case "download":
 			case "downloadOriginal":
 			case "downloadOther":
-			case "gallery":	
+			case "gallery":
+            case "recordFileAccess":
 			case "export":// list all commands that need read permission here
 				$this->checkPermission("read");
 				$this->$cmd();
@@ -221,6 +222,15 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
              */
 			//$ilTabs->addTab("export", $this->txt("export"), $ilCtrl->getLinkTarget($this, "export"));
 		}
+
+        if(ilLearningProgressAccess::checkAccess($this->object->getRefId()) && $this->object->getLearningProgressEnabled())
+        {
+            $ilTabs->addTab(
+                'learning_progress',
+                $this->txt('learning_progress'),
+                $ilCtrl->getLinkTargetByClass('illearningprogressgui',''));
+        }
+
 		// standard epermission tab
 		$this->addPermissionTab();
 	}
@@ -289,6 +299,18 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		$sd->setInfo($this->txt("show_download_description"));
 		$this->form->addItem($sd);
 
+		$lp_radio = new ilRadioGroupInputGUI($this->txt('learning_progress_mode'), 'learning_progress');
+
+		$lp_option_deac = new ilRadioOption($this->txt('lp_deactivated'), ilObjMediaGallery::LP_DEACTIVATED);
+		$lp_option_deac->setInfo($this->txt('lp_deactivated_info'));
+		$lp_radio->addOption($lp_option_deac);
+
+		$lp_option_acti = new ilRadioOption($this->txt('lp_by_objects'), ilObjMediaGallery::LP_ACTIVATED);
+		$lp_option_acti->setInfo($this->txt('lp_by_objects_info'));
+		$lp_radio->addOption($lp_option_acti);
+
+		$this->form->addItem($lp_radio);
+
 		// theme
 		$theme = new ilSelectInputGUI($this->plugin->txt("gallery_theme"), "theme");
 		$theme_options = $this->object->getGalleryThemes();
@@ -316,6 +338,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		$values["show_download"] = $this->object->getDownload();
 		$values["show_title"] = $this->object->getShowTitle();
 		$values["theme"] = $this->object->getTheme();
+		$values["learning_progress"] = $this->object->getLearningProgressEnabled();
 		$this->form->setValuesByArray($values);
 	}
 
@@ -335,6 +358,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 			$this->object->setShowTitle($this->form->getInput("show_title"));
 			$this->object->setDownload($this->form->getInput("show_download"));
 			$this->object->setTheme($this->form->getInput("theme"));
+			$this->object->setLearningProgressEnabled($this->form->getInput("learning_progress"));
 
 			// tile image
 			$obj_service =  $this->getObjectService();
@@ -342,6 +366,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 
 			$this->object->update();
 			ilUtil::sendSuccess($lng->txt("msg_obj_modified"), true);
+			ilLPStatusWrapper::_refreshStatus($this->object->getId());
 			$ilCtrl->redirect($this, "editProperties");
 		}
 
@@ -425,8 +450,10 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 
 	public function gallery()
 	{
-		global $ilTabs;
-	
+		global $ilTabs, $DIC;
+
+        ilChangeEvent::_recordReadEvent('xmg', $this->object->getRefId(), $this->object->getId(), $DIC->user()->getId());
+
 		$ilTabs->activateTab("gallery");
 		$this->plugin->includeClass("class.ilMediaGalleryGUI.php");
 		$gallery = new ilMediaGalleryGUI($this, $this->plugin);
@@ -542,6 +569,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		$this->sortkey = 'custom';
 		uasort($mediafiles, array($this, 'gallerysort'));
 		$counter = 1.0;
+
 		foreach ($mediafiles as $id => $fdata)
 		{
 			$mediafiles[$id]['custom'] = $counter;
@@ -829,6 +857,11 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 			$file->setTitle($_POST['title'][$fid]);
 			$file->setDescription($_POST['description'][$fid]);
 			$file->setSorting(is_numeric($_POST['custom'][$fid])?($_POST['custom'][$fid]*10):0);
+			if(isset($_POST['lp_relevant'][$fid])) {
+                $file->setLpRelevant(1);
+            } else {
+			    $file->setLpRelevant(0);
+            }
 			$file->update();
 		}
 		ilUtil::sendSuccess($this->plugin->txt('file_data_saved'), true);
@@ -1201,6 +1234,20 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
         // display form to correct errors
         $form->setValuesByPost();
         $tpl->setContent($form->getHtml());
+    }
+
+    /**
+     * Records access of file. Is called through Ajax
+     *
+     */
+    public function recordFileAccess()
+    {
+        global $DIC;
+
+        $params = $DIC->http()->request()->getQueryParams();
+
+        $access = ilMediaGalleryFileAccess::getInstanceByGalleryId($this->object->getId());
+        $access->create($params['file_id'], $DIC->user()->getId());
     }
 }
 

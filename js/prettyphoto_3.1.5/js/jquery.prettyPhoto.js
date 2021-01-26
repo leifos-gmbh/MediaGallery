@@ -148,8 +148,9 @@
 			theRel = $(this).attr(settings.hook);
 			galleryRegExp = /\[(?:.*)\]/;
 			isSet = (galleryRegExp.exec(theRel)) ? true : false;
-			
-			// Put the SRCs, TITLEs, ALTs into an array.
+
+			// Put the RecordURLs, SRCs, TITLEs, ALTs into an array.
+			pp_recordUrls = (isSet) ? jQuery.map(matchedObjects, function(n, i){ if($(n).attr(settings.hook).indexOf(theRel) != -1) return $(n).attr('data-recordurl'); }) : $.makeArray($(this).attr('data-recordurl'));
 			pp_images = (isSet) ? jQuery.map(matchedObjects, function(n, i){ if($(n).attr(settings.hook).indexOf(theRel) != -1) return $(n).attr('href'); }) : $.makeArray($(this).attr('href'));
 			pp_titles = (isSet) ? jQuery.map(matchedObjects, function(n, i){ if($(n).attr(settings.hook).indexOf(theRel) != -1) return ($(n).find('img').attr('alt')) ? $(n).find('img').attr('alt') : ""; }) : $.makeArray($(this).find('img').attr('alt'));
 			pp_descriptions = (isSet) ? jQuery.map(matchedObjects, function(n, i){ if($(n).attr(settings.hook).indexOf(theRel) != -1) return ($(n).attr('title')) ? $(n).attr('title') : ""; }) : $.makeArray($(this).attr('title'));
@@ -163,8 +164,7 @@
 			
 			if(settings.allow_resize)
 				$(window).bind('scroll.prettyphoto',function(){ _center_overlay(); });
-			
-			
+
 			$.prettyPhoto.open();
 			
 			return false;
@@ -187,7 +187,7 @@
 				set_position = (arguments[3])? arguments[3]: 0;
 				_build_overlay(event.target); // Build the overlay {this} being the caller
 			}
-			
+
 			if(settings.hideflash) $('object,embed,iframe[src*=youtube],iframe[src*=vimeo]').css('visibility','hidden'); // Hide the flash
 
 			_checkPosition($(pp_images).size()); // Hide the next/previous links if on first or last images.
@@ -202,7 +202,7 @@
 				facebook_like_link = settings.social_tools.replace('{location_href}', encodeURIComponent(location.href)); 
 				$pp_pic_holder.find('.pp_social').html(facebook_like_link);
 			}
-			
+
 			// Fade the content in
 			if($ppt.is(':hidden')) $ppt.css('opacity',0).show();
 			$pp_overlay.show().fadeTo(settings.animation_speed,settings.opacity);
@@ -225,7 +225,22 @@
 			percentBased=false;
 			if(movie_height.indexOf('%') != -1) { movie_height = parseFloat(($(window).height() * parseFloat(movie_height) / 100) - 150); percentBased = true; }
 			if(movie_width.indexOf('%') != -1) { movie_width = parseFloat(($(window).width() * parseFloat(movie_width) / 100) - 150); percentBased = true; }
-			
+
+			// Call php file access record function through url
+			$.ajax({
+					async: true,
+					cache:false,
+					url: pp_recordUrls[set_position],
+					beforeSend: function (jqXHR, settings) {
+					},
+					success: function (response) {
+					},
+					error: function (response) {
+						console.log(response);
+					}
+				}
+			);
+
 			// Fade the holder
 			$pp_pic_holder.fadeIn(function(){
 				// Set the title
@@ -258,7 +273,7 @@
 							alert('Image cannot be loaded. Make sure the path is correct and image exist.');
 							$.prettyPhoto.close();
 						};
-					
+
 						imgPreloader.src = pp_images[set_position];
 					break;
 				
@@ -732,7 +747,7 @@
 					.find('div:first').width(galleryWidth+5)
 					.find('ul').width(fullGalleryWidth)
 					.find('li.selected').removeClass('selected');
-				
+
 				goToPage = (Math.floor(set_position/itemsPerPage) < totalPage) ? Math.floor(set_position/itemsPerPage) : totalPage;
 
 				$.prettyPhoto.changeGalleryPage(goToPage);

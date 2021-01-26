@@ -84,6 +84,7 @@ class ilMediaGalleryGUI
 	{
 		$this->tpl->addCss($this->plugin->getStyleSheetLocation("xmg.css"));
 		$this->tpl->addCss($this->plugin->getDirectory() . "/js/prettyphoto_3.1.5/css/prettyPhoto.css");
+		$this->tpl->addJavaScript($this->plugin->getDirectory() . "/js/recordFileAccess.js");
 		$this->tpl->addJavascript($this->plugin->getDirectory() . "/js/prettyphoto_3.1.5/js/jquery.prettyPhoto.js");
 		$this->tpl->addJavascript($this->plugin->getDirectory() . "/js/html5media-master/domready.js");
 		$this->tpl->addJavascript($this->plugin->getDirectory() . "/js/html5media-master/flowplayer.js");
@@ -291,6 +292,8 @@ class ilMediaGalleryGUI
 				break;
 		}
 
+        $this->ctrl->setParameter($this->parent, 'file_id', $a_set->getId());
+        $tpl_element->setVariable("VID_URL", $this->ctrl->getLinkTarget($this->parent, 'recordFileAccess', '', 'true'));
 		return $tpl_element;
 	}
 
@@ -334,6 +337,8 @@ class ilMediaGalleryGUI
 			$tpl_element->setVariable('MARGIN_LEFT', "4");
 			$tpl_element->parseCurrentBlock();
 		}
+        $this->ctrl->setParameter($this->parent, 'file_id', $a_set->getId());
+        $tpl_element->setVariable('IMG_URL', $this->ctrl->getLinkTarget($this->parent, 'recordFileAccess', '', 'true'));
 		$tpl_element->setVariable('URL_FULLSCREEN', ilWACSignedPath::signFile($a_set->getPath(ilObjMediaGallery::LOCATION_SIZE_LARGE, true)));
 		$tpl_element->setVariable('CAPTION', ilUtil::prepareFormOutput($a_set->getDescription()));
 		if ($this->preview_flag)
@@ -383,6 +388,8 @@ class ilMediaGalleryGUI
 			$tpl_element->setVariable('MARGIN_LEFT', "4");
 			$tpl_element->parseCurrentBlock();
 		}
+        $this->ctrl->setParameter($this->parent, 'file_id', $a_set->getId());
+        $tpl_element->setVariable('AUDIO_URL', $this->ctrl->getLinkTarget($this->parent, 'recordFileAccess', '', 'true'));
 		$tpl_element->setVariable('INLINE_SECTION', "aud".$this->counter);
 		$tpl_element->setVariable('URL_AUDIO', ilWACSignedPath::signFile($a_set->getPath(ilObjMediaGallery::LOCATION_ORIGINALS, true)) );
 		$tpl_element->setVariable('CAPTION', ilUtil::prepareFormOutput($a_set->getDescription()));
@@ -452,6 +459,9 @@ class ilMediaGalleryGUI
 		{
 			$tpl_element->setVariable('URL_THUMBNAIL', $this->object->getMimeIconPath($a_set->getId()));
 		}
+
+		$this->ctrl->setParameter($this->parent, 'file_id', $a_set->getId());
+        $tpl_element->setVariable('OTH_URL', $this->ctrl->getLinkTarget($this->parent, 'recordFileAccess', '', 'true'));
 		$tpl_element->setVariable('INLINE_SECTION', "oth". $this->counter);
 		$this->ctrl->setParameter($this->parent, 'id', $a_set->getId());
 		$tpl_element->setVariable('URL_DOWNLOAD', $this->ctrl->getLinkTarget($this->parent, "downloadOther"));
@@ -469,6 +479,7 @@ class ilMediaGalleryGUI
 	{
 		$this->tpl->addCss($this->plugin->getStyleSheetLocation("xmg.css"));
 		$this->tpl->addCss($this->plugin->getDirectory() . "/js/prettyphoto_3.1.5/css/prettyPhoto.css");
+        $this->tpl->addJavaScript($this->plugin->getDirectory() . "/js/recordFileAccess.js");
 		$this->tpl->addJavascript($this->plugin->getDirectory() . "/js/prettyphoto_3.1.5/js/jquery.prettyPhoto.js");
 		$this->tpl->addJavascript($this->plugin->getDirectory() . "/js/html5media-master/domready.js");
 		$this->tpl->addJavascript($this->plugin->getDirectory() . "/js/html5media-master/flowplayer.js");

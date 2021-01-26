@@ -18,7 +18,7 @@ define("LOCATION_PREVIEWS", 7);
 *
 * $Id$
 */
-class ilObjMediaGallery extends ilObjectPlugin
+class ilObjMediaGallery extends ilObjectPlugin implements ilLPStatusPluginInterface
 {
 	/**
 	 * @var ilMediaGalleryPlugin
@@ -32,6 +32,7 @@ class ilObjMediaGallery extends ilObjectPlugin
 	protected $showTitle = 0;
 	protected $download = 0;
 	protected $theme = '';
+	protected $learning_progress = 0;
 
 	const LOCATION_ROOT = 0;
 	const LOCATION_ORIGINALS = 1;
@@ -42,6 +43,8 @@ class ilObjMediaGallery extends ilObjectPlugin
 	const LOCATION_DOWNLOADS = 6;
 	const LOCATION_PREVIEWS = 7;
 
+    const LP_DEACTIVATED = 0;
+	const LP_ACTIVATED = 1;
 
 	const CONTENT_TYPE_VIDEO = 1;
 	const CONTENT_TYPE_IMAGE = 2;
@@ -113,6 +116,7 @@ class ilObjMediaGallery extends ilObjectPlugin
 			$this->setDownload($row['download']);
 			$this->setTheme($row['theme']);
 			$this->setSortOrder($row['sortorder']);
+			$this->setLearningProgressEnabled($row['learning_progress']);
 		}
 		else
 		{
@@ -120,6 +124,7 @@ class ilObjMediaGallery extends ilObjectPlugin
 			$this->setDownload(0);
 			$this->setTheme(ilObjMediaGallery::_getConfigurationValue('theme'));
 			$this->setSortOrder('filename');
+			$this->setLearningProgressEnabled(0);
 		}
 	}
 	
@@ -135,9 +140,9 @@ class ilObjMediaGallery extends ilObjectPlugin
 			array('integer'),
 			array($this->getId())
 		);
-		$result = $ilDB->manipulateF("INSERT INTO rep_robj_xmg_object (obj_fi, sortorder, show_title, download, theme) VALUES (%s, %s, %s, %s, %s)",
-			array('integer','text','integer', 'integer', 'text'),
-			array($this->getId(), $this->getSortOrder(), $this->getShowTitle(), $this->getDownload(), $this->getTheme())
+		$result = $ilDB->manipulateF("INSERT INTO rep_robj_xmg_object (obj_fi, sortorder, show_title, download, theme, learning_progress) VALUES (%s, %s, %s, %s, %s, %s)",
+			array('integer','text','integer', 'integer', 'text', 'integer'),
+			array($this->getId(), $this->getSortOrder(), $this->getShowTitle(), $this->getDownload(), $this->getTheme(), $this->getLearningProgressEnabled())
 		);
 	}
 	
@@ -149,7 +154,7 @@ class ilObjMediaGallery extends ilObjectPlugin
 	function doDelete()
 	{
 		global $ilDB;
-		// $myID = $this->getId();
+
 		ilUtil::delDir($this->getFS()->getPath(self::LOCATION_ROOT));
 
 		$affectedRows = $ilDB->manipulateF("DELETE FROM rep_robj_xmg_filedata WHERE xmg_id = %s",
@@ -164,6 +169,9 @@ class ilObjMediaGallery extends ilObjectPlugin
 			array('integer'),
 			array($this->getId())
 		);
+
+		$access_records = ilMediaGalleryFileAccess::getInstanceByGalleryId($this->getId());
+		$access_records->deleteAccessRecordsForGallery();
 	}
 
 	/**
@@ -302,6 +310,22 @@ class ilObjMediaGallery extends ilObjectPlugin
 	{
 		return $this->size_small;
 	}
+
+    /**
+     * @return int
+     */
+    public function getLearningProgressEnabled() : int
+    {
+        return $this->learning_progress;
+    }
+
+    /**
+     * @param int $learning_progress
+     */
+    public function setLearningProgressEnabled(int $learning_progress)
+    {
+        $this->learning_progress = $learning_progress;
+    }
 
 
 	/**
@@ -545,5 +569,96 @@ class ilObjMediaGallery extends ilObjectPlugin
 
 		return true;
 	}
+
+    /**
+     * Get all user ids with LP status completed
+     *
+     * @return array
+     */
+    public function getLPCompleted() : array
+    {
+
+        if($this->getLearningProgressEnabled() == 0) {
+            return array();
+        }
+
+        $file_access = ilMediaGalleryFileAccess::getInstanceByGalleryId($this->getId());
+
+        return $file_access->getLpCompleted();
+    }
+
+    /**
+     * Get all user ids with LP status not attempted
+     *
+     * @return array
+     */
+    public function getLPNotAttempted() : array
+    {
+        return array();
+    }
+
+    /**
+     * Get all user ids with LP status failed
+     *
+     * @return array
+     */
+    public function getLPFailed() : array
+    {
+        return array();
+    }
+
+    /**
+     * Get all user ids with LP status in progress
+     *
+     * @return array
+     */
+    public function getLPInProgress() : array
+    {
+
+        if($this->getLearningProgressEnabled() == 0) {
+            return array();
+        }
+
+        return $this->getUsersAttempted();
+    }
+
+    /**
+     * Get current status for given user
+     *
+     * @param int $a_user_id
+     * @return int
+     */
+    public function getLPStatusForUser($a_user_id) : int
+    {
+
+        if(in_array($a_user_id, $this->getUsersAttempted())) {
+
+            if(ilLPStatus::_hasUserCompleted($this->getId(), $a_user_id))
+            {
+                return ilLPStatus::LP_STATUS_COMPLETED_NUM;
+            }
+
+            return ilLPStatus::LP_STATUS_IN_PROGRESS_NUM;
+        }
+
+        return ilLPStatus::LP_STATUS_NOT_ATTEMPTED_NUM;
+    }
+
+    /**
+     * @return array
+     */
+    protected function getUsersAttempted() : array
+    {
+        $events = ilChangeEvent::_lookupReadEvents($this->getId());
+
+        $users = array();
+        foreach ($events as $event) {
+            $users[] = $event['usr_id'];
+        }
+
+        return $users;
+    }
 }
+
+
 ?>
