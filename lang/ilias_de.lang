@@ -142,3 +142,4 @@ lp_deactivated#:#Lernfortschritt ist deaktiviert
 lp_deactivated_info#:#Der Lernfortschrittsstatus wird nicht angezeigt und beeinflusst keine übergeordneten Objekte.
 lp_by_objects#:#Auswahl an Medien-Objekten
 lp_by_objects_info#:#Der Lernfortschritt wird automatisch aus der Anzahl der betrachteten Medienobjekte, welche vorher im Bereich Mediendateien->Liste markiert wurden, ermittelt.
+presentation#:#Darstellung
