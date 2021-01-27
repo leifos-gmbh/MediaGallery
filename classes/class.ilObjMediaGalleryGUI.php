@@ -358,7 +358,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 			$this->object->setShowTitle($this->form->getInput("show_title"));
 			$this->object->setDownload($this->form->getInput("show_download"));
 			$this->object->setTheme($this->form->getInput("theme"));
-			$this->object->setLearningProgress($this->form->getInput("learning_progress"));
+			$this->object->setLearningProgressEnabled($this->form->getInput("learning_progress"));
 
 			// tile image
 			$obj_service =  $this->getObjectService();
