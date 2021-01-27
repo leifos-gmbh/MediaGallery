@@ -146,3 +146,4 @@ lp_deactivated#:#Learning progress is deactivated
 lp_deactivated_info#:#The learning progress status is not displayed and does not influence parent objects.
 lp_by_objects#:#Collection of Media Objects
 lp_by_objects_info#:#The learning progress status will be determined by the viewing status of selected media objects, which are specified under Media Files->List.
+presentation#:#Presentation

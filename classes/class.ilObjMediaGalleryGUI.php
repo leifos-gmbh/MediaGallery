@@ -267,6 +267,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 
 		include_once("Services/Form/classes/class.ilPropertyFormGUI.php");
 		$this->form = new ilPropertyFormGUI();
+        $this->form->setTitle($this->txt("edit_properties"));
 
 		// title
 		$ti = new ilTextInputGUI($this->txt("title"), "title");
@@ -276,6 +277,16 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		// description
 		$ta = new ilTextAreaInputGUI($this->txt("description"), "desc");
 		$this->form->addItem($ta);
+
+        $pres = new ilFormSectionHeaderGUI();
+        $pres->setTitle($this->plugin->txt("presentation"));
+        $this->form->addItem($pres);
+
+        // theme
+        $theme = new ilSelectInputGUI($this->plugin->txt("gallery_theme"), "theme");
+        $theme_options = $this->object->getGalleryThemes();
+        $theme->setOptions($theme_options);
+        $this->form->addItem($theme);
 
 		// sort
 		$so = new ilSelectInputGUI($this->plugin->txt("sort_order"), "sort");
@@ -295,9 +306,17 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		$st->setInfo($this->txt("show_title_description"));
 		$this->form->addItem($st);
 
-		$sd = new ilCheckboxInputGUI($this->txt('show_download'), 'show_download');
-		$sd->setInfo($this->txt("show_download_description"));
-		$this->form->addItem($sd);
+        $sd = new ilCheckboxInputGUI($this->txt('show_download'), 'show_download');
+        $sd->setInfo($this->txt("show_download_description"));
+        $this->form->addItem($sd);
+
+        // tile image
+        $obj_service =  $this->getObjectService();
+        $this->form = $obj_service->commonSettings()->legacyForm($this->form, $this->object)->addTileImage();
+
+        $lp_section = new ilFormSectionHeaderGUI();
+        $lp_section->setTitle($this->plugin->txt("learning_progress"));
+        $this->form->addItem($lp_section);
 
 		$lp_radio = new ilRadioGroupInputGUI($this->txt('learning_progress_mode'), 'learning_progress');
 
@@ -311,19 +330,8 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 
 		$this->form->addItem($lp_radio);
 
-		// theme
-		$theme = new ilSelectInputGUI($this->plugin->txt("gallery_theme"), "theme");
-		$theme_options = $this->object->getGalleryThemes();
-		$theme->setOptions($theme_options);
-		$this->form->addItem($theme);
-
-		// tile image
-		$obj_service =  $this->getObjectService();
-		$this->form = $obj_service->commonSettings()->legacyForm($this->form, $this->object)->addTileImage();
-
 		$this->form->addCommandButton("updateProperties", $this->txt("save"));
 
-		$this->form->setTitle($this->txt("edit_properties"));
 		$this->form->setFormAction($ilCtrl->getFormAction($this));
 	}
 
