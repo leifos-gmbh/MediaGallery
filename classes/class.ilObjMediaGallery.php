@@ -582,7 +582,7 @@ class ilObjMediaGallery extends ilObjectPlugin implements ilLPStatusPluginInterf
             return array();
         }
 
-        $file_access = ilMediaGalleryFileAccess::getInstance($this->getId());
+        $file_access = ilMediaGalleryFileAccess::getInstanceByGalleryId($this->getId());
 
         return $file_access->getLpCompleted();
     }
