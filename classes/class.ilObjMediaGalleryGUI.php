@@ -58,6 +58,44 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		return "xmg";
 	}
 
+    /**
+     * _goto
+     * Deep link
+     *
+     * @param string $a_target
+     */
+    public static function _goto($a_target)
+    {
+        global $DIC;
+
+        $ilCtrl = $DIC->ctrl();
+
+        $target_array = explode("_", $a_target[0]);
+        $ref_id = $target_array[0];
+        $param = $target_array[1];
+
+        $ilCtrl->initBaseClass(ilObjPluginDispatchGUI::class);
+        $ilCtrl->setParameterByClass(ilObjMediaGalleryGUI::class, "ref_id", $ref_id);
+
+        if ($param == ilObjMediaGallery::DIRECT_UPLOAD) {
+            $ilCtrl->redirectByClass(
+                [
+                    ilObjPluginDispatchGUI::class,
+                    ilObjMediaGalleryGUI::class
+                ],
+                "upload");
+        } else {
+            $ilCtrl->redirectByClass(
+                [
+                    ilObjPluginDispatchGUI::class,
+                    ilObjMediaGalleryGUI::class
+                ],
+                "gallery");
+        }
+
+
+    }
+
 	/**
 	* Handles all commmands of this class, centralizes permission checks
   */
@@ -125,9 +163,8 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 	*/
 	function infoScreen()
 	{
-		global $ilAccess, $ilUser, $lng, $ilCtrl, $tpl, $ilTabs;
 
-		$ilTabs->setTabActive("info_short");
+		$this->tabs->activateTab("info_short");
 
 		$this->checkPermission("visible");
 
@@ -135,30 +172,50 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		$info = new ilInfoScreenGUI($this);
 
 		$info->addSection($this->txt("plugininfo"));
-		$info->addProperty($lng->txt("name"), $this->txt("obj_xmg"));
-		$info->addProperty($lng->txt("version"), xmg_version);
-		/*$info->addProperty('Developer', 'Helmut Schottmüller');
-		$info->addProperty('Kontakt', 'ilias@aurealis.de');
-		$info->addProperty('&nbsp;', 'Aurealis');
-		$info->addProperty('&nbsp;', '');
-		$info->addProperty('&nbsp;', "http://www.aurealis.de");*/
+		$info->addProperty($this->lng->txt("name"), $this->txt("obj_xmg"));
+		$info->addProperty($this->lng->txt("version"), xmg_version);
 
-
+        $info->addProperty(
+            $this->plugin->txt("perma_link_upload"),
+            $this->getDirectUploadLinkHTML(),
+            ""
+        );
 
 		$info->enablePrivateNotes();
 
 		// general information
-		$lng->loadLanguageModule("meta");
+		$this->lng->loadLanguageModule("meta");
 
 		$this->addInfoItems($info);
 
 
 		// forward the command
-		$ret = $ilCtrl->forwardCommand($info);
+		$this->ctrl->forwardCommand($info);
 
-
-		//$tpl->setContent($ret);
 	}
+
+    /**
+     * Create perma link for upload with custom template, since using permalinkgui overlaps with it's js select function
+     *
+     * @return string
+     * @throws ilTemplateException
+     */
+    protected function getDirectUploadLinkHTML()
+    {
+        $tpl = $this->plugin->getTemplate("tpl.direct_upload_link.html");
+
+        $href = ilLink::_getStaticLink(
+            $this->object->getRefId(),
+            $this->object->getType(),
+            true,
+            "_" . ilObjMediaGallery::DIRECT_UPLOAD
+        );
+
+        $tpl->setVariable("LINK", $href);
+
+        return $tpl->get();
+    }
+
 	//
 	// DISPLAY TABS
 	//
@@ -1089,15 +1146,14 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 
 	public function upload()
 	{
-		global $ilTabs, $ilCtrl, $lng;
 
 		if(isset($_GET["upload"]))
 		{
-			ilUtil::sendSuccess($this->plugin->txt("new_file_added"));
+            ilUtil::sendSuccess($this->plugin->txt("new_file_added"));
 		}
 
 		$this->setSubTabs("mediafiles");
-		$ilTabs->activateTab("mediafiles");
+		$this->tabs->activateTab("mediafiles");
 		$template = $this->plugin->getTemplate("tpl.upload.html");
 		$template->setVariable("FILE_ALERT", $this->plugin->txt('upload_file_alert'));
 		$this->plugin->includeClass("class.ilObjMediaGallery.php");
@@ -1125,14 +1181,14 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		$filter_txt .= '],';
 		$template->setVariable("FILTERS", $filter_txt);
 
-		$template->setVariable("UPLOAD_URL", html_entity_decode(ILIAS_HTTP_PATH . "/" . $ilCtrl->getLinkTarget($this, 'uploadFile')));
+		$template->setVariable("UPLOAD_URL", html_entity_decode(ILIAS_HTTP_PATH . "/" . $this->ctrl->getLinkTarget($this, 'uploadFile')));
 		$template->setVariable("MAX_FILE_SIZE", ilObjMediaGallery::_getConfigurationValue("max_upload", 100) . "mb");
 		$this->tpl->addCss($this->plugin->getDirectory() . "/js/jquery.plupload.queue/css/jquery.plupload.queue.css");
 		$this->tpl->addJavascript($this->plugin->getDirectory() . "/js/plupload.full.js");
 		$this->tpl->addJavascript($this->plugin->getDirectory() . "/js/jquery.plupload.queue/jquery.plupload.queue.js");
 
 		//change language
-		$lang = $lng->getUserLanguage();
+		$lang = $this->lng->getUserLanguage();
 		$lang_path = $this->plugin->getDirectory() . "/js/i18n/".$lang.".js";
 
 		if(file_exists($lang_path))

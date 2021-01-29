@@ -1,0 +1,14 @@
+<div class="ilPermalinkContainer input-group">
+    <label for="direct_upload_link">
+	<a href="{LINK}" onclick="selectUploadlink(); return false;" class="permalink_label"></a></label>
+    <input class="form-control" id="direct_upload_link" type="text" value="{LINK}" readonly="readonly" onclick="selectUploadlink(); return false;" />
+</div>
+<script>
+	function selectUploadlink() {
+		var pl = $("#direct_upload_link");
+		pl.attr("readOnly", false);
+		pl.focus().select();
+		document.execCommand('copy');
+		pl.attr("readOnly", true);
+	}
+</script>
