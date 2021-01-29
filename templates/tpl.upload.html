@@ -21,13 +21,15 @@ $(function() {
     init: {
         UploadComplete: function(up, files) {
 
-            var message = "&upload=successfully";
+            let message = "&upload=successfully";
 
             if(window.location.href.indexOf(message) > -1)
             {
                 message = '';
             }
-            window.location = window.location.href + message;
+
+            let url = window.location.href.replace("cmd=upload", "cmd=mediafiles");
+            window.location = url + message;
         },
     }
 	});
