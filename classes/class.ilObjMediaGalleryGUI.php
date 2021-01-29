@@ -29,6 +29,11 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 	 */
 	protected $plugin;
 	protected $sortkey;
+
+    /**
+     * @var \Psr\Http\Message\ServerRequestInterface
+     */
+    protected $http_request;
 	/**
 	 * @var ilObjMediaGallery
 	 */
@@ -39,10 +44,9 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 	*/
 	protected function afterConstructor()
 	{
-		// anything needed after object has been constructed
-		// - gallery: append my_id GET parameter to each request
-		//   $ilCtrl->saveParameter($this, array("my_id"));
-		//$this->object->setId($this->object_id);
+	    global $DIC;
+
+        $this->http_request = $DIC->http()->request();
 
 		include_once "./Services/Component/classes/class.ilPlugin.php";
 		$this->plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, "Repository", "robj", "MediaGallery");
@@ -529,7 +533,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 	
 	function downloadOriginal()
 	{
-		$file = ilMediaGalleryFile::_getInstanceById($_GET['id']);
+		$file = ilMediaGalleryFile::_getInstanceById($this->http_request->getQueryParams()['id']);
 
 		if(!file_exists($file->getPath(ilObjMediaGallery::LOCATION_ORIGINALS)))
 		{
@@ -549,7 +553,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 
 	function downloadOther()
 	{
-		$file = ilMediaGalleryFile::_getInstanceById($_GET['id']);
+		$file = ilMediaGalleryFile::_getInstanceById($this->http_request->getQueryParams()['id']);
 
 		if(!file_exists($file->getPath(ilObjMediaGallery::LOCATION_ORIGINALS)))
 		{
@@ -606,17 +610,23 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 	
 	public function mediafiles()
 	{
-		global $ilTabs;
-		if (isset($_GET['action']) && isset($_GET['id']))
+
+		if (isset($this->http_request->getQueryParams()['action']) && isset($this->http_request->getQueryParams()['id']))
 		{
-			$this->performAction($_GET['id'], $_GET['action']);
+			$this->performAction($this->http_request->getQueryParams()['id'], $this->http_request->getQueryParams()['action']);
 			ilUtil::sendSuccess($this->plugin->txt("image_rotated"), true);
 			$this->ctrl->setParameter($this, "action", "");
 			$this->ctrl->redirect($this, 'mediafiles');
 			return;
 		}
+
+        if(isset($this->http_request->getQueryParams()["upload"]))
+        {
+            ilUtil::sendSuccess($this->plugin->txt("new_file_added"));
+        }
+
 		$this->setSubTabs("mediafiles");
-		$ilTabs->activateTab("mediafiles");
+		$this->tabs->activateTab("mediafiles");
 		$this->tpl->addCss($this->plugin->getStyleSheetLocation("xmg.css"));
 		$this->plugin->includeClass("class.ilMediaFileTableGUI.php");
 		$table_gui = new ilMediaFileTableGUI($this, 'mediafiles');
@@ -1147,11 +1157,6 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 	public function upload()
 	{
 
-		if(isset($_GET["upload"]))
-		{
-            ilUtil::sendSuccess($this->plugin->txt("new_file_added"));
-		}
-
 		$this->setSubTabs("mediafiles");
 		$this->tabs->activateTab("mediafiles");
 		$template = $this->plugin->getTemplate("tpl.upload.html");
@@ -1210,7 +1215,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 		$ilToolbar->addButton("Exportdatei erzeugen (XML)",$ilCtrl->getLinkTarget($this, "export"));
 		$ilCtrl->clearParameters($this);
 		
-		if(isset($_GET["download"]))
+		if(isset($this->http_request->getQueryParams()["download"]))
 		{
 			$this->plugin->includeClass("class.ilMediaGalleryXmlWriter.php");
 			$xml_writer = new ilMediaGalleryXmlWriter(true);
@@ -1254,7 +1259,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 
         if(!$parent_id)
         {
-            $parent_id = $_GET["ref_id"];
+            $parent_id = $this->http_request->getQueryParams()["ref_id"];
         }
         $new_type = $_REQUEST["new_type"];
 
