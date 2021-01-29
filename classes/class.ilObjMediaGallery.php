@@ -56,6 +56,8 @@ class ilObjMediaGallery extends ilObjectPlugin implements ilLPStatusPluginInterf
 	const IMAGE_SIZE_MEDIUM = 1280;
 	const IMAGE_SIZE_LARGE = 2048;
 
+	const DIRECT_UPLOAD = "directupload";
+
 
 	
 	/**
