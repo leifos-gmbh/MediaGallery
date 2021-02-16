@@ -632,10 +632,10 @@ class ilObjMediaGallery extends ilObjectPlugin implements ilLPStatusPluginInterf
      */
     public function getLPStatusForUser($a_user_id) : int
     {
-
         if(in_array($a_user_id, $this->getUsersAttempted())) {
 
-            if(ilLPStatus::_hasUserCompleted($this->getId(), $a_user_id))
+            $users_completed = ilLPStatusWrapper::_getCompleted($this->getId());
+            if(in_array($a_user_id, $users_completed))
             {
                 return ilLPStatus::LP_STATUS_COMPLETED_NUM;
             }
