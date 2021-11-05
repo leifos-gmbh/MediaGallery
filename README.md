@@ -3,10 +3,10 @@
 MediaGallery is a repository plugin to store media items like pictures, videos and audios to view and share it in ILIAS as a gallery.
 
 **Minimum ILIAS Version:**
-5.4.0
+7.3
 
 **Maximum ILIAS Version:**
-5.4.999
+7.999
 
 **Responsible Developer:**
 Fabian Wolf - wolf AT leifos.com
