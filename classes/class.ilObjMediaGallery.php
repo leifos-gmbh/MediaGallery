@@ -371,7 +371,7 @@ class ilObjMediaGallery extends ilObjectPlugin implements ilLPStatusPluginInterf
 		include_once "./Services/Utilities/classes/class.ilMimeTypeUtil.php";
 
 		$file_parts = pathinfo($file);
-		$arrExtensions = split(",", $extensions);//TODO: Split is deprecated
+		$arrExtensions = explode(",", $extensions);
 		$extMap = ilMimeTypeUtil::getExt2MimeMap();
 		foreach ($arrExtensions as $ext)
 		{
