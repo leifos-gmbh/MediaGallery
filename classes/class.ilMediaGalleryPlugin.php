@@ -1,90 +1,79 @@
 <?php
 
-include_once("./Services/Repository/classes/class.ilRepositoryObjectPlugin.php");
- 
-/**
-* MediaGallery repository object plugin
-*
-* @author Helmut Schottmüller <ilias@aurealis.de>
-* @version $Id$
-*
+/*
+        +-----------------------------------------------------------------------------+
+        | ILIAS open source                                                           |
+        +-----------------------------------------------------------------------------+
+        | Copyright (c) 1998-2006 ILIAS open source, University of Cologne            |
+        |                                                                             |
+        | This program is free software; you can redistribute it and/or               |
+        | modify it under the terms of the GNU General Public License                 |
+        | as published by the Free Software Foundation; either version 2              |
+        | of the License, or (at your option) any later version.                      |
+        |                                                                             |
+        | This program is distributed in the hope that it will be useful,             |
+        | but WITHOUT ANY WARRANTY; without even the implied warranty of              |
+        | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the               |
+        | GNU General Public License for more details.                                |
+        |                                                                             |
+        | You should have received a copy of the GNU General Public License           |
+        | along with this program; if not, write to the Free Software                 |
+        | Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. |
+        +-----------------------------------------------------------------------------+
 */
+
+declare(strict_types=1);
+
+/**
+ * MediaGallery repository object plugin
+ * @author Helmut Schottmüller <ilias@aurealis.de>
+ * @version $Id$
+ */
 class ilMediaGalleryPlugin extends ilRepositoryObjectPlugin
 {
-	function getPluginName()
-	{
-		return "MediaGallery";
-	}
+    protected static ilMediaGalleryPlugin $instance;
+    protected const PLUGIN_ID = "xmg";
+    protected const PLUGIN_NAME = "MediaGallery";
 
-	public function uninstallCustom()
-	{
-		global $ilDB;
-
-		if ($ilDB->tableExists('rep_robj_xmg_filedata'))
-		{
-			$ilDB->dropTable('rep_robj_xmg_filedata');
-		}
-
-		if ($ilDB->tableExists('rep_robj_xmg_downloads'))
-		{
-			$ilDB->dropTable('rep_robj_xmg_downloads');
-		}
-
-		if ($ilDB->tableExists('rep_robj_xmg_object'))
-		{
-			$ilDB->dropTable('rep_robj_xmg_object');
-		}
-		$this->includeClass("class.ilFSStorageMediaGallery.php");
-		ilFSStorageMediaGallery::_deletePluginData();
-
-		$query = "DELETE FROM il_wac_secure_path ".
-			"WHERE path = ".$ilDB->quote('ilXmg','text');
-
-		$res = $ilDB->manipulate($query);
-
-		include_once './Services/Administration/classes/class.ilSetting.php';
-		$setting = new ilSetting("xmg");
-		$setting->deleteAll();
-	}
-
-    /**
-     * Init MediaGallery
-     */
-    protected function init()
+    public static function _getInstance(): ilMediaGalleryPlugin
     {
-        $this->initAutoLoad();
+        global $DIC;
+        if (isset(self::$instance)) {
+            return self::$instance;
+        }
+        /** @var ilComponentFactory $component_factory */
+        $component_factory = $DIC["component.factory"];
+        /** @var ilMediaGalleryPlugin $plugin */
+        $plugin = $component_factory->getPlugin(self::PLUGIN_ID);
+        return $plugin;
     }
 
-    /**
-     * Init auto loader
-     * @return void
-     */
-    protected function initAutoLoad()
+    public function getPluginName(): string
     {
-        spl_autoload_register(
-            array($this,'autoLoad')
-        );
+        return self::PLUGIN_NAME;
     }
 
-    /**
-     * Auto load implementation
-     *
-     * @param string class name
-     */
-    private function autoLoad($a_classname)
+    public function uninstallCustom(): void
     {
-        $class_file = $this->getClassesDirectory().'/class.'.$a_classname.'.php';
-        @include_once($class_file);
+        if ($this->db->tableExists('rep_robj_xmg_filedata')) {
+            $this->db->dropTable('rep_robj_xmg_filedata');
+        }
+        if ($this->db->tableExists('rep_robj_xmg_downloads')) {
+            $this->db->dropTable('rep_robj_xmg_downloads');
+        }
+        if ($this->db->tableExists('rep_robj_xmg_object')) {
+            $this->db->dropTable('rep_robj_xmg_object');
+        }
+        ilFSStorageMediaGallery::_deletePluginData();
+        $query = "DELETE FROM il_wac_secure_path " .
+            "WHERE path = " . $this->db->quote('ilXmg', 'text');
+        $res = $this->db->manipulate($query);
+        $setting = new ilSetting("xmg");
+        $setting->deleteAll();
     }
 
-    /**
-     * decides if this repository plugin can be copied
-     *
-     * @return bool
-     */
-    public function allowCopy()
+    public function allowCopy(): bool
     {
         return true;
     }
 }
-?>

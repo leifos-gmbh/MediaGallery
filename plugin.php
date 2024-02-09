@@ -9,8 +9,8 @@ define('xmg_version', '7.3.0');
 
 $version = xmg_version;
  
-$ilias_min_version = "7.3";
-$ilias_max_version = "7.999";
+$ilias_min_version = "8.0";
+$ilias_max_version = "8.999";
  
 $responsible = 'Stefan Meyer';
 $responsible_mail = 'meyer@leifos.de';

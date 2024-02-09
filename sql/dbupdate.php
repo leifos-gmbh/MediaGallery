@@ -292,7 +292,7 @@ if(count($downloads) > 0)
 ?>
 <#14>
 <?php
-$media_dir = ilUtil::getWebspaceDir(). "/mediagallery/";
+$media_dir = ilFileUtils::getWebspaceDir(). "/mediagallery/";
 
 $objects = array();
 
@@ -445,7 +445,7 @@ if(count($file_data) > 0)
 ?>
 <#16>
 <?php
-$media_dir = ilUtil::getWebspaceDir(). "/mediagallery/";
+$media_dir = ilFileUtils::getWebspaceDir(). "/mediagallery/";
 
 if($ilDB->tableColumnExists('rep_robj_xmg_filedata', 'id'))
 {
@@ -483,7 +483,7 @@ if($ilDB->tableColumnExists('rep_robj_xmg_filedata', 'id'))
 ?>
 <#17>
 <?php
-$media_dir = ilUtil::getWebspaceDir(). "/mediagallery/";
+$media_dir = ilFileUtils::getWebspaceDir(). "/mediagallery/";
 if ($ilDB->tableExists('rep_robj_xmg_filedata'))
 {
 	$res = $ilDB->query("SELECT xmg_id FROM rep_robj_xmg_filedata GROUP BY xmg_id");
@@ -519,11 +519,11 @@ if ($ilDB->tableExists('rep_robj_xmg_filedata'))
 ?>
 <#18>
 <?php
-$media_dir = ilUtil::getWebspaceDir(). "/mediagallery/";
+$media_dir = ilFileUtils::getWebspaceDir(). "/mediagallery/";
 
 if(file_exists($media_dir))
 {
-	$sec_dir = ilUtil::getWebspaceDir()."/sec/";
+	$sec_dir = ilFileUtils::getWebspaceDir()."/sec/";
 
 	if(!file_exists($sec_dir))
 	{

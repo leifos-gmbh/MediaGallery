@@ -1,4 +1,5 @@
 <?php
+
 /*
         +-----------------------------------------------------------------------------+
         | ILIAS open source                                                           |
@@ -21,7 +22,7 @@
         +-----------------------------------------------------------------------------+
 */
 
-include_once('./Services/Table/classes/class.ilTable2GUI.php');
+declare(strict_types=1);
 
 /**
 *
@@ -33,99 +34,67 @@ include_once('./Services/Table/classes/class.ilTable2GUI.php');
 
 class ilMediaFileDownloadArchivesTableGUI extends ilTable2GUI
 {
-	/**
-	 * @var ilMediaGalleryPlugin
-	 */
-	protected $plugin;
-	
-	/**
-	 * Constructor
-	 *
-	 * @access public
-	 * @param
-	 * @return
-	 */
-	public function __construct($a_parent_obj, $a_parent_cmd)
-	{
-		parent::__construct($a_parent_obj, $a_parent_cmd);
+    protected ilMediaGalleryPlugin $plugin;
+    protected int $counter;
 
-		global $lng, $ilCtrl;
+    /**
+     * @throws ilCtrlException
+     * @throws ilException
+     */
+    public function __construct(
+        ?object $a_parent_obj,
+        string $a_parent_cmd
+    ) {
+        parent::__construct($a_parent_obj, $a_parent_cmd);
+        $this->plugin = ilMediaGalleryPlugin::_getInstance();
+        $this->setId("xmg_arch_" . $a_parent_obj->getMediaGalleryObject()->getId());
+        $this->setFormName('downloadarchives');
+        $this->setStyle('table', 'fullwidth');
+        $this->counter = 1;
+        $this->addColumn('', 'f', '1%');
+        $this->addColumn($this->plugin->txt("filename"), 'filename', '', false, 'xmg_arch_filename');
+        $this->addColumn($this->plugin->txt("size"), 'size', '', false, 'xmg_arch_size');
+        $this->addColumn($this->plugin->txt("download_archive"), 'download', '', false, 'xmg_arch_download');
+        $this->addColumn($this->plugin->txt("created"), 'created', '', false, 'xmg_arch_created');
+        $this->setRowTemplate("tpl.mediafiles_archive_row.html", 'Customizing/global/plugins/Services/Repository/RepositoryObject/MediaGallery');
+        $this->setDefaultOrderField("filename");
+        $this->setDefaultOrderDirection("asc");
+        $this->addMultiCommand('deleteArchive', $this->lng->txt('delete'));
+        $this->addMultiCommand('changeArchiveFilename', $this->lng->txt('rename'));
+        $this->addCommandButton('saveAllArchiveData', $this->plugin->txt('save_all'));
+        $this->setFormAction($this->ctrl->getFormAction($a_parent_obj, $a_parent_cmd));
+        $this->setSelectAllCheckbox('file');
+        $this->setLimit(9999);
+        $this->enable('header');
+        $this->initFilter();
+    }
 
-		$this->lng = $lng;
-		$this->ctrl = $ilCtrl;
-		include_once "./Services/Component/classes/class.ilPlugin.php";
-		$this->plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, "Repository", "robj", "MediaGallery");
+    public function numericOrdering($a_field): bool
+    {
+        return $a_field === 'size';
+    }
 
-    $this->setId("xmg_arch_".$a_parent_obj->object->getId());
-		$this->setFormName('downloadarchives');
-		$this->setStyle('table', 'fullwidth');
-		$this->counter = 1;
-		$this->addColumn('','f','1%');
-		$this->addColumn($this->plugin->txt("filename"),'filename', '', '', 'xmg_arch_filename');
-		$this->addColumn($this->plugin->txt("size"),'size', '', '', 'xmg_arch_size');
-		$this->addColumn($this->plugin->txt("download_archive"),'download', '', '', 'xmg_arch_download');
-		$this->addColumn($this->plugin->txt("created"),'created', '', '', 'xmg_arch_created');
-	
-		$this->setRowTemplate("tpl.mediafiles_archive_row.html", 'Customizing/global/plugins/Services/Repository/RepositoryObject/MediaGallery');
+    /**
+     * @throws ilDateTimeException
+     */
+    public function fillRow(array $a_set): void
+    {
+        $this->tpl->setVariable('CB_ID', $a_set['id']);
+        $this->tpl->setVariable("FILENAME", ilLegacyFormElementsUtil::prepareFormOutput($a_set['filename']));
+        $this->tpl->setVariable("SIZE", ilLegacyFormElementsUtil::prepareFormOutput($this->formatBytes((int) $a_set['size'])));
+        $this->tpl->setVariable("CREATED", ilDatePresentation::formatDate(new ilDate($a_set["created"], IL_CAL_UNIX)));
+        if ($a_set['download_flag']) {
+            $this->tpl->setVariable("CHECKED_DOWNLOAD", ' checked="checked"');
+        }
+    }
 
-		$this->setDefaultOrderField("filename");
-		$this->setDefaultOrderDirection("asc");
-		
-		$this->addMultiCommand('deleteArchive', $this->lng->txt('delete'));
-		$this->addMultiCommand('changeArchiveFilename', $this->lng->txt('rename'));
-		$this->addCommandButton('saveAllArchiveData', $this->plugin->txt('save_all'));
-		$this->setFormAction($this->ctrl->getFormAction($a_parent_obj, $a_parent_cmd));
-		$this->setSelectAllCheckbox('file');
-//		$this->setExternalSorting(true);
-		$this->setLimit(9999);
-		$this->enable('header');
-		$this->initFilter();
-	}
-
-	function numericOrdering($a_field)
-	{
-		switch ($a_field)
-		{
-			case 'size':
-				return true;
-			default:
-				return false;
-		}
-	}
-
-	/**
-	 * fill row 
-	 *
-	 * @access public
-	 * @param
-	 * @return
-	 */
-	public function fillRow($data)
-	{
-		global $ilUser,$ilAccess;
-
-		$this->plugin->includeClass("class.ilObjMediaGallery.php");
-		$this->tpl->setVariable('CB_ID', $data['id']);
-		$this->tpl->setVariable("FILENAME", ilUtil::prepareFormOutput($data['filename']));
-		$this->tpl->setVariable("SIZE", ilUtil::prepareFormOutput($this->formatBytes($data['size'])));
-		$this->tpl->setVariable("CREATED", ilDatePresentation::formatDate(new ilDate($data["created"],IL_CAL_UNIX)));
-		if ($data['download_flag'])
-		{
-			$this->tpl->setVariable("CHECKED_DOWNLOAD", ' checked="checked"');
-		}
-	}
-	
-	protected function formatBytes($bytes, $precision = 2) 
-	{
-		$units = array('B', 'KB', 'MB', 'GB', 'TB');
-
-		$bytes = max($bytes, 0);
-		$pow = floor(($bytes ? log($bytes) : 0) / log(1024));
-		$pow = min($pow, count($units) - 1);
-
-		$bytes /= pow(1024, $pow);
-
-		return round($bytes, $precision) . ' ' . $units[$pow];
-	}
+    protected function formatBytes(int $bytes, int $precision = 2): string
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        $bytes = max($bytes, 0);
+        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+        $pow = min($pow, count($units) - 1);
+        $bytes /= pow(1024, $pow);
+        return round($bytes, $precision) . ' ' . $units[$pow];
+    }
 }
-?>

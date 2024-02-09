@@ -6,7 +6,7 @@
 	theme CDATA #IMPLIED
 >
 <!ELEMENT title (#PCDATA)>
-<!ELEMENT description(#PCDATA)>
+<!ELEMENT description (#PCDATA)>
 <!ELEMENT filedata (file_title,file_description,content,preview?)>
 <!ATTLIST filedata
 	media_id CDATA #IMPLIED
@@ -21,7 +21,7 @@
 	height CDATA #REQUIRED
 >
 <!ELEMENT file_title (#PCDATA)>
-<!ELEMENT file_description(#PCDATA)>
+<!ELEMENT file_description (#PCDATA)>
 <!--
 Base64 encoded file content
 -->
