@@ -25,7 +25,7 @@
 declare(strict_types=1);
 
 use ILIAS\Filesystem\Exception\IOException;
-use \ILIAS\HTTP\Services as ilHttpServices;
+use ILIAS\HTTP\Services as ilHttpServices;
 
 /**
 * User Interface class for gallery repository object.
@@ -748,7 +748,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
     /**
      * @throws ilCtrlException
      */
-    public function changeArchiveFilename() : void
+    public function changeArchiveFilename(): void
     {
         if (
             !is_array($_POST['file']) ||
@@ -872,7 +872,8 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
      */
     public function saveAllFileData(): void
     {
-        if(is_null($_POST['id'])) {;
+        if(is_null($_POST['id'])) {
+            ;
             $this->ctrl->redirect($this, 'mediafiles');
         }
         foreach (array_keys($_POST['id']) as $fid) {

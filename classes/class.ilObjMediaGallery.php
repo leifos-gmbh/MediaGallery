@@ -24,7 +24,7 @@
 
 declare(strict_types=1);
 
-use \ILIAS\FileUpload\MimeType;
+use ILIAS\FileUpload\MimeType;
 
 /**
 * Application class for gallery repository object.

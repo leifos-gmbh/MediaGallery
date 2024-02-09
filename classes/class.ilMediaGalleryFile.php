@@ -25,7 +25,7 @@
 declare(strict_types=1);
 
 use ILIAS\Filesystem\Exception\IOException;
-use \ILIAS\FileUpload\MimeType;
+use ILIAS\FileUpload\MimeType;
 
 /**
  * Class ilMediaGalleryFile

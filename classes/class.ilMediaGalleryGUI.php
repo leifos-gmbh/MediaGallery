@@ -199,8 +199,8 @@ class ilMediaGalleryGUI
                     $tpl_element->setVariable('MARGIN_TOP', "4");
                     $tpl_element->setVariable('MARGIN_LEFT', "4");
                 }
-            $tpl_element->parseCurrentBlock();
-            $tpl_element->setVariable('INLINE_SECTION', "aud" . $this->counter);
+                $tpl_element->parseCurrentBlock();
+                $tpl_element->setVariable('INLINE_SECTION', "aud" . $this->counter);
                 $tpl_element->setVariable('URL_VIDEO', ilWACSignedPath::signFile($a_set->getPath(ilObjMediaGallery::LOCATION_ORIGINALS)));
                 if(strtolower($file_parts['extension']) == 'mov') {
                     $tpl_element->setVariable('TYPE_VIDEO', "video/mp4; codecs=avc1.42E01E, mp4a.40.2");

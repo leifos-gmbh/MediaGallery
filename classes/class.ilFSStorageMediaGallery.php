@@ -25,7 +25,7 @@
 declare(strict_types=1);
 
 use ILIAS\Filesystem\Exception\IOException;
-use \ILIAS\FileUpload\MimeType;
+use ILIAS\FileUpload\MimeType;
 
 /**
  * Class ilFSStorageMediaGallery
@@ -167,7 +167,8 @@ class ilFSStorageMediaGallery extends ilFileSystemAbstractionStorage
      * deletes all file of a given file id or deletes a file at a given location
      * @throws IOException
      */
-    public function deleteFileByName(string $file_name): bool {
+    public function deleteFileByName(string $file_name): bool
+    {
         $locations = [
             ilObjMediaGallery::LOCATION_PREVIEWS,
             ilObjMediaGallery::LOCATION_THUMBS,

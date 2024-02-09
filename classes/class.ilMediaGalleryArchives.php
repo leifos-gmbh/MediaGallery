@@ -41,7 +41,7 @@ class ilMediaGalleryArchives
     protected ilDBInterface $db;
     protected ilLogger $log;
 
-    public static function _getInstanceByXmgId(int $a_xmg_id) : ilMediaGalleryArchives
+    public static function _getInstanceByXmgId(int $a_xmg_id): ilMediaGalleryArchives
     {
         if(!array_key_exists($a_xmg_id, self::$objects)) {
             self::$objects[$a_xmg_id] = new self($a_xmg_id);
@@ -62,12 +62,12 @@ class ilMediaGalleryArchives
         $this->xmg_id = $xmg_id;
     }
 
-    public function getXmgId() : int
+    public function getXmgId(): int
     {
         return $this->xmg_id;
     }
 
-    protected function setArchives(array $archives) : void
+    protected function setArchives(array $archives): void
     {
         $this->archives = $archives;
     }
@@ -107,7 +107,7 @@ class ilMediaGalleryArchives
         return true;
     }
 
-    public function setDownloadFlags(array $a_archives) : bool
+    public function setDownloadFlags(array $a_archives): bool
     {
         $this->db->manipulate("UPDATE rep_robj_xmg_downloads SET download_flag = "
             . $this->db->quote(0, "integer")
@@ -144,7 +144,7 @@ class ilMediaGalleryArchives
     /**
      * @throws IOException
      */
-    public function deleteArchives(array $a_archive_ids) : bool
+    public function deleteArchives(array $a_archive_ids): bool
     {
         $this->read();
         $this->db->manipulate("DELETE FROM rep_robj_xmg_downloads " .
@@ -204,7 +204,7 @@ class ilMediaGalleryArchives
         if(!ilFileUtils::zip($tmp_dir, $tmp_dir . '/' . $a_zip_filename, true)) {
             return false;
         }
-        rename($tmp_dir . '/' .$a_zip_filename, $this->getFileSystem()->getFilePath(ilObjMediaGallery::LOCATION_DOWNLOADS, $a_zip_filename));
+        rename($tmp_dir . '/' . $a_zip_filename, $this->getFileSystem()->getFilePath(ilObjMediaGallery::LOCATION_DOWNLOADS, $a_zip_filename));
         ilFileUtils::delDir($tmp_dir);
         $this->addArchive($a_zip_filename);
         return true;

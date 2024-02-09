@@ -99,7 +99,7 @@ class ilMediaFileTableGUI extends ilTable2GUI
         return 0;
     }
 
-    public function numericOrdering($a_field) : bool
+    public function numericOrdering($a_field): bool
     {
         return $a_field === 'custom';
     }
@@ -203,7 +203,7 @@ class ilMediaFileTableGUI extends ilTable2GUI
     /**
      * @throws Exception
      */
-    public function initFilter() : void
+    public function initFilter(): void
     {
         // media type
         $options = array(
