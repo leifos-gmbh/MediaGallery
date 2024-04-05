@@ -501,7 +501,7 @@ class ilMediaGalleryFile
                 "pfilename" => $row['pfilename'],
                 "lp_relevant" => $row["lp_relevant"]
             ];
-            if(!self::$objects[(int) $row["id"]]) {
+            if(!isset(self::$objects[(int) $row["id"]])) {
                 $obj =  new self();
                 $obj->setId((int) $row["id"]);
                 $obj->setValuesByArray($arr);
@@ -583,7 +583,7 @@ class ilMediaGalleryFile
 
     public static function _getInstanceById(int $a_id): ilMediaGalleryFile
     {
-        if(!self::$objects[$a_id]) {
+        if(!isset(self::$objects[$a_id])) {
             self::$objects[$a_id] = new self($a_id);
         }
         return self::$objects[$a_id];

@@ -43,7 +43,7 @@ class ilFSStorageMediaGallery extends ilFileSystemAbstractionStorage
 
     public static function _getInstanceByXmgId(int $a_xmg_id): ilFSStorageMediaGallery
     {
-        if(!self::$objects[$a_xmg_id]) {
+        if(!isset(self::$objects[$a_xmg_id])) {
             self::$objects[$a_xmg_id] = new self($a_xmg_id);
         }
         return self::$objects[$a_xmg_id];

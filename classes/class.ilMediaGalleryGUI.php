@@ -232,7 +232,12 @@ class ilMediaGalleryGUI
         $location = $this->preview_flag ?
             ilObjMediaGallery::LOCATION_PREVIEWS :
             ilObjMediaGallery::LOCATION_ORIGINALS;
-        list($i_width, $i_height) = getimagesize($media_gallery_file->getPath($location));
+        try {
+            list($i_width, $i_height) = getimagesize($media_gallery_file->getPath($location));
+        } catch (Exception $e) {
+            $i_width = 0;
+            $i_height = 0;
+        }
         if ($i_width > 0 && $i_height > 0) {
             $scale = $this->object->scaleDimensions($i_width, $i_height, 150);
             $width = $scale['width'];

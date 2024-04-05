@@ -173,10 +173,10 @@ class ilMediaFileTableGUI extends ilTable2GUI
             }
             $this->tpl->parseCurrentBlock("learning_progress");
         }
-        if (((int) $a_set['pwidth']) > 0) {
+        if (isset($a_set['pwidth']) && ((int) $a_set['pwidth']) > 0) {
             $this->tpl->setVariable("WIDTH", $this->getTextFieldValue((string) $a_set['pwidth']));
             $this->tpl->setVariable("HEIGHT", $this->getTextFieldValue((string) $a_set['pheight']));
-        } else {
+        } else if (isset($a_set['width']) && isset($a_set['height'])) {
             $this->tpl->setVariable("WIDTH", $this->getTextFieldValue((string) $a_set['width']));
             $this->tpl->setVariable("HEIGHT", $this->getTextFieldValue((string) $a_set['height']));
         }
