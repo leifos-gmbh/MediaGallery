@@ -261,6 +261,8 @@ class ilMediaGalleryGUI
         $tpl_element->parseCurrentBlock();
         $this->ctrl->setParameter($this->parent, 'file_id', $media_gallery_file->getId());
         $tpl_element->setVariable('IMG_URL', $this->ctrl->getLinkTarget($this->parent, 'recordFileAccess', '', true));
+        // Added  ". $media_gallery_file->getLocalFileName()" to show the selected image in fullscreen.
+        // This is a temp fix for as long as the prettyphoto js elements do not work
         $tpl_element->setVariable('URL_FULLSCREEN', ilWACSignedPath::signFile($media_gallery_file->getPath(ilObjMediaGallery::LOCATION_SIZE_LARGE) . $media_gallery_file->getLocalFileName()));
         $tpl_element->setVariable('CAPTION', ilLegacyFormElementsUtil::prepareFormOutput(($media_gallery_file->getDescription())));
         if ($this->preview_flag) {
