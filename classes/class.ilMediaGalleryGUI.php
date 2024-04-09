@@ -34,6 +34,7 @@ class ilMediaGalleryGUI
     protected array $file_data;
     protected array $archive_data;
     protected ilTemplate $ctpl;
+    protected ilTemplate $master_ctpl;
     protected string $sortkey;
     protected ilGlobalTemplateInterface $tpl;
     protected bool $preview_flag = false;
@@ -58,7 +59,6 @@ class ilMediaGalleryGUI
     {
         $this->tpl->addCss($this->plugin->getStyleSheetLocation("xmg.css"));
         $this->tpl->addCss($this->plugin->getDirectory() . "/js/prettyphoto_3.1.5/css/prettyPhoto.css");
-        $this->tpl->addJavaScript($this->plugin->getDirectory() . "/js/recordFileAccess.js");
         $this->tpl->addJavascript($this->plugin->getDirectory() . "/js/prettyphoto_3.1.5/js/jquery.prettyPhoto.js");
         $this->tpl->addJavascript($this->plugin->getDirectory() . "/js/html5media-master/domready.js");
         $this->tpl->addJavascript($this->plugin->getDirectory() . "/js/html5media-master/flowplayer.js");
@@ -122,12 +122,12 @@ class ilMediaGalleryGUI
             $tpl_title->setVariable('MEDIA_TITLE', ilLegacyFormElementsUtil::prepareFormOutput($media_gallery_file->getFilename()));
         }
         $element_title = $tpl_title->get();
-        $this->ctpl->setVariable("TXT_EXPAND_IMAGE_TITLE", $this->plugin->txt("expand_image_title"));
-        $this->ctpl->setVariable("TXT_EXPAND_IMAGE", $this->plugin->txt("expand_image"));
-        $this->ctpl->setVariable("TXT_NEXT", $this->plugin->txt("next"));
-        $this->ctpl->setVariable("TXT_PREVIOUS", $this->plugin->txt("previous"));
-        $this->ctpl->setVariable("TXT_CLOSE", $this->plugin->txt("close"));
-        $this->ctpl->setVariable("TXT_START_SLIDESHOW", $this->plugin->txt("playpause"));
+        $this->master_ctpl->setVariable("TXT_EXPAND_IMAGE_TITLE", $this->plugin->txt("expand_image_title"));
+        $this->master_ctpl->setVariable("TXT_EXPAND_IMAGE", $this->plugin->txt("expand_image"));
+        $this->master_ctpl->setVariable("TXT_NEXT", $this->plugin->txt("next"));
+        $this->master_ctpl->setVariable("TXT_PREVIOUS", $this->plugin->txt("previous"));
+        $this->master_ctpl->setVariable("TXT_CLOSE", $this->plugin->txt("close"));
+        $this->master_ctpl->setVariable("TXT_START_SLIDESHOW", $this->plugin->txt("playpause"));
         $this->ctpl->setCurrentBlock('media');
         $this->ctpl->setVariable('GALLERY_ELEMENT', $tpl_element->get() . $element_title);
         $this->ctpl->parseCurrentBlock();
@@ -261,9 +261,7 @@ class ilMediaGalleryGUI
         $tpl_element->parseCurrentBlock();
         $this->ctrl->setParameter($this->parent, 'file_id', $media_gallery_file->getId());
         $tpl_element->setVariable('IMG_URL', $this->ctrl->getLinkTarget($this->parent, 'recordFileAccess', '', true));
-        // Added  ". $media_gallery_file->getLocalFileName()" to show the selected image in fullscreen.
-        // This is a temp fix for as long as the prettyphoto js elements do not work
-        $tpl_element->setVariable('URL_FULLSCREEN', ilWACSignedPath::signFile($media_gallery_file->getPath(ilObjMediaGallery::LOCATION_SIZE_LARGE) . $media_gallery_file->getLocalFileName()));
+        $tpl_element->setVariable('URL_FULLSCREEN', ilWACSignedPath::signFile($media_gallery_file->getPath(ilObjMediaGallery::LOCATION_SIZE_LARGE)));
         $tpl_element->setVariable('CAPTION', ilLegacyFormElementsUtil::prepareFormOutput(($media_gallery_file->getDescription())));
         if ($this->preview_flag) {
             $tpl_element->setVariable('URL_THUMBNAIL', ilWACSignedPath::signFile($media_gallery_file->getPath(ilObjMediaGallery::LOCATION_PREVIEWS)));
@@ -372,18 +370,17 @@ class ilMediaGalleryGUI
      * @throws ilTemplateException
      * @throws ilWACException
      */
-    public function getHTML(): string
+    public function buildTemplateContent(): void
     {
         $this->tpl->addCss($this->plugin->getStyleSheetLocation("xmg.css"));
         $this->tpl->addCss($this->plugin->getDirectory() . "/js/prettyphoto_3.1.5/css/prettyPhoto.css");
-        $this->tpl->addJavaScript($this->plugin->getDirectory() . "/js/recordFileAccess.js");
         $this->tpl->addJavascript($this->plugin->getDirectory() . "/js/prettyphoto_3.1.5/js/jquery.prettyPhoto.js");
         $this->tpl->addJavascript($this->plugin->getDirectory() . "/js/html5media-master/domready.js");
         $this->tpl->addJavascript($this->plugin->getDirectory() . "/js/html5media-master/flowplayer.js");
         $this->tpl->addJavascript($this->plugin->getDirectory() . "/js/html5media-master/html5media.js");
         $media_files = $this->getFileData();
+        $this->master_ctpl = $this->plugin->getTemplate("tpl.gallery_master.js");
         $this->ctpl = $this->plugin->getTemplate("tpl.gallery.html");
-        $counter = 0;
         $this->sortkey = $this->object->getSortOrder();
         if (!strlen($this->sortkey)) {
             $this->sortkey = 'filename';
@@ -408,8 +405,8 @@ class ilMediaGalleryGUI
             $ilToolbar->addFormButton($lng->txt("download"), 'download');
             $ilToolbar->setFormAction($this->ctrl->getFormAction($this->parent));
         }
-        $this->ctpl->setVariable("THEME", $this->object->getTheme());
-        return $this->ctpl->get();
+        $this->tpl->addOnLoadCode($this->master_ctpl->get());
+        $this->tpl->setContent($this->ctpl->get());
     }
 
     protected function gallerySort(array $x, array $y): int
