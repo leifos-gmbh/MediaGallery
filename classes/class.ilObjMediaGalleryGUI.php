@@ -454,6 +454,11 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
         return strnatcasecmp($x[$this->sortkey], $y[$this->sortkey]);
     }
 
+    /**
+     * @throws ilCtrlException
+     * @throws ilWACException
+     * @throws ilTemplateException
+     */
     public function gallery(): void
     {
         ilChangeEvent::_recordReadEvent('xmg', $this->object->getRefId(), $this->object->getId(), $this->user->getId());
@@ -461,7 +466,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
         $gallery = new ilMediaGalleryGUI($this, $this->plugin);
         $gallery->setFileData(ilMediaGalleryFile::_getMediaFilesInGallery($this->object_id));
         $gallery->setArchiveData(ilMediaGalleryArchives::_getInstanceByXmgId($this->object_id)->getArchives());
-        $this->tpl->setVariable("ADM_CONTENT", $gallery->getHTML());
+        $gallery->buildTemplateContent();
     }
 
     /**
@@ -1203,6 +1208,6 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
     {
         $params = $this->http->request()->getQueryParams();
         $access = ilMediaGalleryFileAccess::getInstanceByGalleryId($this->object->getId());
-        $access->create($params['file_id'], $this->user->getId());
+        $access->create((int) $params['file_id'], $this->user->getId());
     }
 }
