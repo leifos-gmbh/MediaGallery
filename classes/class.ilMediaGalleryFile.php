@@ -302,7 +302,7 @@ class ilMediaGalleryFile
 
     public function getMimeType(int $a_location  = ilObjMediaGallery::LOCATION_ORIGINALS): string
     {
-        return MimeType::lookupMimeType($this->getPath($a_location));
+        return MimeType::lookupMimeType($this->getPath($a_location) . "/" . $this->getLocalFileName());
     }
 
     public function getFileInfo(int $a_location = ilObjMediaGallery::LOCATION_ORIGINALS): array

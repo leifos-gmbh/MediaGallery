@@ -1208,6 +1208,6 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
     {
         $params = $this->http->request()->getQueryParams();
         $access = ilMediaGalleryFileAccess::getInstanceByGalleryId($this->object->getId());
-        $access->create($params['file_id'], $this->user->getId());
+        $access->create((int) $params['file_id'], $this->user->getId());
     }
 }

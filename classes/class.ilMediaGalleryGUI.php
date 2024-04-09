@@ -138,14 +138,14 @@ class ilMediaGalleryGUI
      * @throws ilTemplateException
      * @throws ilWACException
      */
-    protected function fillRowVideo(ilMediaGalleryFile $a_set): ilTemplate
+    protected function fillRowVideo(ilMediaGalleryFile $media_gallery_file): ilTemplate
     {
-        $file_parts = $a_set->getFileInfo();
+        $file_parts = $media_gallery_file->getFileInfo();
         switch(strtolower($file_parts['extension'])) {
             case "swf":
                 $tpl_element = $this->plugin->getTemplate("tpl.gallery.qt.html");
                 if ($this->preview_flag) {
-                    list($i_width, $i_height) = getimagesize($a_set->getPath(ilObjMediaGallery::LOCATION_PREVIEWS));
+                    list($i_width, $i_height) = getimagesize($media_gallery_file->getPath(ilObjMediaGallery::LOCATION_PREVIEWS));
                     $scale = $this->object->scaleDimensions($i_width, $i_height, 150);
                     $width = $scale['width'];
                     $height = $scale['height'];
@@ -166,20 +166,20 @@ class ilMediaGalleryGUI
                     $tpl_element->setVariable('MARGIN_LEFT', "4");
                 }
                 $tpl_element->parseCurrentBlock();
-                $tpl_element->setVariable('URL_VIDEO', ilWACSignedPath::signFile($a_set->getPath(ilObjMediaGallery::LOCATION_ORIGINALS)));
-                $tpl_element->setVariable('CAPTION', ilLegacyFormElementsUtil::prepareFormOutput($a_set->getDescription()));
+                $tpl_element->setVariable('URL_VIDEO', ilWACSignedPath::signFile($media_gallery_file->getPath(ilObjMediaGallery::LOCATION_ORIGINALS)));
+                $tpl_element->setVariable('CAPTION', ilLegacyFormElementsUtil::prepareFormOutput($media_gallery_file->getDescription()));
                 if ($this->preview_flag) {
-                    $tpl_element->setVariable('URL_THUMBNAIL', ilWACSignedPath::signFile($a_set->getPath(ilObjMediaGallery::LOCATION_PREVIEWS)));
+                    $tpl_element->setVariable('URL_THUMBNAIL', ilWACSignedPath::signFile($media_gallery_file->getPath(ilObjMediaGallery::LOCATION_PREVIEWS)));
                 } else {
                     $tpl_element->setVariable('URL_THUMBNAIL', $this->plugin->getDirectory() . '/templates/images/video.png');
                 }
-                $tpl_element->setVariable('ALT_THUMBNAIL', ilLegacyFormElementsUtil::prepareFormOutput($a_set->getTitle()));
+                $tpl_element->setVariable('ALT_THUMBNAIL', ilLegacyFormElementsUtil::prepareFormOutput($media_gallery_file->getTitle()));
                 break;
             case "mov":
             default:
                 $tpl_element = $this->plugin->getTemplate("tpl.gallery.vid.html");
                 if ($this->preview_flag) {
-                    list($i_width, $i_height) = getimagesize($a_set->getPath(ilObjMediaGallery::LOCATION_PREVIEWS));
+                    list($i_width, $i_height) = getimagesize($media_gallery_file->getPath(ilObjMediaGallery::LOCATION_PREVIEWS));
                     $scale = $this->object->scaleDimensions($i_width, $i_height, 150);
                     $width = $scale['width'];
                     $height = $scale['height'];
@@ -201,22 +201,22 @@ class ilMediaGalleryGUI
                 }
                 $tpl_element->parseCurrentBlock();
                 $tpl_element->setVariable('INLINE_SECTION', "aud" . $this->counter);
-                $tpl_element->setVariable('URL_VIDEO', ilWACSignedPath::signFile($a_set->getPath(ilObjMediaGallery::LOCATION_ORIGINALS)));
+                $tpl_element->setVariable('URL_VIDEO', $this->buildWACPath($media_gallery_file, ilObjMediaGallery::LOCATION_ORIGINALS));
                 if(strtolower($file_parts['extension']) == 'mov') {
                     $tpl_element->setVariable('TYPE_VIDEO', "video/mp4; codecs=avc1.42E01E, mp4a.40.2");
                 } else {
-                    $tpl_element->setVariable('TYPE_VIDEO', $a_set->getMimeType());
+                    $tpl_element->setVariable('TYPE_VIDEO', $media_gallery_file->getMimeType());
                 }
-                $tpl_element->setVariable('CAPTION', ilLegacyFormElementsUtil::prepareFormOutput(($a_set->getDescription())));
+                $tpl_element->setVariable('CAPTION', ilLegacyFormElementsUtil::prepareFormOutput(($media_gallery_file->getDescription())));
                 if ($this->preview_flag) {
-                    $tpl_element->setVariable('URL_THUMBNAIL', ilWACSignedPath::signFile($a_set->getPath(ilObjMediaGallery::LOCATION_PREVIEWS)));
+                    $tpl_element->setVariable('URL_THUMBNAIL', ilWACSignedPath::signFile($media_gallery_file->getPath(ilObjMediaGallery::LOCATION_PREVIEWS)));
                 } else {
                     $tpl_element->setVariable('URL_THUMBNAIL', $this->plugin->getDirectory() . '/templates/images/video.png');
                 }
-                $tpl_element->setVariable('ALT_THUMBNAIL', ilLegacyFormElementsUtil::prepareFormOutput(($a_set->getTitle())));
+                $tpl_element->setVariable('ALT_THUMBNAIL', ilLegacyFormElementsUtil::prepareFormOutput(($media_gallery_file->getTitle())));
                 break;
         }
-        $this->ctrl->setParameter($this->parent, 'file_id', $a_set->getId());
+        $this->ctrl->setParameter($this->parent, 'file_id', $media_gallery_file->getId());
         $tpl_element->setVariable("VID_URL", $this->ctrl->getLinkTarget($this->parent, 'recordFileAccess', '', true));
         return $tpl_element;
     }
@@ -261,7 +261,7 @@ class ilMediaGalleryGUI
         $tpl_element->parseCurrentBlock();
         $this->ctrl->setParameter($this->parent, 'file_id', $media_gallery_file->getId());
         $tpl_element->setVariable('IMG_URL', $this->ctrl->getLinkTarget($this->parent, 'recordFileAccess', '', true));
-        $tpl_element->setVariable('URL_FULLSCREEN', ilWACSignedPath::signFile($media_gallery_file->getPath(ilObjMediaGallery::LOCATION_SIZE_LARGE)));
+        $tpl_element->setVariable('URL_FULLSCREEN', $this->buildWACPath($media_gallery_file, ilObjMediaGallery::LOCATION_SIZE_LARGE));
         $tpl_element->setVariable('CAPTION', ilLegacyFormElementsUtil::prepareFormOutput(($media_gallery_file->getDescription())));
         if ($this->preview_flag) {
             $tpl_element->setVariable('URL_THUMBNAIL', ilWACSignedPath::signFile($media_gallery_file->getPath(ilObjMediaGallery::LOCATION_PREVIEWS)));
@@ -300,7 +300,7 @@ class ilMediaGalleryGUI
         $this->ctrl->setParameter($this->parent, 'file_id', $media_gallery_file->getId());
         $tpl_element->setVariable('AUDIO_URL', $this->ctrl->getLinkTarget($this->parent, 'recordFileAccess', '', true));
         $tpl_element->setVariable('INLINE_SECTION', "aud" . $this->counter);
-        $tpl_element->setVariable('URL_AUDIO', ilWACSignedPath::signFile($media_gallery_file->getPath(ilObjMediaGallery::LOCATION_ORIGINALS)));
+        $tpl_element->setVariable('URL_AUDIO', $this->buildWACPath($media_gallery_file, ilObjMediaGallery::LOCATION_ORIGINALS));
         $tpl_element->setVariable('CAPTION', ilLegacyFormElementsUtil::prepareFormOutput(($media_gallery_file->getDescription())));
         if ($this->preview_flag) {
             $tpl_element->setVariable('URL_THUMBNAIL', ilWACSignedPath::signFile($media_gallery_file->getPath(ilObjMediaGallery::LOCATION_ORIGINALS)));
@@ -415,5 +415,19 @@ class ilMediaGalleryGUI
             return strnatcasecmp($x['custom'], $y['custom']);
         }
         return strnatcasecmp($x[$this->sortkey], $y[$this->sortkey]);
+    }
+
+    protected function buildWACPath(
+        ilMediaGalleryFile $media_gallery_file,
+        int $location
+    ): string {
+        $path_str = str_replace(
+            "?il_wac_token",
+            $media_gallery_file->getLocalFileName() . "?il_wac_token",
+            ilWACSignedPath::signFile($media_gallery_file->getPath($location))
+        );
+        global $DIC;
+        $DIC->logger()->root()->error($path_str);
+        return $path_str;
     }
 }
