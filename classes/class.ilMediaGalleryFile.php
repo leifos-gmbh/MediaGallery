@@ -594,7 +594,15 @@ class ilMediaGalleryFile
         $files = self::_getMediaFilesInGallery($a_source_xmg_id, true);
         $fss = ilFSStorageMediaGallery::_getInstanceByXmgId($a_source_xmg_id);
         $fsd = ilFSStorageMediaGallery::_getInstanceByXmgId($a_dest_xmg_id);
-        @copy($fss->getPath(ilObjMediaGallery::LOCATION_PREVIEWS), $fsd->getPath(ilObjMediaGallery::LOCATION_PREVIEWS));
+        $src_path_to_previews = $fss->getPath(ilObjMediaGallery::LOCATION_PREVIEWS);
+        $dst_path_to_previews = $fsd->getPath(ilObjMediaGallery::LOCATION_PREVIEWS);
+        $previews_file_names = array_diff(scandir($fss->getPath(ilObjMediaGallery::LOCATION_PREVIEWS)), array('..', '.'));
+        foreach ($previews_file_names as $file_name) {
+            if (is_dir($src_path_to_previews . '/' . $file_name)) {
+                continue;
+            }
+            copy($src_path_to_previews . '/' . $file_name, $dst_path_to_previews . '/' . $file_name);
+        }
         /**
          * @var $s_file self
          */
@@ -603,28 +611,26 @@ class ilMediaGalleryFile
             $d_file->setValuesByArray($s_file->getValueArray());
             $d_file->setGalleryId($a_dest_xmg_id);
             $d_file->create();
-            $ext = pathinfo($s_file->getPath(ilObjMediaGallery::LOCATION_ORIGINALS), PATHINFO_EXTENSION);
             @copy(
-                $s_file->getPath(ilObjMediaGallery::LOCATION_ORIGINALS),
-                $d_file->getPath(ilObjMediaGallery::LOCATION_ORIGINALS) . $d_file->getId() . '.' . $ext
+                $s_file->getPath(ilObjMediaGallery::LOCATION_ORIGINALS) . '/' . $s_file->getLocalFileName(),
+                $d_file->getPath(ilObjMediaGallery::LOCATION_ORIGINALS) . '/' . $d_file->getLocalFileName()
             );
             if($s_file->getContentType() == ilObjMediaGallery::CONTENT_TYPE_IMAGE) {
-                $ext = pathinfo($s_file->getPath(ilObjMediaGallery::LOCATION_SIZE_LARGE), PATHINFO_EXTENSION);
                 copy(
-                    $s_file->getPath(ilObjMediaGallery::LOCATION_SIZE_LARGE),
-                    $d_file->getPath(ilObjMediaGallery::LOCATION_SIZE_LARGE) . $d_file->getId() . '.' . $ext
+                    $s_file->getPath(ilObjMediaGallery::LOCATION_SIZE_LARGE) . '/' . $s_file->getLocalFileName(),
+                    $d_file->getPath(ilObjMediaGallery::LOCATION_SIZE_LARGE) . '/' . $d_file->getLocalFileName()
                 );
                 copy(
-                    $s_file->getPath(ilObjMediaGallery::LOCATION_SIZE_MEDIUM),
-                    $d_file->getPath(ilObjMediaGallery::LOCATION_SIZE_MEDIUM) . $d_file->getId() . '.' . $ext
+                    $s_file->getPath(ilObjMediaGallery::LOCATION_SIZE_MEDIUM) . '/' . $s_file->getLocalFileName(),
+                    $d_file->getPath(ilObjMediaGallery::LOCATION_SIZE_MEDIUM) . '/' . $d_file->getLocalFileName()
                 );
                 copy(
-                    $s_file->getPath(ilObjMediaGallery::LOCATION_SIZE_SMALL),
-                    $d_file->getPath(ilObjMediaGallery::LOCATION_SIZE_SMALL) . $d_file->getId() . '.' . $ext
+                    $s_file->getPath(ilObjMediaGallery::LOCATION_SIZE_SMALL) . '/' . $s_file->getLocalFileName(),
+                    $d_file->getPath(ilObjMediaGallery::LOCATION_SIZE_SMALL) . '/' . $d_file->getLocalFileName()
                 );
                 copy(
-                    $s_file->getPath(ilObjMediaGallery::LOCATION_THUMBS),
-                    $d_file->getPath(ilObjMediaGallery::LOCATION_THUMBS) . $d_file->getId() . '.' . $ext
+                    $s_file->getPath(ilObjMediaGallery::LOCATION_THUMBS) . '/' . $s_file->getLocalFileName(),
+                    $d_file->getPath(ilObjMediaGallery::LOCATION_THUMBS) . '/' . $d_file->getLocalFileName()
                 );
             }
         }
