@@ -113,6 +113,14 @@ class ilObjMediaGallery extends ilObjectPlugin implements ilLPStatusPluginInterf
             ['integer','text','integer', 'integer', 'text', 'integer'],
             [$this->getId(), $this->getSortOrder(), $this->getShowTitle(), $this->getDownload(), $this->getTheme(), $this->getLearningProgressEnabled()]
         );
+        if ($this->db->tableExists('ut_lp_settings')) {
+            $learning_progress = $this->learning_progress === 0 ? 0 : 14;
+            $this->db->manipulateF(
+                "INSERT INTO ut_lp_settings (obj_id, obj_type, u_mode, visits) VALUES (%s, 'xmg', %s, 0) ON DUPLICATE KEY UPDATE u_mode = %s;",
+                [ilDBConstants::T_INTEGER, ilDBConstants::T_INTEGER, ilDBConstants::T_INTEGER],
+                [$this->getId(),$learning_progress, $learning_progress]
+            );
+        }
     }
 
     public function doDelete(): void
