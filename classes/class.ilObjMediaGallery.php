@@ -76,6 +76,13 @@ class ilObjMediaGallery extends ilObjectPlugin implements ilLPStatusPluginInterf
     public function doCreate(bool $clone_mode = false): void
     {
         ilFSStorageMediaGallery::_getInstanceByXmgId($this->getId())->create();
+        if ($this->db->tableExists('ut_lp_settings')) {
+            $this->db->manipulateF(
+                "insert into ut_lp_settings (obj_id, obj_type, u_mode, visits) values(%s, 'xmg', 0, 0);",
+                [ilDBConstants::T_INTEGER],
+                [$this->getId()]
+            );
+        }
     }
 
     public function doRead(): void
@@ -141,6 +148,13 @@ class ilObjMediaGallery extends ilObjectPlugin implements ilLPStatusPluginInterf
             ['integer'],
             [$this->getId()]
         );
+        if ($this->db->tableExists('ut_lp_settings')) {
+            $this->db->manipulateF(
+                "delete from ut_lp_settings where obj_id=%s and obj_type='xmg';",
+                [ilDBConstants::T_INTEGER],
+                [$this->getId()]
+            );
+        }
         $access_records = ilMediaGalleryFileAccess::getInstanceByGalleryId($this->getId());
         $access_records->deleteAccessRecordsForGallery();
     }
