@@ -70,6 +70,10 @@ class ilMediaGalleryPlugin extends ilRepositoryObjectPlugin
         $res = $this->db->manipulate($query);
         $setting = new ilSetting("xmg");
         $setting->deleteAll();
+
+        if ($this->db->tableExists('ut_lp_settings')) {
+            $this->db->manipulate("delete from ut_lp_settings where obj_type='xmg';");
+        }
     }
 
     public function allowCopy(): bool
