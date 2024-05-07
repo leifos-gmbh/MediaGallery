@@ -736,3 +736,44 @@ $ilDB->addPrimaryKey('rep_robj_xmg_faccess', array('access_id'));
 $ilDB->createSequence('rep_robj_xmg_faccess');
 
 ?>
+
+<#30>
+<?php
+// Adds entries to ut_lp_settings according to the disable/enable Learning Progress setting of the Plugin.
+if (
+    $ilDB->tableExists('ut_lp_settings') &&
+    $ilDB->tableExists('rep_robj_xmg_object') &&
+    $ilDB->tableExists('object_data')
+) {
+    $obj_ids = [];
+    $obj_ids_lp_enabled = [];
+    $query = "select obj_fi, learning_progress from rep_robj_xmg_object;";
+    $res = $this->db->query($query);
+    while ($row = $res->fetchRow(ilDBConstants::FETCHMODE_OBJECT)) {
+        $obj_id = (int) $row->obj_fi;
+        $learning_progress_enabled = ((int) $row->learning_progress) == 1;
+        if ($learning_progress_enabled) {
+            $obj_ids_lp_enabled[] = $obj_id;
+        }
+    }
+    $query = "select obj_id from object_data where type='xmg';";
+    $res = $this->db->query($query);
+    while ($row = $res->fetchRow(ilDBConstants::FETCHMODE_OBJECT)) {
+        $obj_id = (int) $row->obj_id;
+        $obj_ids[] = $obj_id;
+    }
+    $obj_ids_lp_disabled = array_diff($obj_ids, $obj_ids_lp_enabled);
+    if (count($obj_ids_lp_disabled) > 0 || count($obj_ids_lp_enabled) > 0) {
+        $query = "insert into ut_lp_settings (obj_id, obj_type, u_mode, visits) values";
+        foreach ($obj_ids_lp_disabled as $obj_id) {
+            $query .= " (" . $this->db->quote($obj_id, ilDBConstants::T_INTEGER) . ", 'xmg', 0, 0),";
+        }
+        foreach ($obj_ids_lp_enabled as $obj_id) {
+            $query .= " (" . $this->db->quote($obj_id, ilDBConstants::T_INTEGER) . ", 'xmg', 14, 0),";
+        }
+        $query = rtrim($query, ",");
+        $query .= ";";
+        $this->db->manipulate($query);
+    }
+}
+?>

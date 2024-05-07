@@ -5,7 +5,7 @@ $id = "xmg";
  
 // code version; must be changed for all code changes
 
-define('xmg_version', '7.3.0');
+define('xmg_version', '8.1.0');
 
 $version = xmg_version;
  
