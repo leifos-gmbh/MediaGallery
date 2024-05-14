@@ -67,4 +67,21 @@ class ilObjMediaGalleryListGUI extends ilObjectPluginListGUI
     {
         return [];
     }
+
+    public function determineProperties(): array
+    {
+        $results = parent::determineProperties();
+        $learning_progress_mode = ilLPObjSettings::_lookupDBMode($this->obj_id) ?? ilLPObjSettings::LP_MODE_DEACTIVATED;
+        if ($learning_progress_mode === ilLPObjSettings::LP_MODE_PLUGIN) {
+            return $results;
+        }
+        $new_results = [];
+        foreach ($results as $result) {
+            if (($result["property"] ?? "") === $this->lng->txt("learning_progress")) {
+                continue;
+            }
+            $new_results[] = $result;
+        }
+        return $new_results;
+    }
 }
