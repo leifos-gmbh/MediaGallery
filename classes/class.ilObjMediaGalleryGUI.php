@@ -508,7 +508,15 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
             );
             $this->ctrl->redirect($this, 'gallery');
         }
-        ilFileDelivery::deliverFileLegacy($file->getPath(ilObjMediaGallery::LOCATION_ORIGINALS), $file->getFilename(), $file->getMimeType());
+        if ($this->media_object->getDownload() === 1) {
+            ilFileDelivery::deliverFileLegacy(
+                $file->getPath(ilObjMediaGallery::LOCATION_ORIGINALS) . $file->getId() . '.' . $file->getFileInfo()["extension"],
+                $file->getFilename(),
+                $file->getMimeType()
+            );
+        } else {
+            $this->ctrl->redirect($this, "gallery");
+        }
     }
 
     /**
