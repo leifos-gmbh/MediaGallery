@@ -499,7 +499,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
      */
     public function downloadOther(): void
     {
-        $file = ilMediaGalleryFile::_getInstanceById($this->http->request()->getQueryParams()['id']);
+        $file = ilMediaGalleryFile::_getInstanceById((int) $this->http->request()->getQueryParams()['id']);
         if(!file_exists($file->getPath(ilObjMediaGallery::LOCATION_ORIGINALS))) {
             $this->tpl->setOnScreenMessage(
                 ilGlobalTemplateInterface::MESSAGE_TYPE_FAILURE,
