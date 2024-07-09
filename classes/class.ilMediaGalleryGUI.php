@@ -173,7 +173,9 @@ class ilMediaGalleryGUI
                 } else {
                     $tpl_element->setVariable('URL_THUMBNAIL', $this->plugin->getDirectory() . '/templates/images/video.png');
                 }
-                $tpl_element->setVariable('ALT_THUMBNAIL', ilLegacyFormElementsUtil::prepareFormOutput($media_gallery_file->getTitle()));
+                $title = ilLegacyFormElementsUtil::prepareFormOutput(($media_gallery_file->getTitle()));
+                $file_name = ilLegacyFormElementsUtil::prepareFormOutput(($media_gallery_file->getFilename()));
+                $tpl_element->setVariable('ALT_THUMBNAIL', strlen($title) === 0 ? $file_name : $title);
                 break;
             case "mov":
             default:
@@ -213,7 +215,9 @@ class ilMediaGalleryGUI
                 } else {
                     $tpl_element->setVariable('URL_THUMBNAIL', $this->plugin->getDirectory() . '/templates/images/video.png');
                 }
-                $tpl_element->setVariable('ALT_THUMBNAIL', ilLegacyFormElementsUtil::prepareFormOutput(($media_gallery_file->getTitle())));
+                $title = ilLegacyFormElementsUtil::prepareFormOutput(($media_gallery_file->getTitle()));
+                $file_name = ilLegacyFormElementsUtil::prepareFormOutput(($media_gallery_file->getFilename()));
+                $tpl_element->setVariable('ALT_THUMBNAIL', strlen($title) === 0 ? $file_name : $title);
                 break;
         }
         $this->ctrl->setParameter($this->parent, 'file_id', $media_gallery_file->getId());
@@ -268,7 +272,9 @@ class ilMediaGalleryGUI
         } else {
             $tpl_element->setVariable('URL_THUMBNAIL', ilWACSignedPath::signFile($media_gallery_file->getPath(ilObjMediaGallery::LOCATION_THUMBS) . $media_gallery_file->getLocalFileName()));
         }
-        $tpl_element->setVariable('ALT_THUMBNAIL', ilLegacyFormElementsUtil::prepareFormOutput(($media_gallery_file->getTitle())));
+        $title = ilLegacyFormElementsUtil::prepareFormOutput(($media_gallery_file->getTitle()));
+        $file_name = ilLegacyFormElementsUtil::prepareFormOutput(($media_gallery_file->getFilename()));
+        $tpl_element->setVariable('ALT_THUMBNAIL', strlen($title) === 0 ? $file_name : $title);
         return $tpl_element;
     }
 
@@ -307,7 +313,9 @@ class ilMediaGalleryGUI
         } else {
             $tpl_element->setVariable('URL_THUMBNAIL', $this->plugin->getDirectory() . '/templates/images/audio.png');
         }
-        $tpl_element->setVariable('ALT_THUMBNAIL', ilLegacyFormElementsUtil::prepareFormOutput(($media_gallery_file->getTitle())));
+        $title = ilLegacyFormElementsUtil::prepareFormOutput(($media_gallery_file->getTitle()));
+        $file_name = ilLegacyFormElementsUtil::prepareFormOutput(($media_gallery_file->getFilename()));
+        $tpl_element->setVariable('ALT_THUMBNAIL', strlen($title) === 0 ? $file_name : $title);
         return $tpl_element;
     }
 
@@ -361,7 +369,9 @@ class ilMediaGalleryGUI
         $this->ctrl->setParameter($this->parent, 'id', $media_gallery_file->getId());
         $tpl_element->setVariable('URL_DOWNLOAD', $this->ctrl->getLinkTarget($this->parent, "downloadOther"));
         $tpl_element->setVariable('URL_DOWNLOADICON', $this->plugin->getDirectory() . '/templates/images/download.png');
-        $tpl_element->setVariable('ALT_THUMBNAIL', ilLegacyFormElementsUtil::prepareFormOutput(($media_gallery_file->getTitle())));
+        $title = ilLegacyFormElementsUtil::prepareFormOutput(($media_gallery_file->getTitle()));
+        $file_name = ilLegacyFormElementsUtil::prepareFormOutput(($media_gallery_file->getFilename()));
+        $tpl_element->setVariable('ALT_THUMBNAIL', strlen($title) === 0 ? $file_name : $title);
         return $tpl_element;
     }
 
