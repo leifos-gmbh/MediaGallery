@@ -5,12 +5,12 @@ $id = "xmg";
  
 // code version; must be changed for all code changes
 
-define('xmg_version', '8.1.0');
+const xmg_version = '8.1.0';
 
 $version = xmg_version;
  
-$ilias_min_version = "8.0";
-$ilias_max_version = "8.999";
+$ilias_min_version = "9.0";
+$ilias_max_version = "9.999";
  
 $responsible = 'Stefan Meyer';
 $responsible_mail = 'meyer@leifos.de';

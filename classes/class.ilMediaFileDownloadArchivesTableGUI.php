@@ -25,13 +25,8 @@
 declare(strict_types=1);
 
 /**
-*
-* @author Helmut Schottmüller <ilias@aurealis.de>
-* @version $Id:$
-*
 * @ingroup ModulesTest
 */
-
 class ilMediaFileDownloadArchivesTableGUI extends ilTable2GUI
 {
     protected ilMediaGalleryPlugin $plugin;
@@ -77,7 +72,7 @@ class ilMediaFileDownloadArchivesTableGUI extends ilTable2GUI
     /**
      * @throws ilDateTimeException
      */
-    public function fillRow(array $a_set): void
+    protected function fillRow(array $a_set): void
     {
         $this->tpl->setVariable('CB_ID', $a_set['id']);
         $this->tpl->setVariable("FILENAME", ilLegacyFormElementsUtil::prepareFormOutput($a_set['filename']));

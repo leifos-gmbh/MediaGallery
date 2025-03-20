@@ -26,13 +26,6 @@ declare(strict_types=1);
 
 use ILIAS\Filesystem\Exception\IOException;
 
-/**
- * Class ilMediaGalleryArchives
- *
- * @author Fabian Wolf <wolf@leifos.com>
- * @version $Id$
- *
- */
 class ilMediaGalleryArchives
 {
     protected static array $objects = [];

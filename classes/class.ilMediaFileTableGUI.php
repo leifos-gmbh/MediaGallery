@@ -25,10 +25,6 @@
 declare(strict_types=1);
 
 /**
-*
-* @author Helmut Schottmüller <ilias@aurealis.de>
-* @version $Id:$
-*
 * @ingroup ModulesTest
 */
 
@@ -132,20 +128,20 @@ class ilMediaFileTableGUI extends ilTable2GUI
      * @throws ilTemplateException
      * @throws ilWACException
      */
-    public function fillRow(array $a_set): void
+    protected function fillRow(array $a_set): void
     {
-        $this->tpl->setVariable('CB_ID', $a_set['id']);
+        $this->tpl->setVariable('CB_ID',(string) $a_set['id']);
         $this->tpl->setVariable("FILENAME", ilLegacyFormElementsUtil::prepareFormOutput($a_set['filename']));
         if ($a_set['has_preview']) {
             if(((int) $a_set['content_type']) === ilObjMediaGallery::CONTENT_TYPE_IMAGE) {
-                $this->addRotateFields($a_set['id']);
+                $this->addRotateFields((string) $a_set['id']);
             }
             $this->tpl->setVariable("PREVIEW", ilWACSignedPath::signFile($this->parent_obj->getMediaGalleryObject()->getFS()->getFilePath(ilObjMediaGallery::LOCATION_PREVIEWS, $a_set['pfilename'])));
-            $this->addRotateFields($a_set['id'], true);
+            $this->addRotateFields((string) $a_set['id'], true);
             $this->tpl->setVariable("PREVIEW_CLASS_BORDER", 'xmg_border');
         } elseif (((int) $a_set['content_type']) === ilObjMediaGallery::CONTENT_TYPE_IMAGE) {
-            $this->tpl->setVariable("PREVIEW", ilWACSignedPath::signFile($this->parent_obj->getMediaGalleryObject()->getFS()->getFilePath(ilObjMediaGallery::LOCATION_THUMBS, $a_set['id'])));
-            $this->addRotateFields($a_set['id']);
+            $this->tpl->setVariable("PREVIEW", ilWACSignedPath::signFile($this->parent_obj->getMediaGalleryObject()->getFS()->getFilePath(ilObjMediaGallery::LOCATION_THUMBS, (string) $a_set['id'])));
+            $this->addRotateFields((string) $a_set['id']);
             $this->tpl->setVariable("PREVIEW_CLASS_BORDER", 'xmg_no_border');
         } elseif (((int) $a_set['content_type']) === ilObjMediaGallery::CONTENT_TYPE_AUDIO) {
             $this->tpl->setVariable("PREVIEW", $this->plugin->getDirectory() . '/templates/images/audio.png');

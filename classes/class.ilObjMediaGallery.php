@@ -26,11 +26,6 @@ declare(strict_types=1);
 
 use ILIAS\FileUpload\MimeType;
 
-/**
-* Application class for gallery repository object.
-* @author Helmut Schottmüller <ilias@aurealis.de>
-* $Id$
-*/
 class ilObjMediaGallery extends ilObjectPlugin implements ilLPStatusPluginInterface
 {
     public const LOCATION_ROOT = 0;
@@ -68,12 +63,12 @@ class ilObjMediaGallery extends ilObjectPlugin implements ilLPStatusPluginInterf
         $this->plugin = ilMediaGalleryPlugin::_getInstance();
     }
 
-    final public function initType(): void
+    final protected function initType(): void
     {
         $this->setType("xmg");
     }
 
-    public function doCreate(bool $clone_mode = false): void
+    protected function doCreate(bool $clone_mode = false): void
     {
         ilFSStorageMediaGallery::_getInstanceByXmgId($this->getId())->create();
         if ($this->db->tableExists('ut_lp_settings')) {
@@ -85,7 +80,7 @@ class ilObjMediaGallery extends ilObjectPlugin implements ilLPStatusPluginInterf
         }
     }
 
-    public function doRead(): void
+    protected function doRead(): void
     {
         $result = $this->db->queryF(
             "SELECT * FROM rep_robj_xmg_object WHERE obj_fi = %s",
@@ -108,7 +103,7 @@ class ilObjMediaGallery extends ilObjectPlugin implements ilLPStatusPluginInterf
         }
     }
 
-    public function doUpdate(): void
+    protected function doUpdate(): void
     {
         $this->db->manipulateF(
             "DELETE FROM rep_robj_xmg_object WHERE obj_fi = %s",
@@ -130,7 +125,7 @@ class ilObjMediaGallery extends ilObjectPlugin implements ilLPStatusPluginInterf
         }
     }
 
-    public function doDelete(): void
+    protected function doDelete(): void
     {
         ilFileUtils::delDir($this->getFS()->getPath(self::LOCATION_ROOT));
         $this->db->manipulateF(

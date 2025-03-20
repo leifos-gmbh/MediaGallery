@@ -27,13 +27,6 @@ declare(strict_types=1);
 use ILIAS\Filesystem\Exception\IOException;
 use ILIAS\FileUpload\MimeType;
 
-/**
- * Class ilFSStorageMediaGallery
- *
- * @author Fabian Wolf <wolf@leifos.com>
- * @version $Id$
- *
- */
 class ilFSStorageMediaGallery extends ilFileSystemAbstractionStorage
 {
     protected static array $objects = [];
@@ -76,12 +69,12 @@ class ilFSStorageMediaGallery extends ilFileSystemAbstractionStorage
         $this->log = $DIC->logger()->root();
     }
 
-    public function getPathPrefix(): string
+    protected function getPathPrefix(): string
     {
         return 'ilXmg';
     }
 
-    public function getPathPostfix(): string
+    protected function getPathPostfix(): string
     {
         return 'xmg';
     }

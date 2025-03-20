@@ -24,11 +24,6 @@
 
 declare(strict_types=1);
 
-/**
- * MediaGallery repository object plugin
- * @author Helmut Schottmüller <ilias@aurealis.de>
- * @version $Id$
- */
 class ilMediaGalleryPlugin extends ilRepositoryObjectPlugin
 {
     protected static ilMediaGalleryPlugin $instance;
@@ -53,7 +48,7 @@ class ilMediaGalleryPlugin extends ilRepositoryObjectPlugin
         return self::PLUGIN_NAME;
     }
 
-    public function uninstallCustom(): void
+    protected function uninstallCustom(): void
     {
         if ($this->db->tableExists('rep_robj_xmg_filedata')) {
             $this->db->dropTable('rep_robj_xmg_filedata');

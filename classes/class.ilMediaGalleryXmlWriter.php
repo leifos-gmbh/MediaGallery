@@ -24,12 +24,6 @@
 
 declare(strict_types=1);
 
-/**
- * @author Fabian Wolf <wolf@leifos.de>
- * @version $Id: $
- * @ingroup
- */
-
 class ilMediaGalleryXmlWriter extends ilXmlWriter
 {
     private bool $add_header = true;

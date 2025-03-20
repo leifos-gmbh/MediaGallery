@@ -25,11 +25,6 @@
 declare(strict_types=1);
 
 /**
- * MediaGallery configuration user interface class
- *
- * @author Helmut Schottmüller <ilias@aurealis.de>
- * @version $Id$
- *
  * @ilCtrl_IsCalledBy ilMediaGalleryConfigGUI : ilObjComponentSettingsGUI
  */
 class ilMediaGalleryConfigGUI extends ilPluginConfigGUI
@@ -63,10 +58,6 @@ class ilMediaGalleryConfigGUI extends ilPluginConfigGUI
         $this->tpl->setContent($form->getHTML());
     }
 
-    //
-    // From here on, this is just an gallery implementation using
-    // a standard form (without saving anything)
-    //
     /**
      * @throws ilCtrlException
      */

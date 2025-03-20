@@ -24,11 +24,6 @@
 
 declare(strict_types=1);
 
-/**
- * Class ilMediaGalleryGUI
- * @author Fabian Wolf <wolf@leifos.com>
- * @version $Id$
- */
 class ilMediaGalleryGUI
 {
     protected array $file_data;

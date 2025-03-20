@@ -28,20 +28,6 @@ use ILIAS\Filesystem\Exception\IOException;
 use ILIAS\HTTP\Services as ilHttpServices;
 
 /**
-* User Interface class for gallery repository object.
-*
-* User interface classes process GET and POST parameter and call
-* application classes to fulfill certain tasks.
-*
-* @author Helmut Schottmüller <ilias@aurealis.de>
-*
-* $Id$
-*
-* Integration into control structure:
-* - The GUI class is called by ilRepositoryGUI
-* - GUI classes used by this class are ilPermissionGUI (provides the rbac
-*   screens) and ilInfoScreenGUI (handles the info screen).
-*
 * @ilCtrl_isCalledBy ilObjMediaGalleryGUI: ilRepositoryGUI, ilAdministrationGUI, ilObjPluginDispatchGUI
 * @ilCtrl_Calls ilObjMediaGalleryGUI: ilPermissionGUI, ilInfoScreenGUI, ilObjectCopyGUI
 * @ilCtrl_Calls ilObjMediaGalleryGUI: ilCommonActionDispatcherGUI, ilLearningProgressGUI
@@ -451,7 +437,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 
     public function gallerysort(array $x, array $y): int
     {
-        return strnatcasecmp($x[$this->sortkey], $y[$this->sortkey]);
+        return strnatcasecmp((string)$x[$this->sortkey], (string)$y[$this->sortkey]);
     }
 
     /**
@@ -1162,8 +1148,9 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
     protected function initCreationForms(string $new_type): array
     {
         return [
-            self::CFORM_NEW => $this->initCreateForm($new_type),
-            self::CFORM_CLONE => $this->fillCloneTemplate(null, $new_type)
+            self::CFORM_NEW => $this->initCreateForm($new_type)
+            # Function fillCloneTemplate does not exist
+            #self::CFORM_CLONE => $this->fillCloneTemplate(null, $new_type)
         ];
     }
 
@@ -1180,7 +1167,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
         $new_type = $_REQUEST["new_type"];
         // create permission is already checked in createObject. This check here is done to prevent hacking attempts
         if (!$this->checkPermissionBool("create", "", $new_type)) {
-            $this->error->raiseError($this->lng->txt("no_create_permission"));
+            $this->error->raiseError($this->lng->txt("no_create_permission"), null);
         }
         $this->lng->loadLanguageModule($new_type);
         $this->ctrl->setParameter($this, "new_type", $new_type);
@@ -1196,9 +1183,10 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
             if ($new_id > 0) {
                 $this->ctrl->setParameter($this, "new_type", "");
                 $newObj = ilObjectFactory::getInstanceByObjId($new_id);
-                $importer = new ilMediaGalleryImporter($newObj, $imp);
-                $importer->init();
-                $importer->importXmlRepresentation();
+                # Class ilMediaGalleryImporter does not exist
+                #$importer = new ilMediaGalleryImporter($newObj, $imp);
+                #$importer->init();
+                #$importer->importXmlRepresentation();
                 $this->afterImport($newObj);
             } else {
                 return;

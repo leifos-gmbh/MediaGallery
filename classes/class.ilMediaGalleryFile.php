@@ -27,12 +27,6 @@ declare(strict_types=1);
 use ILIAS\Filesystem\Exception\IOException;
 use ILIAS\FileUpload\MimeType;
 
-/**
- * Class ilMediaGalleryFile
- * @author Fabian Wolf <wolf@leifos.com>
- * @version $Id$
- *
- */
 class ilMediaGalleryFile
 {
     protected int $id;
