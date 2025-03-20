@@ -144,3 +144,4 @@ lp_by_objects#:#Auswahl an Medien-Objekten
 lp_by_objects_info#:#Der Lernfortschritt wird automatisch aus der Anzahl der betrachteten Medienobjekte, welche vorher im Bereich Mediendateien->Liste markiert wurden, ermittelt.
 presentation#:#Darstellung
 perma_link_upload#:#Link zum Mediengallerie-Dateiupload
+msg_obj_modified#:#Einstellungen gespeichert

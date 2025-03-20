@@ -218,7 +218,7 @@ class ilMediaGalleryArchives
 
     public function getArchiveFilename(int $a_id): string
     {
-        if(!$this->archives[$a_id]) {
+        if(!isset($this->archives[$a_id])) {
             $res = $this->db->query("SELECT filename FROM rep_robj_xmg_downloads WHERE id = "
                 . $this->db->quote($a_id, "integer"));
             $row = $this->db->fetchAssoc($res);
