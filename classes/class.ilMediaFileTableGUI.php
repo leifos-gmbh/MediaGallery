@@ -88,9 +88,9 @@ class ilMediaFileTableGUI extends ilTable2GUI
         }
         switch ($this->getOrderDirection()) {
             case 'asc':
-                return strnatcasecmp($x[$order_field], $y[$order_field]);
+                return strnatcasecmp((string) $x[$order_field], (string) $y[$order_field]);
             case 'desc':
-                return strnatcasecmp($y[$order_field], $x[$order_field]);
+                return strnatcasecmp((string) $y[$order_field], (string) $x[$order_field]);
         }
         return 0;
     }

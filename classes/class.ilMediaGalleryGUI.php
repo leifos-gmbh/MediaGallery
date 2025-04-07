@@ -418,9 +418,9 @@ class ilMediaGalleryGUI
     protected function gallerySort(array $x, array $y): int
     {
         if(!$x[$this->sortkey] && !$y[$this->sortkey]) {
-            return strnatcasecmp($x['custom'], $y['custom']);
+            return strnatcasecmp((string) $x['custom'], (string) $y['custom']);
         }
-        return strnatcasecmp($x[$this->sortkey], $y[$this->sortkey]);
+        return strnatcasecmp((string) $x[$this->sortkey], (string) $y[$this->sortkey]);
     }
 
     protected function buildWACPathWithFileName(
