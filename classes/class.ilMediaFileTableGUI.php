@@ -34,6 +34,7 @@ class ilMediaFileTableGUI extends ilTable2GUI
     protected ilMediaGalleryPlugin $plugin;
     protected float $custom_sort;
     protected int $lp_active;
+    protected array $filter;
 
     /**
      * @throws ilCtrlException
@@ -46,6 +47,7 @@ class ilMediaFileTableGUI extends ilTable2GUI
     ) {
         $this->setId("xmg_mft_" . $a_parent_obj->getMediaGalleryObject()->getId());
         parent::__construct($a_parent_obj, $a_parent_cmd);
+        $this->filter = [];
         $this->plugin = ilMediaGalleryPlugin::_getInstance();
         $this->lp_active = $this->parent_obj->getMediaGalleryObject()->getLearningProgressEnabled();
         $this->custom_sort = 1.0;
