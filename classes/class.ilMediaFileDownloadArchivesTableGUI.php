@@ -51,7 +51,7 @@ class ilMediaFileDownloadArchivesTableGUI extends ilTable2GUI
         $this->addColumn($this->plugin->txt("size"), 'size', '', false, 'xmg_arch_size');
         $this->addColumn($this->plugin->txt("download_archive"), 'download', '', false, 'xmg_arch_download');
         $this->addColumn($this->plugin->txt("created"), 'created', '', false, 'xmg_arch_created');
-        $this->setRowTemplate("tpl.mediafiles_archive_row.html", 'Customizing/global/plugins/Services/Repository/RepositoryObject/MediaGallery');
+        $this->setRowTemplate("tpl.mediafiles_archive_row.html", 'public/Customizing/global/plugins/Services/Repository/RepositoryObject/MediaGallery');
         $this->setDefaultOrderField("filename");
         $this->setDefaultOrderDirection("asc");
         $this->addMultiCommand('deleteArchive', $this->lng->txt('delete'));

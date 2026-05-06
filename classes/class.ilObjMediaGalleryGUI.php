@@ -1110,14 +1110,16 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
             $template->parseCurrentBlock();
         }
         $filter_txt .= '],';
-        $this->tpl->addCss($this->plugin->getDirectory() . "/js/jquery.plupload.queue/css/jquery.plupload.queue.css");
-        $this->tpl->addJavascript($this->plugin->getDirectory() . "/js/plupload.full.js");
-        $this->tpl->addJavascript($this->plugin->getDirectory() . "/js/jquery.plupload.queue/jquery.plupload.queue.js");
+
+        $this->tpl->addCss(ilMediaGalleryPlugin::PLUGIN_PATH . "/js/jquery.plupload.queue/css/jquery.plupload.queue.css");
+        $this->tpl->addJavascript(ilMediaGalleryPlugin::PLUGIN_PATH . "/js/plupload.full.js");
+        $this->tpl->addJavascript(ilMediaGalleryPlugin::PLUGIN_PATH . "/js/jquery.plupload.queue/jquery.plupload.queue.js");
+
         //change language
         $lang = $this->lng->getUserLanguage();
         $lang_path = $this->plugin->getDirectory() . "/js/i18n/" . $lang . ".js";
         if(file_exists($lang_path)) {
-            $this->tpl->addJavascript($this->plugin->getDirectory() . "/js/i18n/de.js");
+            $this->tpl->addJavascript(ilMediaGalleryPlugin::PLUGIN_PATH . "/js/i18n/de.js");
         }
         $js_template = $this->plugin->getTemplate("tpl.plupload_master.js");
         $js_template->setVariable("FILTERS", $filter_txt);

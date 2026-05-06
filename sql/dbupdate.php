@@ -46,7 +46,6 @@ if (!$ilDB->tableExists('rep_robj_xmg_filedata'))
 <#2>
 <?php
 
-include_once './Services/Administration/classes/class.ilSetting.php';
 $setting = new ilSetting("xmg");
 $setting->set('ext_img', 'jpg,jpeg,tif,tiff,png,gif,bmp');
 $setting->set('ext_vid', 'mov,avi,m4v,mp4,flv');
@@ -219,7 +218,6 @@ if(!$ilDB->tableColumnExists('rep_robj_xmg_object', 'theme'))
 <#12>
 <?php
 
-include_once './Services/Administration/classes/class.ilSetting.php';
 $setting = new ilSetting("xmg");
 $setting->set('max_upload', '100');
 
@@ -565,7 +563,6 @@ if ($ilDB->tableExists('rep_robj_xmg_object'))
 ?>
 <#22>
 <?php
-include_once './Services/Administration/classes/class.ilSetting.php';
 $setting = new ilSetting("xmg");
 $setting->delete('sort');
 ?>
@@ -614,8 +611,7 @@ $ilDB->insert('il_wac_secure_path', array(
 <#25>
 <?php
 //Upwards compatible version of dbupdate step 24
-include_once('./Services/Migration/DBUpdate_3560/classes/class.ilDBUpdateNewObjectType.php');
-
+include_once __DIR__ . "/../../Migration/DBUpdate_3560/classes/class.ilDBUpdateNewObjectType.php";
 $copy_operation_id = ilDBUpdateNewObjectType::getCustomRBACOperationId("copy");
 $write_operation_id = ilDBUpdateNewObjectType::getCustomRBACOperationId("write");
 
@@ -643,8 +639,7 @@ if($copy_operation_id)
 
 <#26>
 <?php
-include_once('./Services/Migration/DBUpdate_3560/classes/class.ilDBUpdateNewObjectType.php');
-
+include_once __DIR__ . "/../../Migration/DBUpdate_3560/classes/class.ilDBUpdateNewObjectType.php";
 $write_operation_id = ilDBUpdateNewObjectType::getCustomRBACOperationId('write');
 $read_operation_id = ilDBUpdateNewObjectType::getCustomRBACOperationId('read');
 $lp_read_operation_id = ilDBUpdateNewObjectType::getCustomRBACOperationId("read_learning_progress");

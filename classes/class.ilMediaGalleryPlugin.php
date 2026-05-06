@@ -29,6 +29,7 @@ class ilMediaGalleryPlugin extends ilRepositoryObjectPlugin
     protected static ilMediaGalleryPlugin $instance;
     protected const PLUGIN_ID = "xmg";
     protected const PLUGIN_NAME = "MediaGallery";
+    public const PLUGIN_PATH = "Customizing/global/plugins/Services/Repository/RepositoryObject/MediaGallery/";
 
     public static function _getInstance(): ilMediaGalleryPlugin
     {

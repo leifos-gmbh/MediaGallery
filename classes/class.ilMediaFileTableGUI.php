@@ -65,7 +65,7 @@ class ilMediaFileTableGUI extends ilTable2GUI
         $this->addColumn($this->plugin->txt("topic"), 'topic', '', false, 'xmg_topic');
         $this->addColumn($this->lng->txt("title"), 'title', '', false, 'xmg_title');
         $this->addColumn($this->lng->txt("description"), 'description', '', false, 'xmg_desc');
-        $this->setRowTemplate("tpl.mediafiles_row.html", 'Customizing/global/plugins/Services/Repository/RepositoryObject/MediaGallery');
+        $this->setRowTemplate("tpl.mediafiles_row.html", 'public/Customizing/global/plugins/Services/Repository/RepositoryObject/MediaGallery');
         $this->setDefaultOrderField("filename");
         $this->setDefaultOrderDirection("asc");
         $this->setFilterCommand('filterMedia');

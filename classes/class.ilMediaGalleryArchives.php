@@ -197,6 +197,10 @@ class ilMediaGalleryArchives
         if(!ilFileUtils::zip($tmp_dir, $tmp_dir . '/' . $a_zip_filename, true)) {
             return false;
         }
+        $download_dir = $this->getFileSystem()->getFilePath(ilObjMediaGallery::LOCATION_DOWNLOADS);
+        if(!file_exists($download_dir)) {
+            ilFileUtils::createDirectory($download_dir);
+        }
         rename($tmp_dir . '/' . $a_zip_filename, $this->getFileSystem()->getFilePath(ilObjMediaGallery::LOCATION_DOWNLOADS, $a_zip_filename));
         ilFileUtils::delDir($tmp_dir);
         $this->addArchive($a_zip_filename);
