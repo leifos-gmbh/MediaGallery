@@ -52,12 +52,12 @@ class ilMediaGalleryGUI
 
     protected function initTemplate(): void
     {
-        $this->tpl->addCss($this->plugin->getStyleSheetLocation("xmg.css"));
-        $this->tpl->addCss(ilMediaGalleryPlugin::PLUGIN_PATH . "/js/prettyphoto_3.1.5/css/prettyPhoto.css");
-        $this->tpl->addJavascript(ilMediaGalleryPlugin::PLUGIN_PATH . "/js/prettyphoto_3.1.5/js/jquery.prettyPhoto.js");
-        $this->tpl->addJavascript(ilMediaGalleryPlugin::PLUGIN_PATH . "/js/html5media-master/domready.js");
-        $this->tpl->addJavascript(ilMediaGalleryPlugin::PLUGIN_PATH . "/js/html5media-master/flowplayer.js");
-        $this->tpl->addJavascript(ilMediaGalleryPlugin::PLUGIN_PATH . "/js/html5media-master/html5media.js");
+        $this->tpl->addCss(ilMediaGalleryPlugin::PLUGIN_PATH . "templates/xmg.css");
+        $this->tpl->addCss(ilMediaGalleryPlugin::PLUGIN_PATH . "js/prettyphoto_3.1.5/css/prettyPhoto.css");
+        $this->tpl->addJavascript(ilMediaGalleryPlugin::PLUGIN_PATH . "js/prettyphoto_3.1.5/js/jquery.prettyPhoto.js");
+        $this->tpl->addJavascript(ilMediaGalleryPlugin::PLUGIN_PATH . "js/html5media-master/domready.js");
+        $this->tpl->addJavascript(ilMediaGalleryPlugin::PLUGIN_PATH . "js/html5media-master/flowplayer.js");
+        $this->tpl->addJavascript(ilMediaGalleryPlugin::PLUGIN_PATH . "js/html5media-master/html5media.js");
     }
 
     public function setFileData(array $file_data): void
@@ -377,12 +377,13 @@ class ilMediaGalleryGUI
      */
     public function buildTemplateContent(): void
     {
-        $this->tpl->addCss($this->plugin->getStyleSheetLocation("xmg.css"));
-        $this->tpl->addCss(ilMediaGalleryPlugin::PLUGIN_PATH . "/js/prettyphoto_3.1.5/css/prettyPhoto.css");
-        $this->tpl->addJavascript(ilMediaGalleryPlugin::PLUGIN_PATH . "/js/prettyphoto_3.1.5/js/jquery.prettyPhoto.js");
-        $this->tpl->addJavascript(ilMediaGalleryPlugin::PLUGIN_PATH . "/js/html5media-master/domready.js");
-        $this->tpl->addJavascript(ilMediaGalleryPlugin::PLUGIN_PATH . "/js/html5media-master/flowplayer.js");
-        $this->tpl->addJavascript(ilMediaGalleryPlugin::PLUGIN_PATH . "/js/html5media-master/html5media.js");
+        #"/srv/www/web/ILIAS_10/components/ILIAS/Component/classes/../../../../public/Customizing/global/plugins/Services/Repository/RepositoryObject/MediaGallery/templates/xmg.css"
+        $this->tpl->addCss(ilMediaGalleryPlugin::PLUGIN_PATH . "templates/xmg.css");
+        $this->tpl->addCss(ilMediaGalleryPlugin::PLUGIN_PATH . "js/prettyphoto_3.1.5/css/prettyPhoto.css");
+        $this->tpl->addJavascript(ilMediaGalleryPlugin::PLUGIN_PATH . "js/prettyphoto_3.1.5/js/jquery.prettyPhoto.js");
+        $this->tpl->addJavascript(ilMediaGalleryPlugin::PLUGIN_PATH . "js/html5media-master/domready.js");
+        $this->tpl->addJavascript(ilMediaGalleryPlugin::PLUGIN_PATH . "js/html5media-master/flowplayer.js");
+        $this->tpl->addJavascript(ilMediaGalleryPlugin::PLUGIN_PATH . "js/html5media-master/html5media.js");
         $media_files = $this->getFileData();
         $this->master_ctpl = $this->plugin->getTemplate("tpl.gallery_master.js");
         $this->ctpl = $this->plugin->getTemplate("tpl.gallery.html");
