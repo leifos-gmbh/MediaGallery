@@ -166,7 +166,7 @@ class ilMediaGalleryGUI
                 if ($this->preview_flag) {
                     $tpl_element->setVariable('URL_THUMBNAIL', ilWACSignedPath::signFile($media_gallery_file->getPath(ilObjMediaGallery::LOCATION_PREVIEWS)));
                 } else {
-                    $tpl_element->setVariable('URL_THUMBNAIL', $this->plugin->getDirectory() . '/templates/images/video.png');
+                    $tpl_element->setVariable('URL_THUMBNAIL', ilMediaGalleryPlugin::PLUGIN_PATH . 'templates/images/video.png');
                 }
                 $title = ilLegacyFormElementsUtil::prepareFormOutput(($media_gallery_file->getTitle()));
                 $file_name = ilLegacyFormElementsUtil::prepareFormOutput(($media_gallery_file->getFilename()));
@@ -208,7 +208,7 @@ class ilMediaGalleryGUI
                 if ($this->preview_flag) {
                     $tpl_element->setVariable('URL_THUMBNAIL', ilWACSignedPath::signFile($media_gallery_file->getPath(ilObjMediaGallery::LOCATION_PREVIEWS)));
                 } else {
-                    $tpl_element->setVariable('URL_THUMBNAIL', $this->plugin->getDirectory() . '/templates/images/video.png');
+                    $tpl_element->setVariable('URL_THUMBNAIL', ilMediaGalleryPlugin::PLUGIN_PATH . 'templates/images/video.png');
                 }
                 $title = ilLegacyFormElementsUtil::prepareFormOutput(($media_gallery_file->getTitle()));
                 $file_name = ilLegacyFormElementsUtil::prepareFormOutput(($media_gallery_file->getFilename()));
@@ -306,7 +306,7 @@ class ilMediaGalleryGUI
         if ($this->preview_flag) {
             $tpl_element->setVariable('URL_THUMBNAIL', ilWACSignedPath::signFile($media_gallery_file->getPath(ilObjMediaGallery::LOCATION_ORIGINALS)));
         } else {
-            $tpl_element->setVariable('URL_THUMBNAIL', $this->plugin->getDirectory() . '/templates/images/audio.png');
+            $tpl_element->setVariable('URL_THUMBNAIL', ilMediaGalleryPlugin::PLUGIN_PATH . 'templates/images/audio.png');
         }
         $title = ilLegacyFormElementsUtil::prepareFormOutput(($media_gallery_file->getTitle()));
         $file_name = ilLegacyFormElementsUtil::prepareFormOutput(($media_gallery_file->getFilename()));
@@ -363,7 +363,7 @@ class ilMediaGalleryGUI
         $tpl_element->setVariable('INLINE_SECTION', "oth" . $this->counter);
         $this->ctrl->setParameter($this->parent, 'id', $media_gallery_file->getId());
         $tpl_element->setVariable('URL_DOWNLOAD', $this->ctrl->getLinkTarget($this->parent, "downloadOther"));
-        $tpl_element->setVariable('URL_DOWNLOADICON', $this->plugin->getDirectory() . '/templates/images/download.png');
+        $tpl_element->setVariable('URL_DOWNLOADICON', ilMediaGalleryPlugin::PLUGIN_PATH . 'templates/images/download.png');
         $title = ilLegacyFormElementsUtil::prepareFormOutput(($media_gallery_file->getTitle()));
         $file_name = ilLegacyFormElementsUtil::prepareFormOutput(($media_gallery_file->getFilename()));
         $tpl_element->setVariable('ALT_THUMBNAIL', strlen($title) === 0 ? $file_name : $title);
@@ -377,7 +377,6 @@ class ilMediaGalleryGUI
      */
     public function buildTemplateContent(): void
     {
-        #"/srv/www/web/ILIAS_10/components/ILIAS/Component/classes/../../../../public/Customizing/global/plugins/Services/Repository/RepositoryObject/MediaGallery/templates/xmg.css"
         $this->tpl->addCss(ilMediaGalleryPlugin::PLUGIN_PATH . "templates/xmg.css");
         $this->tpl->addCss(ilMediaGalleryPlugin::PLUGIN_PATH . "js/prettyphoto_3.1.5/css/prettyPhoto.css");
         $this->tpl->addJavascript(ilMediaGalleryPlugin::PLUGIN_PATH . "js/prettyphoto_3.1.5/js/jquery.prettyPhoto.js");

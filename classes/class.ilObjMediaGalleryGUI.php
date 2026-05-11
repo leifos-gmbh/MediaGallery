@@ -1117,7 +1117,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
 
         //change language
         $lang = $this->lng->getUserLanguage();
-        $lang_path = $this->plugin->getDirectory() . "/js/i18n/" . $lang . ".js";
+        $lang_path = ilMediaGalleryPlugin::PLUGIN_PATH . "js/i18n/" . $lang . ".js";
         if(file_exists($lang_path)) {
             $this->tpl->addJavascript(ilMediaGalleryPlugin::PLUGIN_PATH . "js/i18n/de.js");
         }

@@ -77,7 +77,7 @@ class ilObjMediaGallerySubItemListGUI extends ilSubItemListGUI
             } elseif(!$file->hasPreviewImage() && $type == "image") {
                 $image = $file->getPath(ilObjMediaGallery::LOCATION_THUMBS);
             } elseif($type != "image" && !$file->hasPreviewImage()) {
-                $image = $this->plugin->getDirectory() . '/templates/images/' . $type . '.png';
+                $image = ilMediaGalleryPlugin::PLUGIN_PATH . 'templates/images/' . $type . '.png';
             }
             $this->tpl->setVariable('SUB_ITEM_IMAGE', ilUtil::img($image, $title, '50px'));
             $this->tpl->setVariable('TITLE', $title);

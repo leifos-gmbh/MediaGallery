@@ -381,11 +381,11 @@ class ilObjMediaGallery extends ilObjectPlugin implements ilLPStatusPluginInterf
                 $mime = "application-vnd.ms-powerpoint";
                 break;
         }
-        $path = $this->plugin->getDirectory() . "/templates/images/mimetypes/" . str_replace("/", "-", $mime) . ".png";
+        $path = ilMediaGalleryPlugin::PLUGIN_PATH . "templates/images/mimetypes/" . str_replace("/", "-", $mime) . ".png";
         if (file_exists($path)) {
             return $path;
         } else {
-            return $this->plugin->getDirectory() . '/templates/images/unknown.png';
+            return ilMediaGalleryPlugin::PLUGIN_PATH . 'templates/images/unknown.png';
         }
     }
 

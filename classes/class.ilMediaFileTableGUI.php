@@ -146,9 +146,9 @@ class ilMediaFileTableGUI extends ilTable2GUI
             $this->addRotateFields((string) $a_set['id']);
             $this->tpl->setVariable("PREVIEW_CLASS_BORDER", 'xmg_no_border');
         } elseif (((int) $a_set['content_type']) === ilObjMediaGallery::CONTENT_TYPE_AUDIO) {
-            $this->tpl->setVariable("PREVIEW", $this->plugin->getDirectory() . '/templates/images/audio.png');
+            $this->tpl->setVariable("PREVIEW", ilMediaGalleryPlugin::PLUGIN_PATH . 'templates/images/audio.png');
         } elseif (((int) $a_set['content_type']) === ilObjMediaGallery::CONTENT_TYPE_VIDEO) {
-            $this->tpl->setVariable("PREVIEW", $this->plugin->getDirectory() . '/templates/images/video.png');
+            $this->tpl->setVariable("PREVIEW", ilMediaGalleryPlugin::PLUGIN_PATH . 'templates/images/video.png');
         } else {
             $this->tpl->setVariable("PREVIEW", $this->parent_obj->getMediaGalleryObject()->getMimeIconPath((int) $a_set['id']));
         }
