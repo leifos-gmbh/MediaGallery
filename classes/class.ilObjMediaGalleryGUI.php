@@ -836,7 +836,6 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
         return preg_replace('/[^A-Za-z0-9]/', '', $filename);
     }
 
-
     protected function initArchiveFilenameForm($a_mode = "edit"): void
     {
         $this->form = new ilPropertyFormGUI();
@@ -1130,7 +1129,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
         $filter_txt .= '],';
 
         $this->tpl->addCss(ilMediaGalleryPlugin::PLUGIN_PATH . "js/jquery.plupload.queue/css/jquery.plupload.queue.css");
-        $this->tpl->addJavascript(ilMediaGalleryPlugin::PLUGIN_PATH . "js/plupload.full.js");
+        $this->tpl->addJavascript(ilMediaGalleryPlugin::PLUGIN_PATH . "js/plupload.full.min.js");
         $this->tpl->addJavascript(ilMediaGalleryPlugin::PLUGIN_PATH . "js/jquery.plupload.queue/jquery.plupload.queue.js");
 
         //change language
