@@ -1,4 +1,4 @@
-// 
+//
 // English Language File for MediaGalleryObject Plugin
 //
 
@@ -149,3 +149,4 @@ lp_by_objects_info#:#The learning progress status will be determined by the view
 presentation#:#Presentation
 perma_link_upload#:#Link to file-upload in Mediagallery
 msg_obj_modified#:#Settings saved
+invalid_archive_filename#:#The input contains invalid characters. Permitted characters are A-Z, a-z and 0-9.

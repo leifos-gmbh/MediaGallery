@@ -1,4 +1,4 @@
-// 
+//
 // German Language File for MediaGalleryObject Plugin
 //
 
@@ -145,3 +145,4 @@ lp_by_objects_info#:#Der Lernfortschritt wird automatisch aus der Anzahl der bet
 presentation#:#Darstellung
 perma_link_upload#:#Link zum Mediengallerie-Dateiupload
 msg_obj_modified#:#Einstellungen gespeichert
+invalid_archive_filename#:#Die Eingabe enthält nicht erlaubte Zeichen. Erlaubt Zeichen sind A-Z, a-z und 0-9.
