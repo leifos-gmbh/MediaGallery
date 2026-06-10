@@ -1128,7 +1128,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
         }
         $filter_txt .= '],';
         $this->tpl->addCss($this->plugin->getDirectory() . "/js/jquery.plupload.queue/css/jquery.plupload.queue.css");
-        $this->tpl->addJavascript($this->plugin->getDirectory() . "/js/plupload.full.js");
+        $this->tpl->addJavascript($this->plugin->getDirectory() . "/js/plupload.full.min.js");
         $this->tpl->addJavascript($this->plugin->getDirectory() . "/js/jquery.plupload.queue/jquery.plupload.queue.js");
         //change language
         $lang = $this->lng->getUserLanguage();
