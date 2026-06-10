@@ -329,7 +329,7 @@ class ilObjMediaGallery extends ilObjectPlugin implements ilLPStatusPluginInterf
 
     public static function _getGalleryThemes(): array
     {
-        $data = self::getDirsInDir(ilMediaGalleryPlugin::_getInstance()->getDirectory() . '/js/prettyphoto_3.1.5/images/prettyPhoto');
+        $data = self::getDirsInDir(ilMediaGalleryPlugin::_getInstance()->getDirectory() . '/js/prettyphoto_3.1.6/images/prettyPhoto');
         if (count($data) == 0) {
             $data[] = ilObjMediaGallery::_getConfigurationValue('theme');
         }
