@@ -790,7 +790,16 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
      */
     public function renameArchiveFilename(): void
     {
-        if($_SESSION['archiveFilename'] == $_POST['filename']) {
+        $filename = $this->cleanFilename($_POST["filename"]);
+        $archive_filename = $this->cleanFilename($_SESSION['archiveFilename']);
+        if (strlen($filename) !== strlen($_POST["filename"])) {
+            $this->tpl->setOnScreenMessage(
+                ilGlobalTemplateInterface::MESSAGE_TYPE_FAILURE,
+                $this->plugin->txt('invalid_archive_filename'),
+                true
+            );
+            $this->ctrl->redirect($this, 'archives');
+        } elseif(strcmp($archive_filename, $filename) == 0) {
             $this->tpl->setOnScreenMessage(
                 ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS,
                 $this->plugin->txt('rename_successful'),
@@ -798,7 +807,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
             );
             unset($_SESSION['archiveFilename']);
             $this->ctrl->redirect($this, 'archives');
-        } elseif (file_exists(ilFSStorageMediaGallery::_getInstanceByXmgId($this->object_id)->getFilePath(ilObjMediaGallery::LOCATION_DOWNLOADS, $_POST['filename'] . ".zip"))) {
+        } elseif (file_exists(ilFSStorageMediaGallery::_getInstanceByXmgId($this->object_id)->getFilePath(ilObjMediaGallery::LOCATION_DOWNLOADS, $filename . ".zip"))) {
             $this->tpl->setOnScreenMessage(
                 ilGlobalTemplateInterface::MESSAGE_TYPE_FAILURE,
                 $this->plugin->txt('please_select_unique_archive_name'),
@@ -806,9 +815,9 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
             );
             $this->ctrl->redirect($this, 'setArchiveFilename');
         } else {
-            if (strlen($_SESSION['archiveFilename']) && strlen($_POST['filename'])) {
+            if (strlen($archive_filename) && strlen($filename)) {
                 $archives = ilMediaGalleryArchives::_getInstanceByXmgId($this->object_id);
-                $archives->renameArchive($_SESSION['archiveFilename'], $_POST['filename']);
+                $archives->renameArchive($archive_filename, $filename);
                 unset($_SESSION['archiveFilename']);
                 $this->tpl->setOnScreenMessage(
                     ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS,
@@ -818,6 +827,13 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
             }
             $this->ctrl->redirect($this, 'archives');
         }
+    }
+
+    protected function cleanFilename(
+        string $filename,
+    ): string {
+        $filename = strip_tags($filename);
+        return preg_replace('/[^A-Za-z0-9]/', '', $filename);
     }
 
     protected function initArchiveFilenameForm($a_mode = "edit"): void
