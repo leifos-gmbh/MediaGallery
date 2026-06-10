@@ -53,8 +53,8 @@ class ilMediaGalleryGUI
     protected function initTemplate(): void
     {
         $this->tpl->addCss($this->plugin->getStyleSheetLocation("xmg.css"));
-        $this->tpl->addCss($this->plugin->getDirectory() . "/js/prettyphoto_3.1.5/css/prettyPhoto.css");
-        $this->tpl->addJavascript($this->plugin->getDirectory() . "/js/prettyphoto_3.1.5/js/jquery.prettyPhoto.js");
+        $this->tpl->addCss($this->plugin->getDirectory() . "/js/prettyphoto_3.1.6/css/prettyPhoto.css");
+        $this->tpl->addJavascript($this->plugin->getDirectory() . "/js/prettyphoto_3.1.6/js/jquery.prettyPhoto.js");
         $this->tpl->addJavascript($this->plugin->getDirectory() . "/js/html5media-master/domready.js");
         $this->tpl->addJavascript($this->plugin->getDirectory() . "/js/html5media-master/flowplayer.js");
         $this->tpl->addJavascript($this->plugin->getDirectory() . "/js/html5media-master/html5media.js");
@@ -378,8 +378,8 @@ class ilMediaGalleryGUI
     public function buildTemplateContent(): void
     {
         $this->tpl->addCss($this->plugin->getStyleSheetLocation("xmg.css"));
-        $this->tpl->addCss($this->plugin->getDirectory() . "/js/prettyphoto_3.1.5/css/prettyPhoto.css");
-        $this->tpl->addJavascript($this->plugin->getDirectory() . "/js/prettyphoto_3.1.5/js/jquery.prettyPhoto.js");
+        $this->tpl->addCss($this->plugin->getDirectory() . "/js/prettyphoto_3.1.6/css/prettyPhoto.css");
+        $this->tpl->addJavascript($this->plugin->getDirectory() . "/js/prettyphoto_3.1.6/js/jquery.prettyPhoto.js");
         $this->tpl->addJavascript($this->plugin->getDirectory() . "/js/html5media-master/domready.js");
         $this->tpl->addJavascript($this->plugin->getDirectory() . "/js/html5media-master/flowplayer.js");
         $this->tpl->addJavascript($this->plugin->getDirectory() . "/js/html5media-master/html5media.js");
