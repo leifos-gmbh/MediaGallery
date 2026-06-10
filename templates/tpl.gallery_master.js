@@ -1,5 +1,10 @@
-$(document).ready(function(){
-    $("a[rel^='prettyPhoto']").prettyPhoto({
+$(document).ready(function($){
+    // size function was removed in jQuery 3.x but is needed by prettyPhoto 3.1.5
+    if (!$.fn.size) {
+        $.fn.size = function() { return this.length; };
+    }
+
+    $(document).find("a[rel^='prettyPhoto'], a[data-rel^='prettyPhoto']").prettyPhoto({
         animation_speed: 'fast', /* fast/slow/normal */
         slideshow: 5000, /* false OR interval time in ms */
         autoplay_slideshow: false, /* true/false */
