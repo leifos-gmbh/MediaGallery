@@ -19,6 +19,12 @@ $(function() {
 
 
         init: {
+            FilesAdded: function(up, files) {
+                plupload.each(files, function(file) {
+                    file.name = file.name.replace(/[^a-zA-Z0-9\._-]/g, '_');
+                });
+            },
+
             UploadComplete: function(up, files) {
 
                 let message = "&upload=successfully";
