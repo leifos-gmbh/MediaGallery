@@ -156,12 +156,17 @@ class ilMediaGalleryArchives
      */
     public function renameArchive(string $a_old_name, string $a_new_name): bool
     {
+        $a_old_name = str_ends_with($a_old_name, '.zip') ? substr($a_old_name, 0, strlen($a_old_name) - 4) : $a_old_name;
+        $a_new_name = str_ends_with($a_new_name, '.zip') ? substr($a_new_name, 0, strlen($a_new_name) - 4) : $a_new_name;
+        $a_new_name = $this->cleanArchiveFilename($a_new_name);
         if($a_old_name && !$a_new_name) {
             return false;
         }
         if($a_new_name == $a_old_name) {
             return true;
         }
+        $a_new_name .= '.zip';
+        $a_old_name .= '.zip';
         $this->db->manipulate("UPDATE rep_robj_xmg_downloads SET filename = "
             . $this->db->quote($a_new_name, "text")
             . " WHERE filename = "
@@ -171,6 +176,13 @@ class ilMediaGalleryArchives
         rename($this->getPath($a_old_name), $this->getPath($a_new_name));
         $this->resetCache();
         return true;
+    }
+
+    protected function cleanArchiveFilename(
+        string $filename,
+    ): string {
+        $filename = strip_tags($filename);
+        return preg_replace('/[^A-Za-z0-9]/', '', $filename);
     }
 
     /**
