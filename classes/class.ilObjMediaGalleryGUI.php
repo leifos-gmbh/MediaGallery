@@ -808,7 +808,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
         } else {
             if (strlen($_SESSION['archiveFilename']) && strlen($_POST['filename'])) {
                 $archives = ilMediaGalleryArchives::_getInstanceByXmgId($this->object_id);
-                $archives->renameArchive($_SESSION['archiveFilename'] . '.zip', $_POST['filename'] . '.zip');
+                $archives->renameArchive($_SESSION['archiveFilename'], $_POST['filename']);
                 unset($_SESSION['archiveFilename']);
                 $this->tpl->setOnScreenMessage(
                     ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS,
@@ -975,6 +975,7 @@ class ilObjMediaGalleryGUI extends ilObjectPluginGUI
         $fileName = $_REQUEST["name"] ?? '';
         // Clean the fileName for security reasons
         $fileName = $this->normalizeUtf8String($fileName);
+        $fileName = strip_tags($fileName);
         $fileName = preg_replace('/[^\w\._]+/', '_', $fileName);
         // Make sure the fileName is unique with chunking support. Ignores Extensions
         $ext = pathinfo($targetDir . $fileName, PATHINFO_EXTENSION);
